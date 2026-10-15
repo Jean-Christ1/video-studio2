@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Copy Studio — 3 Lots de Copies</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+--bg:#0a0a12;--bg2:#12121c;--bg3:#1a1a28;
+--panel:#16161f;--border:#2a2a3a;--border-soft:#23232f;
+--ink:#e8e6e0;--dim:#8a8896;--faint:#4a4858;
+--acc:#e5c15a;--acc2:#e87b35;
+--ok:#4a9d6a;--err:#c85a4a;--warn:#d4a017;
+--blue:#4a7bc8;--purple:#8b5fc4;
+--r:6px;--fs:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
+--fm:ui-monospace,'SF Mono',Menlo,monospace;
+}
+html,body{background:var(--bg)}
+body{font-family:var(--fs);background:var(--bg);color:var(--ink);min-height:100vh;padding:1.2rem 1rem 260px;font-size:15px;line-height:1.55;max-width:1400px;margin:0 auto}
+header{margin-bottom:1.2rem;text-align:center;padding:.8rem 0 1.2rem;position:relative}
+header::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:180px;height:1px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.5}
+h1{font-size:1.85rem;font-weight:300;margin-bottom:.35rem;background:linear-gradient(135deg,var(--acc2),var(--acc));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.subtitle{font-size:.82rem;color:var(--dim);font-style:italic}
+
+.toast{position:fixed;top:1.2rem;left:50%;transform:translateX(-50%) translateY(-120px);background:var(--bg3);color:var(--ink);border:1px solid var(--border);border-left:3px solid var(--acc);padding:.8rem 1.3rem;border-radius:var(--r);font-size:.85rem;box-shadow:0 8px 32px rgba(0,0,0,.6);z-index:1000;opacity:0;transition:transform .35s cubic-bezier(.2,.9,.3,1.2),opacity .35s;max-width:90vw;text-align:center;display:flex;align-items:center;gap:.6rem}
+.toast.visible{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.success{border-left-color:var(--ok)}.toast.error{border-left-color:var(--err)}.toast.warn{border-left-color:var(--warn)}
+
+.banner{background:var(--panel);border:1px solid var(--border);border-left:2px solid var(--acc);padding:.9rem 1.1rem;border-radius:var(--r);font-size:.78rem;color:var(--dim);margin-bottom:1.1rem;line-height:1.6}
+.banner strong{color:var(--ink)}.banner .hl{color:var(--acc)}
+.banner code{background:var(--bg2);padding:.1rem .35rem;border-radius:3px;font-family:var(--fm);font-size:.72rem;color:var(--acc)}
+
+.section{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1rem;overflow:hidden}
+.section-header{padding:.95rem 1.15rem;cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center}
+.section-header:active{background:var(--bg2)}
+.section-title{font-size:.85rem;text-transform:uppercase;letter-spacing:.2em;color:var(--ink);font-weight:500;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.badge{display:inline-block;padding:.15rem .55rem;background:transparent;color:var(--acc);border:1px solid var(--border);border-radius:2px;font-size:.6rem;letter-spacing:.15em;font-weight:600}
+.chevron{font-size:.7rem;color:var(--faint);transition:transform .3s}
+.section.open .chevron{transform:rotate(180deg);color:var(--acc)}
+.section-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.section.open .section-body{max-height:8000px}
+.section-content{padding:0 1.15rem 1.15rem}
+
+textarea,input[type=text],input[type=number]{width:100%;padding:.8rem .95rem;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-family:var(--fs);font-size:.9rem;margin-bottom:.6rem;outline:none;transition:border-color .15s;line-height:1.5;resize:vertical}
+textarea:focus,input:focus{border-color:var(--acc)}
+textarea#keys-input{font-family:var(--fm);font-size:.78rem;min-height:90px}
+
+.controls-row{display:flex;gap:.6rem;margin-bottom:.8rem;flex-wrap:wrap}
+.control{flex:1;min-width:140px}
+.control label{display:block;font-size:.68rem;color:var(--dim);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.12em;font-weight:600}
+.control select,.control input{width:100%;padding:.7rem .85rem;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-family:inherit;font-size:.85rem;outline:none;appearance:none}
+.control input[type=number]{-moz-appearance:textfield;appearance:textfield}
+.control input[type=number]::-webkit-outer-spin-button,.control input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+
+.btn{width:100%;padding:.85rem 1.2rem;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:.85rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-bottom:.7rem;transition:all .2s;font-family:inherit}
+.btn:hover:not(:disabled){background:var(--bg3);border-color:var(--acc)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-primary{border-color:var(--acc);background:linear-gradient(135deg,rgba(232,123,53,.2),rgba(229,193,90,.15));color:var(--acc)}
+.btn-primary:hover:not(:disabled){background:linear-gradient(135deg,rgba(232,123,53,.3),rgba(229,193,90,.25))}
+.btn-large{font-size:1rem;padding:1.1rem;letter-spacing:.2em}
+.btn-stop{border-color:var(--err);color:var(--err);background:transparent;display:none}
+.btn-stop.visible{display:block}
+
+.status{font-size:.75rem;padding:.55rem .85rem;border-radius:var(--r);margin-bottom:.5rem;display:flex;align-items:center;gap:.6rem;background:var(--bg2);color:var(--dim);border:1px solid var(--border)}
+.status.ok{background:rgba(74,157,106,.08);color:var(--ok);border-color:rgba(74,157,106,.3)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--faint);flex-shrink:0}
+.status.ok .dot{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.hint{font-size:.7rem;color:var(--dim);margin-top:.5rem;line-height:1.5}
+.hint a{color:var(--acc);text-decoration:none;border-bottom:1px dotted var(--acc)}
+.hint code{background:var(--bg2);padding:.1rem .35rem;border-radius:3px;font-family:var(--fm);font-size:.68rem;color:var(--acc)}
+
+.keys-status{margin-top:.7rem;display:flex;flex-direction:column;gap:.3rem}
+.key-row{padding:.5rem .75rem;background:var(--bg2);border:1px solid var(--border-soft);border-radius:var(--r);display:flex;justify-content:space-between;align-items:center;gap:.5rem;font-family:var(--fm);font-size:.72rem}
+.key-row .key-id{color:var(--acc);font-weight:600;letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
+.key-row .key-rpm{color:var(--dim);font-size:.68rem;flex-shrink:0}
+.key-row .key-usage{color:var(--ink);font-weight:600;font-size:.68rem;flex-shrink:0;padding:.1rem .45rem;background:rgba(74,157,106,.12);border-radius:3px;border:1px solid rgba(74,157,106,.25)}
+.key-row .key-usage.warn{background:rgba(212,160,23,.12);border-color:rgba(212,160,23,.3);color:var(--warn)}
+.key-row .key-usage.full{background:rgba(200,90,74,.12);border-color:rgba(200,90,74,.3);color:var(--err)}
+.key-row .key-usage.cool{background:rgba(74,123,200,.12);border-color:rgba(74,123,200,.3);color:#6a9be0}
+.key-row .key-state{font-size:.6rem;padding:.1rem .45rem;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.key-row .key-state.on{background:rgba(74,157,106,.15);color:var(--ok);border:1px solid rgba(74,157,106,.3)}
+.key-row .key-state.off{background:rgba(200,90,74,.15);color:var(--err);border:1px solid rgba(200,90,74,.3)}
+
+.progress-bar{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;margin-bottom:.6rem;border:1px solid var(--border);display:none}
+.progress-bar.visible{display:block}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--acc2),var(--acc));width:0%;transition:width .3s;border-radius:3px}
+.progress-info{font-size:.75rem;font-family:var(--fm);color:var(--dim);display:none;justify-content:space-between;flex-wrap:wrap;gap:.4rem;margin-bottom:.8rem}
+.progress-info.visible{display:flex}
+
+.ref-drop{border:2px dashed var(--border);border-radius:var(--r);padding:1.4rem 1rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2);margin-bottom:.8rem;position:relative}
+.ref-drop:hover{border-color:var(--acc)}
+.ref-drop.has-image{border-style:solid;border-color:var(--acc);padding:0}
+.ref-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.ref-drop .ref-icon{font-size:2rem;color:var(--acc);opacity:.6;margin-bottom:.4rem}
+.ref-drop .ref-text{font-size:.82rem;color:var(--dim);line-height:1.5}
+.ref-drop .ref-text strong{color:var(--acc)}
+.ref-preview{position:relative;display:block;width:100%;max-height:300px;overflow:hidden}
+.ref-preview img{width:100%;height:auto;display:block;max-height:300px;object-fit:contain;background:#000}
+.ref-preview .ref-remove{position:absolute;top:.5rem;right:.5rem;background:rgba(200,90,74,.9);color:#fff;border:none;width:30px;height:30px;border-radius:50%;font-size:.9rem;cursor:pointer;z-index:2}
+
+.lot-tabs{display:flex;gap:.3rem;margin-bottom:.8rem;flex-wrap:wrap}
+.lot-tab{flex:1;min-width:100px;padding:.6rem .5rem;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);color:var(--dim);font-size:.7rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;text-align:center;transition:all .2s;font-family:inherit}
+.lot-tab.active{border-color:var(--acc);color:var(--acc);background:rgba(229,193,90,.08)}
+.lot-tab .lt-count{display:block;font-size:.6rem;opacity:.7;margin-top:.15rem;font-weight:400}
+.lot-panel{display:none}
+.lot-panel.active{display:block}
+
+.lot-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;padding:.6rem .8rem;background:var(--bg2);border-radius:var(--r);border:1px solid var(--border-soft);flex-wrap:wrap;gap:.4rem}
+.lot-header .lot-title{font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.lot-header .lot-desc{font-size:.68rem;color:var(--dim);margin-top:.15rem;line-height:1.4}
+.lot-header .lot-badge{padding:.15rem .5rem;border-radius:3px;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.lot-header .lot-badge.fidelity{background:rgba(74,157,106,.15);color:var(--ok);border:1px solid rgba(74,157,106,.3)}
+.lot-header .lot-badge.doc{background:rgba(74,123,200,.15);color:var(--blue);border:1px solid rgba(74,123,200,.3)}
+.lot-header .lot-badge.users{background:rgba(139,95,196,.15);color:var(--purple);border:1px solid rgba(139,95,196,.3)}
+
+.image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.6rem;margin-top:.6rem}
+.image-card{position:relative;border-radius:var(--r);overflow:hidden;border:2px solid var(--border);background:var(--bg2);cursor:pointer;transition:all .2s;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
+.image-card:hover{border-color:var(--faint)}
+.image-card.selected{border-color:var(--acc);box-shadow:0 0 0 2px rgba(229,193,90,.25),0 0 20px rgba(229,193,90,.15)}
+.image-card.selected::after{content:'✓';position:absolute;top:.4rem;left:.4rem;width:24px;height:24px;background:var(--acc);color:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;z-index:3}
+.image-card.loading{background:linear-gradient(110deg,var(--bg2) 30%,var(--bg3) 50%,var(--bg2) 70%);background-size:200% 100%;animation:shimmer 1.8s linear infinite;cursor:default;border-style:dashed}
+.image-card.error{border-color:var(--err);background:rgba(200,90,74,.06);cursor:default}
+.image-card img{width:100%;height:100%;object-fit:cover;display:block}
+.image-card .img-key{position:absolute;bottom:.4rem;right:.4rem;padding:.12rem .4rem;background:rgba(0,0,0,.7);color:#fff;border-radius:3px;font-size:.58rem;font-family:var(--fm);z-index:3}
+.image-card .img-actions{position:absolute;top:.4rem;right:.4rem;display:flex;gap:.25rem;z-index:4;opacity:0;transition:opacity .2s}
+.image-card:hover .img-actions{opacity:1}
+.image-card .img-action{width:26px;height:26px;background:rgba(0,0,0,.75);color:#fff;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;cursor:pointer;transition:background .2s}
+.image-card .img-action:hover{background:var(--acc);color:var(--bg)}
+.image-card .placeholder-text{color:var(--faint);font-size:.68rem;font-family:var(--fm);padding:.5rem;text-align:center;z-index:2}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+
+.empty-state{padding:2rem 1rem;text-align:center;color:var(--faint);font-size:.82rem;font-family:var(--fm);border:1px dashed var(--border);border-radius:var(--r);margin-top:.5rem}
+.empty-state .big{font-size:2.2rem;opacity:.3;margin-bottom:.5rem}
+
+.floating-bar{position:fixed;left:0;right:0;bottom:220px;z-index:90;transition:bottom .3s ease;pointer-events:none}
+body.debug-collapsed .floating-bar{bottom:46px}
+.floating-bar .floating-inner{max-width:1400px;margin:0 auto;padding:0 1rem;display:flex;gap:.5rem;align-items:center;pointer-events:auto}
+.selected-thumb{flex:0 0 auto;width:56px;height:56px;border-radius:var(--r);border:2px solid var(--acc);background:var(--bg2);overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.selected-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.selected-thumb.empty{border-color:var(--border);border-style:dashed;color:var(--faint);font-size:.5rem;text-align:center;padding:.15rem;font-family:var(--fm);line-height:1.1}
+.selected-info{flex:1;min-width:0;color:var(--dim);font-size:.72rem;font-family:var(--fm);line-height:1.3;overflow:hidden}
+.selected-info strong{color:var(--acc);display:block;font-size:.78rem;margin-bottom:.1rem}
+.selected-info span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-var{flex:0 0 auto;padding:.75rem 1rem;border-radius:var(--r);border:1px solid var(--acc);background:linear-gradient(135deg,rgba(232,123,53,.25),rgba(229,193,90,.2));color:var(--acc);font-size:.8rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:all .2s;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.btn-var:hover:not(:disabled){background:linear-gradient(135deg,rgba(232,123,53,.35),rgba(229,193,90,.3))}
+.btn-var:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;border-color:var(--border)}
+
+.status-bar{position:fixed;bottom:220px;left:0;right:0;background:var(--bg3);border-top:1px solid var(--border);color:var(--ink);padding:.55rem 1rem;font-size:.72rem;display:flex;align-items:center;gap:.6rem;transform:translateY(200%);transition:transform .35s cubic-bezier(.2,.9,.3,1);z-index:150;font-family:var(--fm);box-shadow:0 -4px 20px rgba(0,0,0,.4)}
+.status-bar.visible{transform:translateY(0)}
+.spinner{width:11px;height:11px;border:2px solid rgba(229,193,90,.2);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.debug-panel{position:fixed;bottom:0;left:0;right:0;height:200px;background:#05050a;border-top:2px solid var(--acc);z-index:200;display:flex;flex-direction:column;font-family:var(--fm);box-shadow:0 -8px 32px rgba(0,0,0,.7);transition:height .3s ease}
+.debug-panel.collapsed{height:40px}
+.debug-header{display:flex;justify-content:space-between;align-items:center;padding:.4rem .7rem;background:linear-gradient(90deg,#0f0f18,#1a1a28);border-bottom:1px solid var(--border);flex-shrink:0;user-select:none}
+.debug-title{font-size:.68rem;color:var(--acc);letter-spacing:.15em;text-transform:uppercase;font-weight:600;display:flex;align-items:center;gap:.5rem}
+.debug-badge{font-size:.58rem;padding:.1rem .4rem;background:var(--acc);color:var(--bg);border-radius:2px;font-weight:700}
+.debug-actions{display:flex;gap:.3rem}
+.debug-actions button{background:transparent;border:1px solid var(--border);color:var(--dim);font-size:.6rem;padding:.25rem .55rem;border-radius:2px;cursor:pointer;font-family:inherit}
+.debug-actions button:hover{color:var(--acc);border-color:var(--acc)}
+.debug-body{flex:1;overflow-y:auto;padding:.5rem .7rem 1rem;font-size:.7rem;line-height:1.45;color:#c8c8d0}
+.debug-entry{margin-bottom:.25rem;padding:.2rem .4rem;border-left:2px solid transparent;border-radius:2px;word-break:break-word}
+.debug-entry.info{border-left-color:var(--faint)}
+.debug-entry.success{border-left-color:var(--ok);background:rgba(74,157,106,.04)}
+.debug-entry.warn{border-left-color:var(--warn);background:rgba(212,160,23,.04)}
+.debug-entry.error{border-left-color:var(--err);background:rgba(200,90,74,.06);color:#f0a0a0}
+.debug-entry.api{border-left-color:var(--acc)}
+.debug-entry.state{border-left-color:var(--acc2)}
+.debug-time{color:var(--faint);margin-right:.5rem;font-size:.6rem}
+.debug-cat{color:var(--acc);font-weight:600;margin-right:.4rem;font-size:.6rem}
+.debug-msg{color:#d8d8e0}
+
+#noSleepCanvas{position:fixed;top:0;left:0;width:1px;height:1px;opacity:.01;pointer-events:none;z-index:-1}
+#noSleepVideo{position:fixed;top:0;left:0;width:1px;height:1px;opacity:.01;pointer-events:none;z-index:-1}
+
+@media(max-width:600px){
+h1{font-size:1.5rem}
+.image-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.45rem}
+body{padding-bottom:240px}
+.lot-tab{font-size:.62rem;padding:.5rem .3rem}
+.floating-bar .floating-inner{padding:0 .5rem;gap:.4rem}
+.selected-thumb{width:48px;height:48px}
+.btn-var{font-size:.7rem;padding:.65rem .7rem;letter-spacing:.06em}
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Copy Studio</h1>
+<p class="subtitle">Image de référence → 3 lots de 10 copies · Fidélité · Documentation · Utilisateurs</p>
+</header>
+
+<div class="banner">
+<strong>Comment ça marche :</strong> importez une image de référence, collez vos clés API, puis cliquez sur <span class="hl">Lancer les 3 lots</span>. Le système génère :<br>
+<span class="hl">🟢 Lot Fidélité</span> — 10 copies avec des réglages visant la fidélité maximale à l'original.<br>
+<span class="hl">🔵 Lot Documentation</span> — 10 copies avec le style recommandé par la documentation Agnes.<br>
+<span class="hl">🟣 Lot Utilisateurs</span> — 10 copies avec les styles recommandés par les utilisateurs (GitHub, forums).
+</div>
+
+<!-- CLÉS API -->
+<div class="section open" id="section-keys">
+<div class="section-header" data-toggle="section-keys">
+<span class="section-title">🔑 Clés API <span class="badge" id="keys-badge">0</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<textarea id="keys-input" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx&#10;sk-yyyyyyyyyyyyyyyyyyyyyyyy = 30&#10;sk-zzzzzzzzzzzzzzzzzzzzzzzz = 50" spellcheck="false" autocomplete="off"></textarea>
+<button type="button" class="btn btn-primary" id="save-keys-btn">💾 Enregistrer les clés</button>
+<div class="status" id="keys-status-line"><span class="dot"></span><span id="keys-status-text">Aucune clé enregistrée</span></div>
+<div class="keys-status" id="keys-status"></div>
+<div class="hint">Format : <code>sk-xxxx</code> (RPM défaut 20) ou <code>sk-xxxx = 30</code> (RPM custom). Clés sur <a href="https://platform.agnes-ai.com" target="_blank" rel="noopener">platform.agnes-ai.com</a></div>
+</div></div>
+</div>
+
+<!-- IMAGE DE RÉFÉRENCE -->
+<div class="section open" id="section-ref">
+<div class="section-header" data-toggle="section-ref">
+<span class="section-title">🖼️ Image de référence <span class="badge" id="ref-badge">—</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="ref-drop" id="ref-drop">
+<input type="file" accept="image/*" id="ref-input">
+<div class="ref-icon">🎨</div>
+<div class="ref-text"><strong>Cliquez pour choisir une image</strong><br>Cette image servira de base pour toutes les copies.</div>
+</div>
+</div></div>
+</div>
+
+<!-- CONTRÔLES -->
+<div class="section open" id="section-controls">
+<div class="section-header" data-toggle="section-controls">
+<span class="section-title">⚙️ Paramètres</span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="controls-row">
+<div class="control">
+<label>Copies par lot</label>
+<input type="number" id="count-per-lot" value="10" min="1" max="30">
+</div>
+<div class="control">
+<label>Format</label>
+<select id="ratio-select">
+<option value="9:16" selected>Portrait 9:16</option>
+<option value="1:1">Carré 1:1</option>
+<option value="16:9">Paysage 16:9</option>
+</select>
+</div>
+</div>
+<button type="button" class="btn btn-primary btn-large" id="launch-btn" disabled>🚀 Lancer les 3 lots</button>
+<button type="button" class="btn btn-stop" id="stop-btn">⏹ Arrêter</button>
+</div></div>
+</div>
+
+<!-- PROGRESSION -->
+<div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+<div class="progress-info" id="progress-info">
+<span id="progress-label">—</span>
+<span id="progress-eta"></span>
+</div>
+
+<!-- RÉSULTATS -->
+<div class="section open" id="section-results">
+<div class="section-header" data-toggle="section-results">
+<span class="section-title">📦 Résultats</span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+
+<div class="lot-tabs" id="lot-tabs">
+<button type="button" class="lot-tab active" data-lot="fidelity">🟢 Fidélité<span class="lt-count" id="tab-count-fidelity">0/10</span></button>
+<button type="button" class="lot-tab" data-lot="doc">🔵 Documentation<span class="lt-count" id="tab-count-doc">0/10</span></button>
+<button type="button" class="lot-tab" data-lot="users">🟣 Utilisateurs<span class="lt-count" id="tab-count-users">0/10</span></button>
+</div>
+
+<div class="lot-panel active" id="lot-panel-fidelity">
+<div class="lot-header">
+<div>
+<div class="lot-title">🟢 Lot Fidélité</div>
+<div class="lot-desc">10 copies avec des réglages de préservation maximale : composition, pose, identité, couleurs, détails inchangés.</div>
+</div>
+<span class="lot-badge fidelity">FIDÉLITÉ</span>
+</div>
+<div class="image-grid" id="grid-fidelity"></div>
+<div class="empty-state" id="empty-fidelity"><div class="big">🟢</div><div>Les copies fidèles apparaîtront ici</div></div>
+</div>
+
+<div class="lot-panel" id="lot-panel-doc">
+<div class="lot-header">
+<div>
+<div class="lot-title">🔵 Lot Documentation Agnes</div>
+<div class="lot-desc">10 copies avec la structure recommandée : [Subject] + [Scene] + [Style] + [Lighting] + [Composition] + [Quality].</div>
+</div>
+<span class="lot-badge doc">DOC</span>
+</div>
+<div class="image-grid" id="grid-doc"></div>
+<div class="empty-state" id="empty-doc"><div class="big">🔵</div><div>Les copies documentation apparaîtront ici</div></div>
+</div>
+
+<div class="lot-panel" id="lot-panel-users">
+<div class="lot-header">
+<div>
+<div class="lot-title">🟣 Lot Utilisateurs</div>
+<div class="lot-desc">10 copies avec les styles recommandés par les utilisateurs : cyberpunk, watercolor, surreal, cinematic, anime, oil painting, etc.</div>
+</div>
+<span class="lot-badge users">USERS</span>
+</div>
+<div class="image-grid" id="grid-users"></div>
+<div class="empty-state" id="empty-users"><div class="big">🟣</div><div>Les copies utilisateurs apparaîtront ici</div></div>
+</div>
+
+</div></div>
+</div>
+
+<!-- BARRE FLOTTANTE -->
+<div class="floating-bar" id="floating-bar">
+<div class="floating-inner">
+<div class="selected-thumb empty" id="selected-thumb">—</div>
+<div class="selected-info" id="selected-info">
+<strong>Aucune sélection</strong>
+<span>Cliquez sur une image</span>
+</div>
+<button type="button" class="btn-var" id="var-btn" disabled>🔄 5 variations</button>
+</div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar" id="status-bar">
+<div class="spinner"></div>
+<span id="status-text">Préparation…</span>
+</div>
+
+<!-- DEBUG PANEL -->
+<div class="debug-panel collapsed" id="debug-panel">
+<div class="debug-header" id="debug-header">
+<div class="debug-title">🖥️ Console <span class="debug-badge" id="debug-count">0</span></div>
+<div class="debug-actions">
+<button type="button" id="debug-copy-btn">Copier</button>
+<button type="button" id="debug-clear-btn">Effacer</button>
+<button type="button" id="debug-collapse-btn">+</button>
+</div>
+</div>
+<div class="debug-body" id="debug-body"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+<span class="toast-icon" id="toast-icon">✓</span>
+<span id="toast-text">Message</span>
+</div>
+
+<canvas id="noSleepCanvas" width="2" height="2"></canvas>
+<video id="noSleepVideo" playsinline muted loop></video>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// CONFIGURATION
+// ══════════════════════════════════════════════════════════════════
+const API_BASE = 'https://apihub.agnes-ai.com/v1';
+const MODEL_IMAGE = 'agnes-image-2.1-flash';
+const API_KEYS_STORAGE = 'copy_studio_keys_v1';
+const DEFAULT_RPM = 20;
+const MAX_RPM = 500;
+const WINDOW_MS = 60000;
+const DEBUG_MAX = 500;
+const VARIATIONS_COUNT = 5;
+
+// ══════════════════════════════════════════════════════════════════
+// STYLE PRESETS
+// ══════════════════════════════════════════════════════════════════
+const DOC_STYLE_TEMPLATES = [
+  { id:'doc-cinematic', label:'Cinematic Realism', template:'cinematic realism, high visual density, rich architectural details, soft golden light, wide-angle composition, high detail, film grain' },
+  { id:'doc-editorial', label:'Editorial', template:'clean editorial style, high-information-density, precise composition, balanced lighting, magazine-quality, sharp detail' },
+  { id:'doc-concept', label:'Concept Art', template:'concept art, detailed environment design, dramatic lighting, atmospheric depth, rich color grading, production-quality rendering' },
+  { id:'doc-product', label:'Product Visual', template:'product photography, studio softbox lighting, clean background, high detail, commercial quality, sharp focus' },
+  { id:'doc-marketing', label:'Marketing Creative', template:'marketing visual, bold composition, vibrant colors, eye-catching design, banner-quality, high contrast' },
+  { id:'doc-story', label:'Storytelling Visual', template:'storytelling visual, narrative composition, emotional lighting, detailed foreground, atmospheric background, rich depth' },
+  { id:'doc-thumbnail', label:'Thumbnail', template:'high-impact thumbnail, bold foreground subject, contrasting background, saturated colors, readable at small size' },
+  { id:'doc-documentary', label:'Documentary', template:'documentary photography, natural lighting, authentic atmosphere, candid composition, photojournalistic quality' },
+  { id:'doc-architecture', label:'Architecture', template:'architectural photography, precise perspective, clean lines, ambient light, high detail, professional grade' },
+  { id:'doc-portrait', label:'Portrait', template:'portrait photography, soft directional lighting, shallow depth of field, skin detail, natural expression, professional quality' }
+];
+
+const USER_STYLE_TEMPLATES = [
+  { id:'user-cyberpunk', label:'Cyberpunk', template:'cyberpunk style, neon lights, rain-soaked streets, chrome reflections, high contrast, Blade Runner atmosphere, vivid magenta and cyan' },
+  { id:'user-watercolor', label:'Watercolor', template:'watercolor painting, soft bleeding edges, translucent washes, paper texture, organic pigments, dreamy aesthetic' },
+  { id:'user-surreal', label:'Surreal', template:'surrealist style, impossible geometry, dreamlike atmosphere, symbolic elements, Salvador Dali influence, hyper-detailed' },
+  { id:'user-cinematic', label:'Cinematic Film', template:'cinematic film still, anamorphic lens, shallow depth of field, dramatic lighting, film grain, color graded, 35mm' },
+  { id:'user-anime', label:'Anime', template:'anime style, cel shading, vibrant colors, expressive characters, detailed backgrounds, Studio-quality animation' },
+  { id:'user-oil', label:'Oil Painting', template:'oil painting, visible brushstrokes, impasto texture, rich pigments, old master technique, chiaroscuro lighting' },
+  { id:'user-3d', label:'3D Render', template:'3D render, subsurface scattering, global illumination, ray tracing, cinematic lighting, Pixar-quality detail' },
+  { id:'user-noir', label:'Film Noir', template:'film noir, high contrast black and white, dramatic shadows, venetian blind patterns, 1940s detective atmosphere' },
+  { id:'user-ghibli', label:'Ghibli', template:'Studio Ghibli style, hand-painted watercolor backgrounds, warm natural lighting, detailed nature, whimsical atmosphere' },
+  { id:'user-comic', label:'Comic Book', template:'comic book style, bold ink outlines, halftone shading, vibrant primary colors, dynamic composition, superhero aesthetic' }
+];
+
+// ══════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════
+const state = {
+  keyPool: [],
+  referenceImage: null,
+  referenceUrl: null,
+  lots: {
+    fidelity: { images: [] },
+    doc: { images: [] },
+    users: { images: [] }
+  },
+  selectedImage: null,
+  nextImageId: 1,
+  isRunning: false,
+  stopRequested: false,
+  currentRun: null,
+  wakeLockSentinel: null,
+  wakeLockEnabled: false,
+  canvasStream: null,
+  canvasInterval: null,
+  activeLotTab: 'fidelity'
+};
+
+// ══════════════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════════════
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function nowTime(){return new Date().toLocaleTimeString('fr-FR',{hour12:false})}
+function formatEta(sec){if(!isFinite(sec)||sec<0)return '—';if(sec<60)return Math.round(sec)+'s';const m=Math.floor(sec/60);const s=Math.round(sec%60);return m+'m'+(s>0?' '+s+'s':'')}
+
+function setStatus(text){
+  const b=document.getElementById('status-bar');
+  const t=document.getElementById('status-text');
+  if(!b||!t)return;
+  if(text){b.classList.add('visible');t.textContent=text}
+  else b.classList.remove('visible');
+}
+
+let toastTimeout=null;
+function showToast(message,type,duration){
+  type=type||'success';
+  duration=duration||2500;
+  const t=document.getElementById('toast');
+  const i=document.getElementById('toast-icon');
+  const x=document.getElementById('toast-text');
+  if(!t||!i||!x)return;
+  t.classList.remove('visible','success','error','warn');
+  void t.offsetWidth;
+  const icons={success:'✓',error:'✕',warn:'⚠'};
+  i.textContent=icons[type]||'✓';
+  x.textContent=message;
+  t.classList.add(type);
+  requestAnimationFrame(function(){t.classList.add('visible')});
+  if(toastTimeout)clearTimeout(toastTimeout);
+  toastTimeout=setTimeout(function(){t.classList.remove('visible')},duration);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DEBUG
+// ══════════════════════════════════════════════════════════════════
+let debugCount=0;
+let debugEntries=[];
+let debugCollapsed=true;
+
+function debugLog(level,category,message,data){
+  const body=document.getElementById('debug-body');
+  if(!body)return;
+  const time=nowTime();
+  const entry=document.createElement('div');
+  entry.className='debug-entry '+level;
+  let html='<span class="debug-time">'+time+'</span><span class="debug-cat">['+esc(category)+']</span><span class="debug-msg">'+esc(message)+'</span>';
+  if(data!==undefined&&data!==null){
+    let ds;
+    if(typeof data==='string'){ds=data}
+    else{try{ds=JSON.stringify(data,null,2)}catch(e){ds=String(data)}}
+    if(ds.length>1800)ds=ds.slice(0,1800)+'\n…[tronqué]';
+    html+='<pre style="margin-top:.3rem;padding:.3rem .45rem;background:#0a0a12;border:1px solid var(--border);border-radius:2px;font-size:.6rem;color:#a8d8b0;max-height:120px;overflow:auto;white-space:pre-wrap;word-break:break-all;line-height:1.4">'+esc(ds)+'</pre>';
+  }
+  entry.innerHTML=html;
+  body.appendChild(entry);
+  debugEntries.push({time:time,level:level,category:category,message:message});
+  if(debugEntries.length>DEBUG_MAX)debugEntries.shift();
+  while(body.children.length>DEBUG_MAX)body.removeChild(body.firstChild);
+  body.scrollTop=body.scrollHeight;
+  debugCount++;
+  const c=document.getElementById('debug-count');
+  if(c)c.textContent=debugCount;
+  // Aussi dans la console navigateur pour debug
+  try{console.log('['+category+'] '+message);}catch(e){}
+}
+
+function clearDebug(){
+  const b=document.getElementById('debug-body');
+  if(b)b.innerHTML='';
+  debugEntries=[];
+  debugCount=0;
+  const c=document.getElementById('debug-count');
+  if(c)c.textContent='0';
+}
+
+function copyDebug(){
+  const lines=debugEntries.map(function(e){return e.time+' ['+e.category+'] '+e.message}).join('\n');
+  const finish=function(ok){showToast(ok?'Console copiée':'Copie impossible',ok?'success':'error')};
+  try{
+    if(navigator.clipboard&&window.isSecureContext){
+      navigator.clipboard.writeText(lines).then(function(){finish(true)}).catch(function(){legacyCopy(lines,finish)});
+      return;
+    }
+  }catch(e){}
+  legacyCopy(lines,finish);
+}
+
+function legacyCopy(text,cb){
+  const ta=document.createElement('textarea');
+  ta.value=text;
+  ta.style.position='fixed';
+  ta.style.opacity='0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  let ok=false;
+  try{ok=document.execCommand('copy')}catch(e){}
+  document.body.removeChild(ta);
+  cb(ok);
+}
+
+function toggleDebugCollapse(){
+  const p=document.getElementById('debug-panel');
+  const b=document.getElementById('debug-collapse-btn');
+  if(!p||!b)return;
+  debugCollapsed=!debugCollapsed;
+  p.classList.toggle('collapsed',debugCollapsed);
+  document.body.classList.toggle('debug-collapsed',debugCollapsed);
+  b.textContent=debugCollapsed?'+':'−';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// WAKE LOCK
+// ══════════════════════════════════════════════════════════════════
+async function activateWakeLock(){
+  try{
+    if('wakeLock' in navigator&&typeof navigator.wakeLock.request==='function'){
+      state.wakeLockSentinel=await navigator.wakeLock.request('screen');
+      state.wakeLockSentinel.addEventListener('release',function(){state.wakeLockSentinel=null});
+      state.wakeLockEnabled=true;
+      return true;
+    }
+  }catch(e){debugLog('warn','WAKELOCK','Refusé : '+e.message)}
+  try{
+    const canvas=document.getElementById('noSleepCanvas');
+    const video=document.getElementById('noSleepVideo');
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#000';
+    ctx.fillRect(0,0,2,2);
+    if(typeof canvas.captureStream==='function'){
+      state.canvasStream=canvas.captureStream(1);
+      let toggle=false;
+      state.canvasInterval=setInterval(function(){
+        toggle=!toggle;
+        ctx.fillStyle=toggle?'#000':'#010101';
+        ctx.fillRect(0,0,2,2);
+      },1000);
+      video.srcObject=state.canvasStream;
+      video.muted=true;
+      video.playsInline=true;
+      video.play().catch(function(){});
+      state.wakeLockEnabled=true;
+      return true;
+    }
+  }catch(e){debugLog('warn','WAKELOCK','Canvas échoué : '+e.message)}
+  return false;
+}
+
+async function deactivateWakeLock(){
+  if(state.wakeLockSentinel){
+    try{await state.wakeLockSentinel.release()}catch(e){}
+    state.wakeLockSentinel=null;
+  }
+  if(state.canvasInterval){
+    clearInterval(state.canvasInterval);
+    state.canvasInterval=null;
+  }
+  const video=document.getElementById('noSleepVideo');
+  if(video){
+    try{video.pause();video.srcObject=null}catch(e){}
+  }
+  if(state.canvasStream){
+    try{state.canvasStream.getTracks().forEach(function(t){t.stop()})}catch(e){}
+    state.canvasStream=null;
+  }
+  state.wakeLockEnabled=false;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CLÉS API
+// ══════════════════════════════════════════════════════════════════
+function parseKeys(raw){
+  const lines=String(raw||'').split(/\r?\n/);
+  const keys=[];
+  const seen={};
+  for(let i=0;i<lines.length;i++){
+    let l=lines[i].trim();
+    if(!l||l.startsWith('#'))continue;
+    let key=l;
+    let rpm=DEFAULT_RPM;
+    const m=l.match(/^([^=|]+?)\s*[=|]\s*(\d+)\s*$/);
+    if(m){
+      key=m[1].trim();
+      const r=parseInt(m[2],10);
+      if(!isNaN(r)&&r>0)rpm=Math.min(MAX_RPM,Math.max(1,r));
+    }
+    key=key.trim();
+    if(!key.startsWith('sk-'))continue;
+    if(seen[key])continue;
+    seen[key]=true;
+    keys.push({key:key,rpm:rpm});
+  }
+  return keys;
+}
+
+function saveKeysFromUI(){
+  debugLog('state','KEYS','Clic sur Enregistrer');
+  const input=document.getElementById('keys-input');
+  if(!input){
+    showToast('Champ clés introuvable','error');
+    return;
+  }
+  const raw=input.value||'';
+  debugLog('state','KEYS','Contenu brut : '+raw.length+' caractères');
+  const parsed=parseKeys(raw);
+  if(parsed.length===0){
+    showToast('Aucune clé valide (doit commencer par "sk-")','error');
+    debugLog('warn','KEYS','Aucune clé valide trouvée');
+    return;
+  }
+  try{
+    localStorage.setItem(API_KEYS_STORAGE,JSON.stringify(parsed));
+  }catch(e){
+    debugLog('error','KEYS','Erreur localStorage : '+e.message);
+  }
+  refreshKeyPool();
+  renderKeysStatus();
+  updateLaunchBtn();
+  const totalRpm=parsed.reduce(function(s,k){return s+k.rpm},0);
+  showToast(parsed.length+' clé(s) enregistrée(s) ✓','success');
+  debugLog('success','KEYS',parsed.length+' clés · RPM total = '+totalRpm);
+}
+
+function refreshKeyPool(){
+  let stored=[];
+  try{
+    const raw=localStorage.getItem(API_KEYS_STORAGE);
+    if(raw)stored=JSON.parse(raw);
+    if(!Array.isArray(stored))stored=[];
+  }catch(e){stored=[]}
+  const oldPool=state.keyPool||[];
+  state.keyPool=stored.map(function(s){
+    const existing=oldPool.find(function(k){return k.key===s.key});
+    // ré-enregistrer les clés réactive une clé désactivée (plus besoin de recharger la page)
+    if(existing){existing.rpm=s.rpm;existing.active=true;existing.errorCount=0;return existing}
+    return {
+      key:s.key,
+      rpm:s.rpm,
+      requestTimes:[],
+      cooldownUntil:0,
+      active:true,
+      errorCount:0
+    };
+  });
+}
+
+function getActiveKeys(){
+  return state.keyPool.filter(function(k){return k.active});
+}
+
+function getAvailableKey(){
+  const now=Date.now();
+  const cutoff=now-WINDOW_MS;
+  const candidates=[];
+  for(let i=0;i<state.keyPool.length;i++){
+    const k=state.keyPool[i];
+    if(!k.active)continue;
+    if(k.cooldownUntil>now)continue;
+    k.requestTimes=k.requestTimes.filter(function(t){return t>cutoff});
+    if(k.requestTimes.length>=k.rpm)continue;
+    candidates.push(k);
+  }
+  if(candidates.length===0)return null;
+  candidates.sort(function(a,b){return a.requestTimes.length-b.requestTimes.length});
+  return candidates[0];
+}
+
+function getSoonestFreeMs(){
+  const now=Date.now();
+  const cutoff=now-WINDOW_MS;
+  let soonest=Infinity;
+  let anyActive=false;
+  for(let i=0;i<state.keyPool.length;i++){
+    const k=state.keyPool[i];
+    if(!k.active)continue;
+    anyActive=true;
+    if(k.cooldownUntil>now){
+      soonest=Math.min(soonest,k.cooldownUntil-now);
+      continue;
+    }
+    k.requestTimes=k.requestTimes.filter(function(t){return t>cutoff});
+    if(k.requestTimes.length>=k.rpm){
+      const oldest=Math.min.apply(null,k.requestTimes);
+      soonest=Math.min(soonest,oldest+WINDOW_MS-now);
+    }else{
+      return 0;
+    }
+  }
+  if(!anyActive)return 30000;
+  if(soonest===Infinity)return 500;
+  return Math.max(150,soonest);
+}
+
+async function acquireKey(){
+  while(true){
+    if(state.stopRequested)throw new Error('Arrêt demandé');
+    // toutes les clés désactivées (401/403) : sinon attente de 30 s en boucle, sans fin
+    if(getActiveKeys().length===0)throw new Error('Aucune clé active');
+    const k=getAvailableKey();
+    if(k)return k;
+    const waitMs=getSoonestFreeMs();
+    setStatus('Clés saturées — attente '+Math.ceil(waitMs/1000)+'s');
+    await sleep(waitMs+80);
+  }
+}
+
+function registerRequest(keyObj){
+  keyObj.requestTimes.push(Date.now());
+  const cutoff=Date.now()-WINDOW_MS;
+  keyObj.requestTimes=keyObj.requestTimes.filter(function(t){return t>cutoff});
+  renderKeysStatus();
+}
+
+function renderKeysStatus(){
+  const el=document.getElementById('keys-status');
+  const badge=document.getElementById('keys-badge');
+  const statusLine=document.getElementById('keys-status-line');
+  const statusText=document.getElementById('keys-status-text');
+  if(badge)badge.textContent=state.keyPool.length;
+  if(state.keyPool.length===0){
+    if(el)el.innerHTML='';
+    if(statusLine)statusLine.classList.remove('ok');
+    if(statusText)statusText.textContent='Aucune clé enregistrée';
+    return;
+  }
+  if(statusLine)statusLine.classList.add('ok');
+  const totalRpm=state.keyPool.reduce(function(s,k){return s+(k.active?k.rpm:0)},0);
+  const activeCount=state.keyPool.filter(function(k){return k.active}).length;
+  if(statusText)statusText.textContent=activeCount+' clé(s) active(s) · RPM total = '+totalRpm;
+  const now=Date.now();
+  const cutoff=now-WINDOW_MS;
+  if(!el)return;
+  el.innerHTML=state.keyPool.map(function(k,i){
+    k.requestTimes=k.requestTimes.filter(function(t){return t>cutoff});
+    const used=k.requestTimes.length;
+    const pct=k.rpm>0?used/k.rpm:0;
+    let usageClass='';
+    if(!k.active)usageClass='';
+    else if(k.cooldownUntil>now)usageClass='cool';
+    else if(pct>=1)usageClass='full';
+    else if(pct>=0.7)usageClass='warn';
+    let cooldownTxt='';
+    if(k.cooldownUntil>now)cooldownTxt=' · cd '+Math.ceil((k.cooldownUntil-now)/1000)+'s';
+    const stateHtml=k.active?'<span class="key-state on">ON</span>':'<span class="key-state off">OFF</span>';
+    return '<div class="key-row">'+
+      '<span class="key-id">#'+(i+1)+' · '+esc(k.key.slice(0,8))+'…'+esc(k.key.slice(-4))+'</span>'+
+      '<span class="key-rpm">'+k.rpm+' RPM</span>'+
+      '<span class="key-usage '+usageClass+'">'+used+'/'+k.rpm+cooldownTxt+'</span>'+stateHtml+
+    '</div>';
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// APPEL API
+// ══════════════════════════════════════════════════════════════════
+async function generateCopy(prompt,ratio,keyObj,referenceUri){
+  const body={
+    model:MODEL_IMAGE,
+    prompt:prompt,
+    n:1,
+    size:'1K',
+    ratio:ratio,
+    extra_body:{response_format:'url'}
+  };
+  if(referenceUri){
+    body.extra_body.image=[referenceUri];
+  }
+  registerRequest(keyObj);
+  debugLog('api','IMAGE','POST · clé '+keyObj.key.slice(-4)+' · ratio='+ratio+(referenceUri?' · +ref':''),{
+    prompt:prompt.slice(0,150)+(prompt.length>150?'…':''),
+    hasRef:!!referenceUri
+  });
+  const res=await fetch(API_BASE+'/images/generations',{
+    method:'POST',
+    headers:{
+      'Authorization':'Bearer '+keyObj.key,
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify(body)
+  });
+  if(res.status===429){
+    keyObj.cooldownUntil=Date.now()+30000;
+    // pas d'errorCount ici : ce compteur sert à désactiver les clés refusées (401/403)
+    debugLog('warn','IMAGE','429 · clé '+keyObj.key.slice(-4)+' → cd 30s');
+    renderKeysStatus();
+    const err=new Error('HTTP 429');
+    err.status=429;
+    throw err;
+  }
+  if(res.status===401||res.status===403){
+    keyObj.errorCount=(keyObj.errorCount||0)+1;
+    debugLog('error','IMAGE','HTTP '+res.status+' · clé '+keyObj.key.slice(-4)+' (err='+keyObj.errorCount+')');
+    if(keyObj.errorCount>=3){
+      keyObj.active=false;
+      debugLog('error','IMAGE','Clé '+keyObj.key.slice(-4)+' désactivée');
+      renderKeysStatus();
+    }
+    const err=new Error('HTTP '+res.status+' (auth)');
+    err.status=res.status;
+    throw err;
+  }
+  if(!res.ok){
+    let errTxt='';
+    try{errTxt=(await res.text()).slice(0,250)}catch(e){}
+    const err=new Error('HTTP '+res.status+' — '+errTxt);
+    err.status=res.status;
+    throw err;
+  }
+  const data=await res.json();
+  const item=data.data&&data.data[0];
+  if(!item)throw new Error('Aucune image dans la réponse');
+  let url=null;
+  if(item.url)url=item.url;
+  else if(item.b64_json)url='data:image/png;base64,'+item.b64_json;
+  if(!url)throw new Error('Format inconnu');
+  debugLog('success','IMAGE','OK · clé '+keyObj.key.slice(-4));
+  return url;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PROMPTS
+// ══════════════════════════════════════════════════════════════════
+function buildFidelityPrompt(variationIndex){
+  const fidelityLevels=[
+    'EXACT COPY. Reproduce the input image with absolute fidelity. Every element, color, shape, texture, lighting and composition must be identical. Do not change anything. Just enhance sharpness and detail slightly.',
+    'EXACT COPY with subtle enhancement. Keep every element, color, shape, texture and composition identical. Only improve sharpness, clarity and micro-detail. Nothing else changes.',
+    'EXACT COPY with light film grain. Preserve every element, color, shape, texture, lighting and composition. Add a subtle analog film grain. Nothing else changes.',
+    'EXACT COPY with slight contrast boost. Preserve every element, color, shape, texture, lighting and composition. Gently increase contrast. Nothing else changes.',
+    'EXACT COPY with slight saturation increase. Preserve every element, color, shape, texture, lighting and composition. Gently boost color saturation. Nothing else changes.',
+    'EXACT COPY with slight brightness adjustment. Preserve every element, color, shape, texture, lighting and composition. Gently adjust exposure. Nothing else changes.',
+    'EXACT COPY with sharpness enhancement. Preserve every element, color, shape, texture, lighting and composition. Sharpen edges and details. Nothing else changes.',
+    'EXACT COPY with shadow recovery. Preserve every element, color, shape, texture, lighting and composition. Lift shadows slightly. Nothing else changes.',
+    'EXACT COPY with highlight recovery. Preserve every element, color, shape, texture, lighting and composition. Recover blown highlights. Nothing else changes.',
+    'EXACT COPY with balanced color correction. Preserve every element, color, shape, texture, lighting and composition. Apply subtle auto-color balance. Nothing else changes.'
+  ];
+  const base=fidelityLevels[variationIndex%fidelityLevels.length];
+  return base+'. CRITICAL: This is an image-to-image reproduction task. The output must look like the input. Do NOT invent, add, remove or modify any element. No text overlays, no watermarks.';
+}
+
+function buildDocPrompt(variationIndex){
+  const tpl=DOC_STYLE_TEMPLATES[variationIndex%DOC_STYLE_TEMPLATES.length];
+  return [
+    'IMAGE-TO-IMAGE TRANSFORMATION using the documented Agnes prompt structure.',
+    '',
+    'SUBJECT: the exact same subject as the input image, preserved without any change to identity, pose, shape or proportions.',
+    'SCENE / ENVIRONMENT: the exact same scene and environment as the input image, preserved without any change to layout, background or composition.',
+    'STYLE: '+tpl.template,
+    'LIGHTING: the lighting should be adapted to the style while keeping the same light direction and source as the input image.',
+    'COMPOSITION: preserve the exact same composition, framing, crop and camera angle as the input image.',
+    'QUALITY REQUIREMENTS: high detail, professional grade, no text, no watermark.',
+    '',
+    'WHAT SHOULD CHANGE: only the visual style, rendering technique, color grading and surface treatment.',
+    'WHAT MUST REMAIN UNCHANGED: subject identity, pose, composition, framing, number and position of all elements.'
+  ].join('\n');
+}
+
+function buildUserPrompt(variationIndex){
+  const tpl=USER_STYLE_TEMPLATES[variationIndex%USER_STYLE_TEMPLATES.length];
+  return [
+    'IMAGE-TO-IMAGE STYLE TRANSFER — community-recommended style.',
+    '',
+    'Apply the following visual style to the input image: '+tpl.template,
+    '',
+    'PRESERVATION RULES (CRITICAL):',
+    '- Keep the EXACT same subject, pose, expression and identity.',
+    '- Keep the EXACT same composition, framing, crop and camera angle.',
+    '- Keep the EXACT same number and position of every element.',
+    '- Do NOT add, remove or modify any element.',
+    '',
+    'WHAT CHANGES: only the style, rendering, colors, lighting quality and surface treatment.',
+    '',
+    'No text, no subtitles, no watermarks. High detail. Professional quality.'
+  ].join('\n');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// WORKER
+// ══════════════════════════════════════════════════════════════════
+async function runWorker(queue,ratio,referenceUri){
+  while(queue.length>0&&!state.stopRequested){
+    const task=queue.shift();
+    if(!task)break;
+    const lot=task.lot;
+    const placeholder=task.placeholder;
+    const promptBuilder=task.promptBuilder;
+    let attempts=0;
+    const maxAttempts=Math.max(5,state.keyPool.length*2);
+    while(attempts<maxAttempts&&!state.stopRequested){
+      attempts++;
+      let keyObj=null;
+      try{
+        keyObj=await acquireKey();
+      }catch(e){
+        placeholder.status='error';
+        placeholder.error=e.message==='Arrêt demandé'?'Arrêté':'Aucune clé';
+        renderLotGrid(lot);
+        updateAllCounts();
+        return;
+      }
+      placeholder.keyLast4=keyObj.key.slice(-4);
+      renderLotGrid(lot);
+      try{
+        const prompt=promptBuilder(placeholder.variationIndex);
+        const url=await generateCopy(prompt,ratio,keyObj,referenceUri);
+        placeholder.status='done';
+        placeholder.url=url;
+        renderLotGrid(lot);
+        updateAllCounts();
+        updateProgress();
+        break;
+      }catch(e){
+        if(e.message==='Arrêt demandé'){
+          placeholder.status='error';
+          placeholder.error='Arrêté';
+          renderLotGrid(lot);
+          updateAllCounts();
+          return;
+        }
+        if(e.status===429)continue;
+        debugLog('warn','COPY','Erreur tentative '+attempts+' : '+e.message);
+        if(attempts>=maxAttempts){
+          placeholder.status='error';
+          placeholder.error=(e.message||'Erreur').slice(0,60);
+          renderLotGrid(lot);
+          updateAllCounts();
+          updateProgress();
+          break;
+        }
+        await sleep(700);
+      }
+    }
+    // sortie par 429 répétés (le « continue » saute le marquage d'erreur) ou par Arrêt :
+    // la carte restait « Génération… » pour toujours
+    if(placeholder.status==='loading'){
+      placeholder.status='error';
+      placeholder.error=state.stopRequested?'Arrêté':'Échec (HTTP 429)';
+      renderLotGrid(lot);
+      updateAllCounts();
+      updateProgress();
+    }
+  }
+}
+
+// Tâches jamais démarrées (Arrêt, plus de clé) : ne pas les laisser « Génération… »
+function finalizeLeftovers(tasks){
+  const lots={};
+  tasks.forEach(function(t){
+    if(t.placeholder.status==='loading'){
+      t.placeholder.status='error';
+      t.placeholder.error=state.stopRequested?'Arrêté':'Non générée (aucune clé)';
+      lots[t.lot]=true;
+    }
+  });
+  Object.keys(lots).forEach(renderLotGrid);
+  updateAllCounts();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// LANCEMENT DES 3 LOTS
+// ══════════════════════════════════════════════════════════════════
+async function launchAllLots(){
+  if(state.isRunning){showToast('Déjà en cours','warn');return}
+  if(!state.referenceUrl){showToast('Importez une image de référence','error');return}
+  const activeKeys=getActiveKeys();
+  if(activeKeys.length===0){showToast('Ajoutez au moins une clé API','error');return}
+  
+  const countEl=document.getElementById('count-per-lot');
+  let countPerLot=parseInt(countEl.value,10);
+  if(isNaN(countPerLot)||countPerLot<1)countPerLot=10;
+  if(countPerLot>30)countPerLot=30;
+  countEl.value=countPerLot;
+  
+  const ratioEl=document.getElementById('ratio-select');
+  const ratio=ratioEl?ratioEl.value:'9:16';
+  const referenceUri=state.referenceUrl;
+  
+  state.isRunning=true;
+  state.stopRequested=false;
+  state.lots={
+    fidelity:{images:[]},
+    doc:{images:[]},
+    users:{images:[]}
+  };
+  
+  document.getElementById('stop-btn').classList.add('visible');
+  updateLaunchBtn();
+  updateFloatingBar();
+  showProgress();
+  await activateWakeLock();
+
+  debugLog('state','START','3 lots de '+countPerLot+' copies · '+activeKeys.length+' clés actives · ratio='+ratio);
+  
+  const allTasks=[];
+  const lotConfigs=[
+    {lot:'fidelity',builder:buildFidelityPrompt},
+    {lot:'doc',builder:buildDocPrompt},
+    {lot:'users',builder:buildUserPrompt}
+  ];
+  
+  for(let c=0;c<lotConfigs.length;c++){
+    const cfg=lotConfigs[c];
+    for(let i=0;i<countPerLot;i++){
+      const placeholder={
+        id:state.nextImageId++,
+        status:'loading',
+        url:null,
+        variationIndex:i,
+        keyLast4:'',
+        error:null
+      };
+      state.lots[cfg.lot].images.push(placeholder);
+      allTasks.push({lot:cfg.lot,placeholder:placeholder,promptBuilder:cfg.builder});
+    }
+    renderLotGrid(cfg.lot);
+  }
+  updateAllCounts();
+  renderEmptyStates();
+  
+  // Mélange pour parallélisme équilibré
+  for(let i=allTasks.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    const tmp=allTasks[i];
+    allTasks[i]=allTasks[j];
+    allTasks[j]=tmp;
+  }
+  
+  const workerCount=Math.min(Math.max(1,activeKeys.length),allTasks.length);
+  debugLog('state','START',workerCount+' workers lancés sur '+allTasks.length+' tâches');
+  
+  const queue=allTasks.slice();
+  state.currentRun={total:allTasks.length,startTime:Date.now(),done:0,error:0};
+  updateProgress();
+  
+  const workers=[];
+  for(let w=0;w<workerCount;w++){
+    workers.push(runWorker(queue,ratio,referenceUri));
+  }
+  await Promise.all(workers);
+  finalizeLeftovers(allTasks);
+
+  state.isRunning=false;
+  state.stopRequested=false;
+  document.getElementById('stop-btn').classList.remove('visible');
+  updateLaunchBtn();
+  updateFloatingBar();
+  setStatus(null);
+  hideProgress();
+  await deactivateWakeLock();
+
+  const elapsed=(Date.now()-state.currentRun.startTime)/1000;
+  let totalDone=0;
+  let totalErr=0;
+  Object.keys(state.lots).forEach(function(k){
+    state.lots[k].images.forEach(function(i){
+      if(i.status==='done')totalDone++;
+      else if(i.status==='error')totalErr++;
+    });
+  });
+  
+  if(totalDone>0){
+    showToast(totalDone+'/'+allTasks.length+' copies générées en '+formatEta(elapsed)+(totalErr>0?' · '+totalErr+' erreurs':''),'success',4000);
+  }else{
+    showToast('Aucune copie générée','error',4000);
+  }
+  debugLog('state','END',totalDone+'/'+allTasks.length+' · '+formatEta(elapsed)+(totalErr>0?' · '+totalErr+' erreurs':''));
+  state.currentRun=null;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PROGRESSION
+// ══════════════════════════════════════════════════════════════════
+function showProgress(){
+  document.getElementById('progress-bar').classList.add('visible');
+  document.getElementById('progress-info').classList.add('visible');
+}
+
+function hideProgress(){
+  document.getElementById('progress-bar').classList.remove('visible');
+  document.getElementById('progress-info').classList.remove('visible');
+  document.getElementById('progress-fill').style.width='0%';
+}
+
+function updateProgress(){
+  if(!state.currentRun)return;
+  const total=state.currentRun.total;
+  let done=0;
+  Object.keys(state.lots).forEach(function(k){
+    state.lots[k].images.forEach(function(i){
+      if(i.status!=='loading')done++;
+    });
+  });
+  const pct=total>0?(done/total)*100:0;
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('progress-label').textContent=done+' / '+total+' tâches';
+  if(state.currentRun.startTime){
+    const elapsed=(Date.now()-state.currentRun.startTime)/1000;
+    const remaining=total-done;
+    if(done>0&&elapsed>0){
+      const rate=done/elapsed;
+      if(rate>0){
+        const eta=remaining/rate;
+        document.getElementById('progress-eta').textContent='ETA ≈ '+formatEta(eta);
+      }
+    }else{
+      document.getElementById('progress-eta').textContent='Calcul…';
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDU UI
+// ══════════════════════════════════════════════════════════════════
+function renderLotGrid(lot){
+  const gridId='grid-'+lot;
+  const emptyId='empty-'+lot;
+  const grid=document.getElementById(gridId);
+  const empty=document.getElementById(emptyId);
+  if(!grid||!empty)return;
+  const images=state.lots[lot].images;
+  if(images.length===0){
+    grid.innerHTML='';
+    empty.style.display='block';
+    return;
+  }
+  empty.style.display='none';
+  grid.innerHTML=images.map(function(img){
+    const isSelected=state.selectedImage&&state.selectedImage.lot===lot&&state.selectedImage.id===img.id;
+    if(img.status==='loading'){
+      return '<div class="image-card loading" data-lot="'+lot+'" data-img-id="'+img.id+'">'+
+        '<div class="placeholder-text">⏳<br>Génération…<br><span style="font-size:.55rem;opacity:.6">clé '+(img.keyLast4||'…')+'</span></div>'+
+      '</div>';
+    }
+    if(img.status==='error'){
+      return '<div class="image-card error" data-lot="'+lot+'" data-img-id="'+img.id+'">'+
+        '<div class="placeholder-text" style="color:var(--err)">✕<br>'+esc(img.error||'Échec')+'</div>'+
+      '</div>';
+    }
+    return '<div class="image-card'+(isSelected?' selected':'')+'" data-lot="'+lot+'" data-img-id="'+img.id+'">'+
+      '<img src="'+esc(img.url)+'" alt="" loading="lazy" referrerpolicy="no-referrer">'+
+      (img.keyLast4?'<div class="img-key">'+esc(img.keyLast4)+'</div>':'')+
+      '<div class="img-actions">'+
+        '<button type="button" class="img-action" data-action="download" data-lot="'+lot+'" data-img-id="'+img.id+'" title="Télécharger">⬇</button>'+
+        '<button type="button" class="img-action" data-action="open" data-lot="'+lot+'" data-img-id="'+img.id+'" title="Ouvrir">↗</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+  
+  grid.querySelectorAll('.image-card').forEach(function(card){
+    card.addEventListener('click',function(e){
+      if(e.target.closest('.img-action'))return;
+      const lotName=card.dataset.lot;
+      const id=parseFloat(card.dataset.imgId);
+      handleImageClick(lotName,id);
+    });
+  });
+  
+  grid.querySelectorAll('[data-action]').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      const action=btn.dataset.action;
+      const lotName=btn.dataset.lot;
+      const id=parseFloat(btn.dataset.imgId);
+      const img=state.lots[lotName].images.find(function(x){return x.id===id});
+      if(!img||!img.url)return;
+      if(action==='download'){
+        const a=document.createElement('a');
+        a.href=img.url;
+        a.download='copy-'+lotName+'-'+id+'.jpg';
+        a.target='_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }else if(action==='open'){
+        window.open(img.url,'_blank','noopener');
+      }
+    });
+  });
+}
+
+function renderAllGrids(){
+  renderLotGrid('fidelity');
+  renderLotGrid('doc');
+  renderLotGrid('users');
+}
+
+function renderEmptyStates(){
+  ['fidelity','doc','users'].forEach(function(lot){
+    const empty=document.getElementById('empty-'+lot);
+    if(empty)empty.style.display=state.lots[lot].images.length===0?'block':'none';
+  });
+}
+
+function updateAllCounts(){
+  ['fidelity','doc','users'].forEach(function(lot){
+    const done=state.lots[lot].images.filter(function(i){return i.status==='done'}).length;
+    const total=state.lots[lot].images.length;
+    const el=document.getElementById('tab-count-'+lot);
+    if(el)el.textContent=done+'/'+total;
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SÉLECTION
+// ══════════════════════════════════════════════════════════════════
+function handleImageClick(lot,id){
+  const img=state.lots[lot].images.find(function(x){return x.id===id});
+  if(!img||img.status!=='done')return;
+  if(state.selectedImage&&state.selectedImage.lot===lot&&state.selectedImage.id===id){
+    state.selectedImage=null;
+  }else{
+    state.selectedImage={lot:lot,id:id};
+  }
+  renderAllGrids();
+  updateFloatingBar();
+  if(state.selectedImage){
+    debugLog('state','SELECT','Image '+id+' sélectionnée (lot '+lot+')');
+  }
+}
+
+function updateFloatingBar(){
+  const thumb=document.getElementById('selected-thumb');
+  const info=document.getElementById('selected-info');
+  const btn=document.getElementById('var-btn');
+  if(!thumb||!info||!btn)return;
+  if(!state.selectedImage){
+    thumb.classList.add('empty');
+    thumb.innerHTML='—';
+    info.innerHTML='<strong>Aucune sélection</strong><span>Cliquez sur une image</span>';
+    btn.disabled=true;
+    return;
+  }
+  const img=state.lots[state.selectedImage.lot].images.find(function(x){return x.id===state.selectedImage.id});
+  if(!img||img.status!=='done'){
+    thumb.classList.add('empty');
+    thumb.innerHTML='—';
+    info.innerHTML='<strong>Aucune sélection</strong><span>Cliquez sur une image</span>';
+    btn.disabled=true;
+    return;
+  }
+  thumb.classList.remove('empty');
+  thumb.innerHTML='<img src="'+esc(img.url)+'" alt="">';
+  const lotLabels={fidelity:'🟢 Fidélité',doc:'🔵 Documentation',users:'🟣 Utilisateurs'};
+  info.innerHTML='<strong>'+lotLabels[state.selectedImage.lot]+' #'+img.variationIndex+'</strong><span>'+esc(img.keyLast4?'clé '+img.keyLast4:'—')+'</span>';
+  btn.disabled=state.isRunning;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// VARIATIONS
+// ══════════════════════════════════════════════════════════════════
+async function generateVariations(){
+  if(!state.selectedImage){showToast('Sélectionnez une image','warn');return}
+  if(state.isRunning){showToast('Déjà en cours','warn');return}
+  const selLot=state.selectedImage.lot;
+  const selId=state.selectedImage.id;
+  const sourceImg=state.lots[selLot].images.find(function(x){return x.id===selId});
+  if(!sourceImg||sourceImg.status!=='done'){showToast('Image non disponible','error');return}
+  
+  const activeKeys=getActiveKeys();
+  if(activeKeys.length===0){showToast('Ajoutez une clé API','error');return}
+  
+  const ratioEl=document.getElementById('ratio-select');
+  const ratio=ratioEl?ratioEl.value:'9:16';
+  
+  // occupé AVANT l'attente de prepareReference : sinon un double-clic (ou « Lancer ») pendant
+  // le téléchargement démarre une 2e génération en parallèle
+  state.isRunning=true;
+  state.stopRequested=false;
+  updateLaunchBtn();
+  updateFloatingBar();
+  setStatus('Préparation de la référence…');
+  const newRef=await prepareReference(sourceImg.url);
+  setStatus(null);
+
+  document.getElementById('stop-btn').classList.add('visible');
+  showProgress();
+  await activateWakeLock();
+  
+  debugLog('state','VARIATIONS','5 variations depuis '+selLot+' #'+sourceImg.variationIndex);
+  
+  const placeholders=[];
+  for(let i=0;i<VARIATIONS_COUNT;i++){
+    const ph={
+      id:state.nextImageId++,
+      status:'loading',
+      url:null,
+      variationIndex:sourceImg.variationIndex,
+      keyLast4:'',
+      error:null
+    };
+    state.lots[selLot].images.push(ph);
+    placeholders.push(ph);
+  }
+  renderLotGrid(selLot);
+  updateAllCounts();
+  
+  const builder=selLot==='fidelity'?buildFidelityPrompt:(selLot==='doc'?buildDocPrompt:buildUserPrompt);
+  const tasks=placeholders.map(function(ph){return {lot:selLot,placeholder:ph,promptBuilder:builder}});
+  
+  const workerCount=Math.min(Math.max(1,activeKeys.length),tasks.length);
+  state.currentRun={total:tasks.length,startTime:Date.now(),done:0,error:0};
+  
+  const queue=tasks.slice();
+  const workers=[];
+  for(let w=0;w<workerCount;w++){
+    workers.push(runWorker(queue,ratio,newRef));
+  }
+  await Promise.all(workers);
+  finalizeLeftovers(tasks);
+
+  state.isRunning=false;
+  state.stopRequested=false;
+  document.getElementById('stop-btn').classList.remove('visible');
+  updateLaunchBtn();
+  updateFloatingBar();
+  setStatus(null);
+  hideProgress();
+  await deactivateWakeLock();
+
+  const done=placeholders.filter(function(p){return p.status==='done'}).length;
+  showToast(done+'/'+VARIATIONS_COUNT+' variations générées','success',3000);
+  debugLog('state','VARIATIONS',done+'/'+VARIATIONS_COUNT+' terminées');
+  state.currentRun=null;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RÉFÉRENCE
+// ══════════════════════════════════════════════════════════════════
+function fileToDataUri(file){
+  return new Promise(function(resolve,reject){
+    const reader=new FileReader();
+    reader.onload=function(e){resolve(e.target.result)};
+    reader.onerror=function(){reject(new Error('Erreur lecture'))};
+    reader.readAsDataURL(file);
+  });
+}
+
+function compressDataUri(dataUri,maxSide){
+  return new Promise(function(resolve){
+    const img=new Image();
+    img.onload=function(){
+      try{
+        let w=img.width;
+        let h=img.height;
+        const scale=Math.min(1,maxSide/Math.max(w,h));
+        w=Math.round(w*scale);
+        h=Math.round(h*scale);
+        const canvas=document.createElement('canvas');
+        canvas.width=w;
+        canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg',0.9));
+      }catch(e){resolve(dataUri)}
+    };
+    img.onerror=function(){resolve(dataUri)};
+    img.src=dataUri;
+  });
+}
+
+async function handleReferenceFile(file){
+  if(!file)return;
+  if(!file.type.startsWith('image/')){showToast('Fichier non image','error');return}
+  try{
+    const raw=await fileToDataUri(file);
+    const compressed=await compressDataUri(raw,1280);
+    state.referenceImage=compressed;
+    state.referenceUrl=compressed;
+    renderReferencePreview();
+    updateLaunchBtn();
+    debugLog('success','REF','Image de référence chargée ('+Math.round(compressed.length/1024)+' Ko)');
+    showToast('Image de référence prête','success');
+  }catch(e){
+    showToast('Erreur chargement','error');
+    debugLog('error','REF',e.message);
+  }
+}
+
+async function prepareReference(url){
+  if(url.indexOf('data:')===0)return url;
+  try{
+    const res=await fetch(url,{mode:'cors'});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const blob=await res.blob();
+    if(!blob.type.startsWith('image/'))throw new Error('Pas une image');
+    const dataUri=await new Promise(function(resolve,reject){
+      const reader=new FileReader();
+      reader.onload=function(e){resolve(e.target.result)};
+      reader.onerror=reject;
+      reader.readAsDataURL(blob);
+    });
+    return await compressDataUri(dataUri,1280);
+  }catch(e){
+    debugLog('warn','REF','Conversion impossible ('+e.message+') → URL directe');
+    return url;
+  }
+}
+
+function renderReferencePreview(){
+  const drop=document.getElementById('ref-drop');
+  const badge=document.getElementById('ref-badge');
+  if(!drop)return;
+  if(state.referenceImage){
+    drop.classList.add('has-image');
+    drop.innerHTML='<div class="ref-preview"><img src="'+esc(state.referenceImage)+'" alt="Référence"><button type="button" class="ref-remove" id="ref-remove-btn">✕</button></div>';
+    const rb=drop.querySelector('#ref-remove-btn');
+    if(rb){
+      rb.addEventListener('click',function(e){
+        e.stopPropagation();
+        state.referenceImage=null;
+        state.referenceUrl=null;
+        renderReferencePreview();
+        updateLaunchBtn();
+        showToast('Référence supprimée','warn');
+      });
+    }
+    if(badge)badge.textContent='✓ Prête';
+  }else{
+    drop.classList.remove('has-image');
+    drop.innerHTML='<input type="file" accept="image/*" id="ref-input">'+
+      '<div class="ref-icon">🎨</div>'+
+      '<div class="ref-text"><strong>Cliquez pour choisir une image</strong><br>Cette image servira de base pour toutes les copies.</div>';
+    bindRefInput();
+    if(badge)badge.textContent='—';
+  }
+}
+
+function bindRefInput(){
+  const input=document.getElementById('ref-input');
+  if(!input)return;
+  input.addEventListener('change',function(e){
+    const file=e.target.files&&e.target.files[0];
+    if(file)handleReferenceFile(file);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BOUTONS
+// ══════════════════════════════════════════════════════════════════
+function updateLaunchBtn(){
+  const btn=document.getElementById('launch-btn');
+  if(!btn)return;
+  const hasKeys=getActiveKeys().length>0;
+  const hasRef=!!state.referenceUrl;
+  btn.disabled=!hasKeys||!hasRef||state.isRunning;
+  if(state.isRunning)btn.textContent='⏳ Génération en cours…';
+  else if(!hasKeys)btn.textContent='🔑 Ajoutez vos clés API';
+  else if(!hasRef)btn.textContent='🖼️ Importez une image de référence';
+  else{
+    const n=parseInt(document.getElementById('count-per-lot').value,10)||10;
+    btn.textContent='🚀 Lancer les 3 lots ('+(n*3)+' copies)';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ONGLETS
+// ══════════════════════════════════════════════════════════════════
+function switchLotTab(lot){
+  state.activeLotTab=lot;
+  document.querySelectorAll('.lot-tab').forEach(function(t){
+    t.classList.toggle('active',t.dataset.lot===lot);
+  });
+  document.querySelectorAll('.lot-panel').forEach(function(p){
+    p.classList.toggle('active',p.id==='lot-panel-'+lot);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════
+function init(){
+  debugLog('state','INIT','Démarrage de l\'application');
+  
+  // Chargement des clés depuis localStorage
+  refreshKeyPool();
+  const keysInput=document.getElementById('keys-input');
+  if(keysInput&&state.keyPool.length>0){
+    keysInput.value=state.keyPool.map(function(k){
+      return k.rpm!==DEFAULT_RPM?(k.key+' = '+k.rpm):k.key;
+    }).join('\n');
+  }
+  renderKeysStatus();
+  
+  // ═══ BOUTON ENREGISTRER LES CLÉS ═══
+  const saveBtn=document.getElementById('save-keys-btn');
+  if(saveBtn){
+    saveBtn.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      saveKeysFromUI();
+    });
+    debugLog('state','INIT','Bouton Enregistrer attaché');
+  }else{
+    debugLog('error','INIT','Bouton Enregistrer introuvable !');
+  }
+  
+  // ═══ BOUTON LANCER ═══
+  const launchBtn=document.getElementById('launch-btn');
+  if(launchBtn){
+    launchBtn.addEventListener('click',function(e){
+      e.preventDefault();
+      launchAllLots();
+    });
+  }
+  
+  // ═══ BOUTON VARIATIONS ═══
+  const varBtn=document.getElementById('var-btn');
+  if(varBtn){
+    varBtn.addEventListener('click',function(e){
+      e.preventDefault();
+      generateVariations();
+    });
+  }
+  
+  // ═══ BOUTON STOP ═══
+  const stopBtn=document.getElementById('stop-btn');
+  if(stopBtn){
+    stopBtn.addEventListener('click',function(e){
+      e.preventDefault();
+      state.stopRequested=true;
+      setStatus('Arrêt…');
+      debugLog('warn','STOP','Arrêt demandé');
+    });
+  }
+  
+  // ═══ SECTIONS TOGGLE ═══
+  document.querySelectorAll('[data-toggle]').forEach(function(h){
+    h.addEventListener('click',function(){
+      const el=document.getElementById(h.dataset.toggle);
+      if(el)el.classList.toggle('open');
+    });
+  });
+  
+  // ═══ ONGLETS LOTS ═══
+  document.querySelectorAll('.lot-tab').forEach(function(t){
+    t.addEventListener('click',function(){
+      switchLotTab(t.dataset.lot);
+    });
+  });
+  
+  // ═══ DEBUG PANEL ═══
+  const dh=document.getElementById('debug-header');
+  if(dh){
+    dh.addEventListener('click',function(e){
+      if(e.target.tagName==='BUTTON')return;
+      toggleDebugCollapse();
+    });
+  }
+  const dcb=document.getElementById('debug-collapse-btn');
+  if(dcb)dcb.addEventListener('click',function(e){e.stopPropagation();toggleDebugCollapse()});
+  const dclb=document.getElementById('debug-clear-btn');
+  if(dclb)dclb.addEventListener('click',function(e){e.stopPropagation();clearDebug()});
+  const dcpb=document.getElementById('debug-copy-btn');
+  if(dcpb)dcpb.addEventListener('click',function(e){e.stopPropagation();copyDebug()});
+  
+  // ═══ CHAMP COUNT ═══
+  const cp=document.getElementById('count-per-lot');
+  if(cp)cp.addEventListener('input',updateLaunchBtn);
+  const rs=document.getElementById('ratio-select');
+  if(rs)rs.addEventListener('change',updateLaunchBtn);
+  
+  // ═══ REF INPUT ═══
+  bindRefInput();
+  renderReferencePreview();
+  
+  // ═══ RACCOURCI CTRL+ENTER DANS KEYS ═══
+  if(keysInput){
+    keysInput.addEventListener('keydown',function(e){
+      if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){
+        e.preventDefault();
+        saveKeysFromUI();
+      }
+    });
+  }
+  
+  // ═══ RENDU INITIAL ═══
+  renderAllGrids();
+  renderEmptyStates();
+  updateAllCounts();
+  updateFloatingBar();
+  updateLaunchBtn();
+  
+  // ═══ TIMERS ═══
+  setInterval(function(){
+    if(state.keyPool.length>0)renderKeysStatus();
+  },1000);
+  setInterval(function(){
+    if(state.isRunning)updateProgress();
+  },1000);
+  
+  debugLog('success','INIT','Copy Studio prêt');
+  debugLog('info','INIT','3 lots de copies · fidélité + documentation + utilisateurs');
+  debugLog('info','INIT','Model : '+MODEL_IMAGE);
+  if(state.keyPool.length>0){
+    debugLog('info','INIT',state.keyPool.length+' clé(s) chargée(s) depuis localStorage');
+  }else{
+    debugLog('info','INIT','Aucune clé en localStorage — collez vos clés et cliquez sur Enregistrer');
+  }
+}
+
+// Point d'entrée robuste
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',init);
+}else{
+  init();
+}
+</script>
+</body>
+</html>

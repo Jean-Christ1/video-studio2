@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Scene Studio — Générateur de scènes</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:#fff;color:#111}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;background:#fff;color:#111;min-height:100vh;padding:1.5rem 1.25rem 200px;font-size:15px;line-height:1.55;max-width:900px;margin:0 auto;letter-spacing:-0.005em;-webkit-font-smoothing:antialiased}
+header{padding-bottom:1rem;border-bottom:1px solid #111;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap}
+header .brand h1{font-size:1.5rem;font-weight:600;letter-spacing:-0.02em;margin-bottom:.15rem}
+header .brand p{font-size:.7rem;color:#666;text-transform:uppercase;letter-spacing:.14em;font-weight:500}
+header .head-status{display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;padding-top:.35rem}
+.head-pill{font-size:.62rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:.28rem .55rem;border:1px solid #ccc;border-radius:100px;background:#fff;color:#999;display:inline-flex;align-items:center;gap:.3rem}
+.head-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:#ccc}
+.head-pill.on{border-color:#111;color:#111}
+.head-pill.on::before{background:#111}
+.main-tabs{display:flex;gap:.3rem;margin-bottom:1rem;flex-wrap:wrap;border-bottom:1px solid #ddd}
+.main-tab{padding:.7rem 1.1rem;background:transparent;border:none;border-bottom:2px solid transparent;color:#666;font-family:inherit;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;cursor:pointer;transition:all .15s;margin-bottom:-1px}
+.main-tab:hover{color:#111}
+.main-tab.active{color:#111;border-bottom-color:#111}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.session-bar{background:#fafafa;border:1px solid #ddd;border-radius:8px;padding:.6rem .9rem;margin-bottom:1rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.session-bar .sb-label{font-size:.66rem;color:#111;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.session-bar select{flex:1;min-width:150px;padding:.5rem .75rem;border:1px solid #111;border-radius:6px;background:#fff;color:#111;font-family:inherit;font-size:.8rem;cursor:pointer}
+.session-bar button{padding:.5rem .8rem;border:1px solid #111;background:#fff;color:#111;border-radius:6px;font-family:inherit;font-size:.66rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;cursor:pointer}
+.session-bar button:hover{background:#111;color:#fff}
+.session-bar button.danger{border-color:#c00;color:#c00}
+.session-bar button.danger:hover{background:#c00;color:#fff}
+.section{background:#fff;border:1px solid #ddd;border-radius:12px;margin-bottom:.9rem;overflow:hidden}
+.section-header{padding:.9rem 1.15rem;cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+.section-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.18em;font-weight:700;color:#111;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.section-title .num{display:inline-flex;width:22px;height:22px;align-items:center;justify-content:center;background:#111;color:#fff;border-radius:50%;font-size:.62rem;font-weight:700}
+.section-title .badge{font-size:.56rem;padding:.1rem .4rem;border:1px solid #111;border-radius:100px;letter-spacing:.05em;font-weight:600;text-transform:uppercase}
+.section-title .badge.gray{border-color:#ccc;color:#888}
+.section-title .badge.green{border-color:#0a7a3e;color:#0a7a3e;background:#f0f9f3}
+.section-title .badge.gold{border-color:#d4a017;color:#b8860b;background:#fffbe6}
+.chevron{font-size:.85rem;color:#666;transition:transform .25s;line-height:1}
+.section.open .chevron{transform:rotate(180deg);color:#111}
+.section-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.section.open .section-body{max-height:400000px}
+.section-content{padding:0 1.15rem 1.15rem}
+.input-row{width:100%;padding:.8rem .95rem;border:1px solid #ddd;border-radius:8px;background:#fff;color:#111;font-family:inherit;font-size:.88rem;outline:none;margin-bottom:.5rem;transition:border-color .15s}
+.input-row:focus{border-color:#111}
+textarea.input-row{font-size:.9rem;line-height:1.6;min-height:130px;resize:vertical;font-family:inherit}
+.input-hint{font-size:.68rem;color:#666;line-height:1.5;margin-top:.35rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.9rem 1.1rem;border:1px solid #111;border-radius:8px;background:#111;color:#fff;font-size:.78rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:opacity .15s;width:100%;margin-bottom:.5rem;line-height:1}
+.btn:hover:not(:disabled){opacity:.85}
+.btn:disabled{opacity:.28;cursor:not-allowed}
+.btn.secondary{background:#fff;color:#111;border-color:#111}
+.btn.ghost{background:#fff;color:#666;border-color:#ddd}
+.btn.gold{background:#fff;color:#b8860b;border-color:#d4a017}
+.btn.danger{background:#fff;color:#c00;border-color:#c00}
+.btn.small{padding:.5rem .8rem;font-size:.66rem;width:auto}
+.btn.large{padding:1.1rem 1.4rem;font-size:.85rem}
+.status{display:flex;align-items:center;gap:.5rem;font-size:.7rem;padding:.55rem .8rem;border:1px solid #ddd;border-radius:6px;background:#fafafa;color:#666;margin-bottom:.5rem}
+.status .dot{width:7px;height:7px;border-radius:50%;background:#ccc;flex-shrink:0}
+.status.ok{border-color:#111;color:#111;background:#f5f5f5}
+.status.ok .dot{background:#111}
+.status.err{border-color:#c00;color:#c00;background:#fff5f5}
+.status.err .dot{background:#c00}
+.status.gold{border-color:#d4a017;color:#b8860b;background:#fffbe6}
+.status.gold .dot{background:#d4a017}
+
+/* PHOTO DROP */
+.ref-drop{border:2px dashed #ccc;border-radius:12px;padding:1.5rem 1rem;text-align:center;cursor:pointer;background:#fafafa;position:relative;display:block;transition:all .2s}
+.ref-drop:hover{border-color:#111;background:#fff}
+.ref-drop.has-image{padding:0;border-style:solid;border-color:#111}
+.ref-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.ref-drop .ref-icon{font-size:2rem;color:#111;opacity:.35;margin-bottom:.5rem}
+.ref-drop .ref-text{font-size:.82rem;color:#666;line-height:1.5}
+.ref-drop .ref-text strong{color:#111;font-weight:600;display:block;margin-bottom:.2rem}
+.ref-preview{display:block;width:100%;max-height:400px;overflow:hidden;position:relative;border-radius:10px}
+.ref-preview img{width:100%;height:auto;max-height:400px;object-fit:contain;display:block;background:#f5f5f5}
+.ref-preview .ref-remove{position:absolute;top:.5rem;right:.5rem;width:32px;height:32px;border-radius:50%;background:#111;color:#fff;border:none;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* SCENE FORM */
+.scene-form .examples{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem}
+.scene-form .ex-chip{padding:.4rem .75rem;border:1px dashed #d4a017;background:#fffbe6;color:#b8860b;border-radius:100px;font-family:inherit;font-size:.66rem;font-weight:600;cursor:pointer;transition:all .15s}
+.scene-form .ex-chip:hover{background:#d4a017;color:#fff;border-style:solid}
+
+/* ANALYSIS INFO */
+.analysis-info{margin-top:.75rem;padding:.8rem .9rem;background:#f0f9f3;border:1px solid #0a7a3e;border-radius:8px;font-size:.72rem;color:#333;line-height:1.5}
+.analysis-info .ai-title{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#0a7a3e;margin-bottom:.4rem}
+.analysis-info .ai-row{padding:.15rem 0;font-size:.68rem}
+.analysis-info .ai-k{color:#666;font-weight:700}
+.analysis-info .ai-chars{margin-top:.5rem;padding-top:.5rem;border-top:1px solid #d0e8d8}
+.analysis-info .ai-char{padding:.25rem .5rem;background:#fff;border-radius:6px;margin-top:.25rem;font-family:ui-monospace,monospace;font-size:.64rem;line-height:1.4}
+
+/* HUMAN LOADER */
+.human-loader{padding:1.3rem 1.15rem;background:linear-gradient(180deg,#fffbe6,#fff);border:1px solid #d4a017;border-radius:12px;display:flex;gap:1rem;align-items:flex-start;margin-top:.9rem}
+.human-loader.hidden{display:none}
+.human-loader .hl-spinner{width:44px;height:44px;flex-shrink:0;border-radius:50%;border:3px solid #f0e0a0;border-top-color:#d4a017;animation:spin 1s linear infinite;margin-top:.15rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.human-loader .hl-content{flex:1;min-width:0}
+.human-loader .hl-phase{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#b8860b;margin-bottom:.35rem}
+.human-loader .hl-message{font-size:.92rem;color:#111;line-height:1.6;font-weight:500}
+.human-loader .hl-sub{font-size:.68rem;color:#666;font-family:ui-monospace,monospace;margin-top:.4rem}
+.human-loader.ok{background:linear-gradient(180deg,#f0f9f3,#fff);border-color:#0a7a3e}
+.human-loader.ok .hl-spinner{border-color:#a0d0b0;border-top-color:#0a7a3e;animation:none;background:#0a7a3e;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'></polyline></svg>");background-size:55%;background-position:center;background-repeat:no-repeat}
+.human-loader.ok .hl-phase{color:#0a7a3e}
+.human-loader.err{background:linear-gradient(180deg,#fff5f5,#fff);border-color:#c00}
+.human-loader.err .hl-spinner{border-color:#f0b0b0;border-top-color:#c00;animation:none}
+.human-loader.err .hl-phase{color:#c00}
+
+/* PROGRESS BAR */
+.progress-bar{margin-top:.75rem;height:8px;background:#f0e0a0;border-radius:100px;overflow:hidden}
+.progress-bar .pb-fill{height:100%;background:#d4a017;width:0%;transition:width .35s ease;border-radius:100px}
+.human-loader.ok .progress-bar{background:#c0e0d0}
+.human-loader.ok .progress-bar .pb-fill{background:#0a7a3e}
+
+/* GALLERY */
+.gallery{display:flex;flex-direction:column;gap:1.1rem;margin-top:.7rem;align-items:center}
+.gallery:empty{display:none}
+.image-card{border:1px solid #ddd;border-radius:14px;overflow:hidden;background:#fff;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column;width:100%;max-width:520px;position:relative}
+.image-card:hover{box-shadow:0 10px 30px rgba(0,0,0,.1)}
+.image-card.loading{background:linear-gradient(90deg,#f5f5f5 0%,#eee 50%,#f5f5f5 100%);background-size:200% 100%;animation:shimmer 1.6s infinite}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.image-card.error{border-color:#c00;background:#fff5f5}
+.image-card .thumb{position:relative;aspect-ratio:9/16;overflow:hidden;background:#f5f5f5;cursor:zoom-in}
+.image-card .thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.image-card:hover .thumb img{transform:scale(1.02)}
+.image-card .thumb .placeholder.err{color:#c00;font-size:.72rem;padding:.6rem;text-align:center;font-family:ui-monospace,monospace;line-height:1.5;display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:.5rem}
+.image-card .thumb .kind-badge{position:absolute;top:.55rem;left:.55rem;font-size:.56rem;padding:.2rem .55rem;background:rgba(0,0,0,.82);color:#fff;border-radius:100px;letter-spacing:.06em;font-weight:700;text-transform:uppercase;z-index:2;backdrop-filter:blur(4px)}
+.image-card .thumb .index-badge{position:absolute;top:.55rem;right:.55rem;font-size:.58rem;padding:.2rem .5rem;background:rgba(255,255,255,.95);color:#111;border-radius:100px;font-weight:700;font-family:ui-monospace,monospace;z-index:2;border:1px solid #111}
+.image-card .cap{padding:.7rem .9rem;font-size:.78rem;font-weight:600;color:#111;border-top:1px solid #eee;background:#fafafa;display:flex;justify-content:space-between;align-items:center;gap:.4rem}
+.image-card .cap .cap-lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.image-card .cap .cap-key{font-family:ui-monospace,monospace;font-size:.6rem;color:#999;flex-shrink:0}
+.image-card .acts{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #eee;background:#fff}
+.image-card .acts button{padding:.6rem .15rem;background:transparent;border:none;color:#666;cursor:pointer;font-family:inherit;font-size:.66rem;font-weight:600;text-transform:uppercase;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.35rem}
+.image-card .acts button:not(:last-child){border-right:1px solid #eee}
+.image-card .acts button:hover:not(:disabled){background:#111;color:#fff}
+.image-card .acts button:disabled{opacity:.3;cursor:not-allowed}
+.image-card .acts button.star-btn.on{color:#d4a017}
+
+.loader-wrap{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.7rem;background:linear-gradient(180deg,#fafafa,#f0f0f0);position:relative;overflow:hidden}
+.loader-wrap::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.7) 50%,transparent 100%);animation:sweep 1.8s infinite;transform:translateX(-100%)}
+@keyframes sweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.loader-spin{width:36px;height:36px;border-radius:50%;border:3px solid #ddd;border-top-color:#111;animation:spin .9s linear infinite}
+.loader-txt{font-size:.68rem;font-family:ui-monospace,monospace;color:#666;letter-spacing:.05em;text-transform:uppercase}
+
+/* CONSOLE */
+.console-dock{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #111;z-index:900;display:flex;flex-direction:column;height:150px;transition:height .3s ease}
+.console-dock.collapsed{height:32px}
+.console-header{display:flex;align-items:center;gap:.5rem;padding:.4rem .85rem;background:#fafafa;border-bottom:1px solid #eee;cursor:pointer;user-select:none;min-height:32px}
+.console-title{font-size:.56rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#111}
+.console-badge{font-size:.54rem;padding:.08rem .35rem;background:#111;color:#fff;border-radius:100px;font-weight:700}
+.console-actions{margin-left:auto;display:flex;gap:.25rem}
+.console-actions button{background:#fff;border:1px solid #ddd;color:#666;font-size:.54rem;padding:.2rem .45rem;border-radius:3px;cursor:pointer;font-family:inherit;letter-spacing:.04em;text-transform:uppercase}
+.console-toggle{background:transparent;border:none;cursor:pointer;color:#111;font-size:.75rem;padding:.2rem .4rem;font-family:inherit}
+.console-body{flex:1;overflow-y:auto;padding:.4rem .85rem .8rem;font-family:ui-monospace,monospace;font-size:.62rem;line-height:1.5;color:#333;background:#fff}
+.log-entry{padding:.15rem 0;border-bottom:1px solid #f3f3f3;word-break:break-word;display:flex;gap:.45rem}
+.log-time{color:#999;font-size:.54rem;flex-shrink:0;min-width:52px}
+.log-cat{color:#111;font-weight:700;font-size:.54rem;flex-shrink:0;min-width:56px}
+.log-msg{color:#333;flex:1}
+.log-entry.success .log-msg{color:#0a7a3e}
+.log-entry.warn .log-msg{color:#b8860b}
+.log-entry.error .log-msg{color:#c00}
+.log-entry.api .log-cat{color:#0045b5}
+
+/* TOAST */
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%) translateY(-140px);background:#111;color:#fff;padding:.7rem 1.15rem;border-radius:6px;font-size:.78rem;font-weight:500;z-index:1100;opacity:0;transition:transform .3s,opacity .3s;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.toast.visible{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.error{background:#c00}
+.toast.warn{background:#b8860b}
+.toast.gold{background:#d4a017}
+
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:1200;display:none;align-items:center;justify-content:center;padding:1rem;animation:lbFade .2s ease}
+.lightbox.visible{display:flex}
+.lightbox img{max-width:100%;max-height:92vh;object-fit:contain;cursor:zoom-out;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.lightbox .lb-close{position:fixed;top:1rem;right:1rem;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.lightbox .lb-close:hover{background:rgba(255,255,255,.3)}
+.lightbox .lb-caption{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);color:#fff;font-size:.75rem;font-family:ui-monospace,monospace;background:rgba(0,0,0,.65);padding:.45rem 1rem;border-radius:100px;text-align:center;backdrop-filter:blur(8px);max-width:90vw;line-height:1.4}
+@keyframes lbFade{from{opacity:0}to{opacity:1}}
+
+/* ADMIN */
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+@media(max-width:800px){.admin-grid{grid-template-columns:1fr}}
+.admin-card{border:1px solid #ddd;border-radius:8px;padding:.85rem;background:#fafafa}
+.admin-card h3{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.6rem}
+.admin-stat{display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #eee;font-size:.72rem}
+.admin-stat:last-child{border-bottom:none}
+.admin-stat .as-k{color:#666}
+.admin-stat .as-v{font-weight:700;color:#111;font-family:ui-monospace,monospace}
+.admin-table{width:100%;font-size:.68rem;border-collapse:collapse}
+.admin-table th{text-align:left;padding:.35rem .4rem;font-size:.58rem;text-transform:uppercase;letter-spacing:.05em;color:#666;border-bottom:1px solid #ddd;font-weight:700}
+.admin-table td{padding:.35rem .4rem;border-bottom:1px solid #f3f3f3;font-family:ui-monospace,monospace;font-size:.66rem}
+.admin-table .trunc{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.admin-scroll{max-height:280px;overflow-y:auto;border:1px solid #eee;border-radius:6px;background:#fff}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal.visible{display:flex}
+.modal-inner{background:#fff;border-radius:10px;max-width:760px;width:100%;max-height:88vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-head{padding:.85rem 1.15rem;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+.modal-head h3{font-size:.72rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase}
+.modal-head .close{background:transparent;border:1px solid #ddd;width:26px;height:26px;border-radius:50%;cursor:pointer;color:#666;font-family:inherit;font-size:.8rem;display:flex;align-items:center;justify-content:center;padding:0}
+.modal-body{padding:.9rem 1.15rem;overflow-y:auto;flex:1}
+.modal-body textarea{width:100%;min-height:280px;padding:.85rem .95rem;border:1px solid #ddd;border-radius:6px;background:#fafafa;font-family:ui-monospace,monospace;font-size:.7rem;line-height:1.55;color:#111;resize:vertical;outline:none}
+.modal-actions{display:flex;gap:.5rem;padding:.85rem 1.15rem;border-top:1px solid #eee;background:#fafafa}
+.modal-actions .btn{margin:0;flex:1}
+
+.empty{padding:1.6rem 1rem;text-align:center;color:#999;font-size:.78rem;border:1px dashed #ddd;border-radius:8px;margin-top:.5rem;font-family:ui-monospace,monospace}
+.empty .big{font-size:1.7rem;opacity:.35;display:block;margin-bottom:.4rem}
+@media(max-width:600px){
+  header{flex-direction:column;gap:.55rem}
+  body{padding:1rem .6rem 170px}
+  .console-dock{height:130px}
+  .main-tab{padding:.55rem .7rem;font-size:.62rem}
+  .image-card .acts button{font-size:.6rem;padding:.55rem .1rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Scene Studio</h1>
+    <p>Une photo · une action · 40 angles</p>
+  </div>
+  <div class="head-status">
+    <span class="head-pill" id="pill-db">DB</span>
+    <span class="head-pill" id="pill-keys">0 clé</span>
+    <span class="head-pill" id="pill-images">0 image</span>
+  </div>
+</header>
+
+<div class="main-tabs">
+  <button type="button" class="main-tab active" data-tab="studio">🎬 Studio</button>
+  <button type="button" class="main-tab" data-tab="admin">⚙️ Admin</button>
+</div>
+
+<div class="tab-panel active" id="tab-studio">
+
+  <div class="session-bar">
+    <span class="sb-label">Session :</span>
+    <select id="session-select"></select>
+    <button type="button" id="new-session-btn">+ Nouvelle</button>
+    <button type="button" class="danger" id="delete-session-btn">Supprimer</button>
+  </div>
+
+  <!-- 1. PHOTO -->
+  <div class="section open" id="section-ref">
+    <div class="section-header" data-toggle="section-ref">
+      <span class="section-title"><span class="num">1</span> Photo de référence <span class="badge gray" id="ref-badge">En attente</span></span>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="section-body"><div class="section-content">
+      <div class="ref-drop" id="ref-drop">
+        <input type="file" accept="image/*" id="ref-input">
+        <div class="ref-icon">◯</div>
+        <div class="ref-text"><strong>Choisir une photo</strong>Les personnages seront reproduits à l'identique sur toutes les images.</div>
+      </div>
+      <div class="analysis-info" id="analysis-info" style="display:none"></div>
+    </div></div>
+  </div>
+
+  <!-- 2. ACTION -->
+  <div class="section open" id="section-action">
+    <div class="section-header" data-toggle="section-action">
+      <span class="section-title"><span class="num">2</span> Action à dépeindre <span class="badge gray" id="action-badge">À remplir</span></span>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="section-body"><div class="section-content">
+      <div class="scene-form">
+        <textarea class="input-row" id="action-input" placeholder="Décrivez l'action qui va se dérouler dans cette scène.
+
+Exemple : « Une foule d'animaux en peluche court joyeusement vers la voiture de police bleue. Le policier humain lève la main pour les accueillir. Des ballons s'envolent, les couleurs sont vives, l'ambiance est joyeuse et estivale. »
+
+Soyez précis sur l'action principale, les mouvements, les émotions. Plus vous êtes précis, meilleur sera le résultat."></textarea>
+        <div class="input-hint">Les personnages de votre photo seront reproduits à l'identique — c'est l'action, les angles et les moments de la scène qui varient.</div>
+        <div class="examples" id="examples">
+          <button type="button" class="ex-chip" data-ex="La foule court joyeusement vers la voiture de police, les ballons s'envolent, le policier les accueille les bras ouverts.">🏃 La foule court vers la voiture</button>
+          <button type="button" class="ex-chip" data-ex="Tous les personnages dansent ensemble sur la place du village, ambiance de fête foraine, confettis dans les airs.">🎉 Danse collective</button>
+          <button type="button" class="ex-chip" data-ex="Le policier arrête la voiture, sort et s'adresse à la foule. Les personnages l'écoutent attentivement, la scène est calme et solennelle.">🚓 Discours du policier</button>
+          <button type="button" class="ex-chip" data-ex="Les personnages organisent un pique-nique géant au bord de la route. Nappes à carreaux, paniers, ambiance champêtre et détendue.">🧺 Pique-nique collectif</button>
+          <button type="button" class="ex-chip" data-ex="Une poursuite échevelée à travers le village. Les peluches courent dans tous les sens, la voiture de police klaxonne, tout le monde rit.">💨 Poursuite endiablée</button>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 3. LANCER -->
+  <div class="section open" id="section-launch">
+    <div class="section-header" data-toggle="section-launch">
+      <span class="section-title"><span class="num">3</span> Générer la scène</span>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="section-body"><div class="section-content">
+      <button type="button" class="btn large" id="launch-btn" disabled>🎬 Générer 40 angles de cette scène</button>
+      <button type="button" class="btn danger" id="stop-btn" style="display:none">■ Arrêter</button>
+      <div class="status" id="launch-status-line"><span class="dot"></span><span id="launch-status-text">En attente de la photo et de l'action.</span></div>
+      <div class="human-loader hidden" id="human-loader">
+        <div class="hl-spinner"></div>
+        <div class="hl-content">
+          <div class="hl-phase" id="hl-phase">Préparation</div>
+          <div class="hl-message" id="hl-message">…</div>
+          <div class="hl-sub" id="hl-sub"></div>
+          <div class="progress-bar"><div class="pb-fill" id="pb-fill"></div></div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 4. GALERIE -->
+  <div class="section open" id="section-gallery">
+    <div class="section-header" data-toggle="section-gallery">
+      <span class="section-title"><span class="num">4</span> Galerie <span class="badge green" id="gallery-badge">0 / 0</span></span>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="section-body"><div class="section-content">
+      <div class="empty" id="gallery-empty"><span class="big">🎬</span>Vos images apparaîtront ici</div>
+      <div class="gallery" id="gallery"></div>
+    </div></div>
+  </div>
+
+</div>
+
+<div class="tab-panel" id="tab-admin">
+  <div class="section open">
+    <div class="section-header" data-toggle="section-admin-keys"><span class="section-title">🔑 Clés API</span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content">
+      <textarea class="input-row" id="keys-input" placeholder="sk-xxxx = 20&#10;sk-yyyy = 30" spellcheck="false"></textarea>
+      <button type="button" class="btn secondary" id="save-keys-btn">Enregistrer</button>
+      <div class="status" id="keys-status-line"><span class="dot"></span><span id="keys-status-text">Aucune clé</span></div>
+      <div class="admin-scroll" style="margin-top:.5rem">
+        <table class="admin-table" id="keys-table">
+          <thead><tr><th>#</th><th>Clé</th><th>RPM</th><th>Util.</th><th>État</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div></div>
+  </div>
+  <div class="section open">
+    <div class="section-header" data-toggle="section-admin-stats"><span class="section-title">📊 Stats</span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content">
+      <div class="admin-grid">
+        <div class="admin-card"><h3>Contenus</h3><div id="stats-content"></div></div>
+        <div class="admin-card"><h3>Clés</h3><div id="stats-keys"></div></div>
+      </div>
+      <div style="display:flex;gap:.5rem;margin-top:.7rem;flex-wrap:wrap">
+        <button type="button" class="btn secondary small" id="export-db-btn">📥 Exporter</button>
+        <button type="button" class="btn secondary small" id="import-db-btn">📤 Importer</button>
+        <button type="button" class="btn danger small" id="reset-db-btn">🗑 Réinitialiser</button>
+      </div>
+    </div></div>
+  </div>
+  <div class="section open">
+    <div class="section-header" data-toggle="section-admin-prompts"><span class="section-title">📝 Prompts système</span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content">
+      <label style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#666;display:block;margin-bottom:.3rem">Analyse photo (personnages + style)</label>
+      <textarea class="input-row" id="prompt-analysis" style="min-height:150px"></textarea>
+      <label style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#666;display:block;margin:.7rem 0 .3rem">Scène · 40 angles</label>
+      <textarea class="input-row" id="prompt-scene" style="min-height:220px"></textarea>
+      <button type="button" class="btn secondary" id="save-prompts-btn" style="margin-top:.5rem">💾 Enregistrer</button>
+      <button type="button" class="btn ghost" id="reset-prompts-btn">↺ Restaurer</button>
+    </div></div>
+  </div>
+</div>
+
+<div class="modal" id="prompt-modal">
+  <div class="modal-inner">
+    <div class="modal-head"><h3 id="prompt-modal-title">Prompt</h3><button class="close" type="button" id="prompt-modal-close">✕</button></div>
+    <div class="modal-body"><textarea id="prompt-modal-text" readonly></textarea></div>
+    <div class="modal-actions"><button class="btn secondary" type="button" id="prompt-modal-copy">Copier</button></div>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox">
+  <button type="button" class="lb-close" id="lightbox-close">✕</button>
+  <img id="lightbox-img" src="" alt="">
+  <div class="lb-caption" id="lightbox-caption"></div>
+</div>
+
+<div class="console-dock collapsed" id="console-dock">
+  <div class="console-header" id="console-header">
+    <span class="console-title">Console</span>
+    <span class="console-badge" id="console-badge">0</span>
+    <div class="console-actions">
+      <button type="button" id="console-copy">Copier</button>
+      <button type="button" id="console-clear">Effacer</button>
+    </div>
+    <button type="button" class="console-toggle" id="console-toggle">▴</button>
+  </div>
+  <div class="console-body" id="console-body"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<canvas id="noSleepCanvas" width="2" height="2"></canvas>
+<video id="noSleepVideo" playsinline muted loop></video>
+
+<script>
+// ==================================================================
+// CONFIG
+// ==================================================================
+const API_BASE = 'https://apihub.agnes-ai.com/v1';
+const MODEL_IMAGE = 'agnes-image-2.1-flash';
+const MODEL_TEXT = 'agnes-2.5-flash';
+const DB_NAME = 'scene_studio_v1';
+const DB_VERSION = 1;
+const IMG_RATIO = '9:16';
+const IMG_SIZE = '1K';
+const TOTAL_IMAGES = 40;
+
+// 7 catégories d'angles → 40 images
+const ANGLE_SPEC = {
+  establishing: { count:4, label:'Établissement',  color:'#0a7a3e', icon:'🏞️', desc:'Plan très large montrant le décor complet' },
+  wide:         { count:6, label:'Plan large',     color:'#0a5c8a', icon:'🎬', desc:'Toute la scène visible, personnages dans l\'environnement' },
+  medium:       { count:8, label:'Plan moyen',     color:'#0045b5', icon:'👥', desc:'Groupe au centre, taille moyenne' },
+  closeup:      { count:6, label:'Gros plan',      color:'#5e2ca5', icon:'👤', desc:'Focus sur un personnage spécifique (différent à chaque fois)' },
+  action:       { count:6, label:'Moment-clé',     color:'#c05a00', icon:'⚡', desc:'Début, milieu, climax, résolution de l\'action' },
+  extreme:      { count:6, label:'Angle extrême',  color:'#a0306b', icon:'📐', desc:'Plongée, contre-plongée, fisheye, dutch angle, vue du sol…' },
+  atmospheric:  { count:4, label:'Atmosphérique',  color:'#b8860b', icon:'✨', desc:'Détails, ambiance, textures, lumière' }
+};
+
+// ==================================================================
+// PROMPTS
+// ==================================================================
+const DEFAULT_PROMPTS = {
+  analysis: `Tu es directeur artistique et chef-opérateur. Analyse cette image de référence et produis un JSON ultra-détaillé des PERSONNAGES et du STYLE, pour qu'ils puissent être recréés à l'identique.
+
+RÉPONDS UNIQUEMENT PAR UN OBJET JSON VALIDE. AUCUN TEXTE AVANT/APRÈS. PAS DE MARKDOWN. PAS DE BACKTICKS.
+N'utilise PAS de guillemets doubles " à l'intérieur des chaînes. Utilise des apostrophes droites ' uniquement.
+Pas de retour à la ligne brut dans une chaîne.
+
+Structure exacte :
+{
+  "scene_summary": "Short English summary of the reference scene",
+  "art_style": "Short English description of the art style (ex: 3D plush toy render, cinematic cartoon, claymation...)",
+  "style_lock": "Detailed English sentence locking the visual style: medium (3D render, plush textures...), color palette, lighting, materials, rendering quality, DOF, film grain, etc.",
+  "characters": [
+    {
+      "role": "main | secondary | background",
+      "name": "Short identifier (ex: human policeman, brown teddy bear, white rabbit girl)",
+      "description": "Ultra detailed English description: species, material (plush fabric, felt, plastic...), exact colors, eyes, fur, clothes, accessories, expression, proportions, distinctive features"
+    },
+    ... up to 10 characters, ordered by visual importance
+  ],
+  "environment": "Detailed English description of the setting: buildings, vegetation, road, ground, sky, weather, time of day, background elements",
+  "lighting": "Detailed English description of lighting: direction, quality, color temperature, shadows, atmosphere",
+  "atmosphere": "Short English description of the mood: joy, tension, calm, adventure, etc.",
+  "color_palette": "English description of dominant colors"
+}`,
+
+  scene: `Tu es directeur artistique et chef-opérateur visionnaire. À partir d'une image de référence contenant des PERSONNAGES PRÉCIS et d'une ACTION décrite par l'utilisateur, tu crées 40 prompts cinématographiques qui dépeignent TOUS cette même action sous des angles, cadrages et moments différents.
+
+RÉPONDS UNIQUEMENT PAR UN OBJET JSON VALIDE. AUCUN TEXTE AVANT/APRÈS. PAS DE MARKDOWN. PAS DE BACKTICKS.
+N'utilise PAS de guillemets doubles " à l'intérieur des chaînes. Utilise des apostrophes droites ' uniquement.
+Pas de retour à la ligne brut dans une chaîne. Chaque prompt est UNE ligne.
+
+⚠️ RÈGLE ABSOLUE N°1 : Les personnages doivent être IDENTIQUES à ceux de la référence. Mêmes espèces, mêmes couleurs, mêmes vêtements, mêmes matériaux (peluche, feutre, plastique...), mêmes détails. L'image de référence sera fournie au modèle d'image pour préserver l'identité exacte. Chaque prompt doit le rappeler.
+
+⚠️ RÈGLE ABSOLUE N°2 : Toutes les images dépeignent LA MÊME SCÈNE (l'action décrite par l'utilisateur), mais vue sous des angles, cadrages et moments différents.
+
+RÉPARTITION EXACTE (total = 40) :
+- "establishing" (4) : Très large, montre l'environnement complet, personnages petits dans le décor
+- "wide" (6)        : Plan large, toute la scène visible, personnages principaux bien lisibles
+- "medium" (8)      : Plan moyen, groupe au centre, on voit les expressions et les interactions
+- "closeup" (6)     : Gros plan sur UN personnage différent à chaque fois (le 1er = personnage principal, les suivants = différents personnages de la scène)
+- "action" (6)      : Moments-clés : début de l'action, réaction, climax, apogée, retombée, résolution
+- "extreme" (6)     : Angles inhabituels : plongée verticale, contre-plongée héroïque, fisheye, dutch angle, vue du sol, vue aérienne
+- "atmospheric" (4) : Détails atmosphériques : objets, textures, ombres, lumière, ambiance, sans forcément montrer les visages
+
+CHAQUE PROMPT doit être en anglais, riche (40-70 mots), sur une seule ligne, et contenir :
+1. Le rappel "Using the reference image, keep all characters EXACTLY identical (same faces, outfits, materials, colors)."
+2. L'action décrite (résumée en anglais)
+3. Le cadrage / l'angle / le moment précis
+4. Le style verrouillé (STYLE LOCK)
+
+RAPPEL JSON : pas de markdown, pas de backticks, apostrophe droite uniquement.
+
+Retourne UNIQUEMENT :
+{
+  "images": [
+    { "category":"establishing", "label":"Court label (3-6 mots)", "prompt":"Full English prompt on one line" },
+    ... 40 items, dans l'ordre : 4 establishing, 6 wide, 8 medium, 6 closeup, 6 action, 6 extreme, 4 atmospheric
+  ]
+}`
+};
+
+// ==================================================================
+// INDEXEDDB
+// ==================================================================
+let db = null;
+function openDB(){
+  return new Promise((res,rej)=>{
+    const r = indexedDB.open(DB_NAME, DB_VERSION);
+    r.onerror = ()=>rej(r.error);
+    r.onsuccess = ()=>res(r.result);
+    r.onupgradeneeded = (ev)=>{
+      const d = ev.target.result;
+      if(!d.objectStoreNames.contains('keys')){ const s=d.createObjectStore('keys',{keyPath:'id'}); s.createIndex('key','key',{unique:true}) }
+      if(!d.objectStoreNames.contains('sessions')) d.createObjectStore('sessions',{keyPath:'id'});
+      if(!d.objectStoreNames.contains('config')) d.createObjectStore('config',{keyPath:'key'});
+    };
+  });
+}
+function dbGet(s,k){return new Promise((r,j)=>{const t=db.transaction(s,'readonly').objectStore(s).get(k);t.onsuccess=()=>r(t.result);t.onerror=()=>j(t.error)})}
+function dbPut(s,v){return new Promise((r,j)=>{const t=db.transaction(s,'readwrite').objectStore(s).put(v);t.onsuccess=()=>r(t.result);t.onerror=()=>j(t.error)})}
+function dbDelete(s,k){return new Promise((r,j)=>{const t=db.transaction(s,'readwrite').objectStore(s).delete(k);t.onsuccess=()=>r();t.onerror=()=>j(t.error)})}
+function dbGetAll(s){return new Promise((r,j)=>{const t=db.transaction(s,'readonly').objectStore(s).getAll();t.onsuccess=()=>r(t.result||[]);t.onerror=()=>j(t.error)})}
+function dbClear(s){return new Promise((r,j)=>{const t=db.transaction(s,'readwrite').objectStore(s).clear();t.onsuccess=()=>r();t.onerror=()=>j(t.error)})}
+
+// ==================================================================
+// STATE
+// ==================================================================
+const state = {
+  keys:[],
+  sessionsIndex:[],
+  currentSessionId:null,
+  config:{},
+  reference:null,
+  analysis:null,
+  analysisSignature:null,
+  action:'',
+  images:[],
+  isRunning:false, isAnalyzing:false,
+  stopRequested:false, abortCtrl:null,
+  wakeLockSentinel:null, canvasStream:null, canvasInterval:null,
+  loaderPhases:{}
+};
+let nextImgId = 1, logCount = 0;
+
+// ==================================================================
+// UTILS
+// ==================================================================
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function nowTime(){return new Date().toLocaleTimeString('fr-FR',{hour12:false})}
+function $(id){return document.getElementById(id)}
+function uid(p){return (p||'id')+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)}
+function angleOf(id){return ANGLE_SPEC[id]||ANGLE_SPEC.medium}
+
+// ==================================================================
+// LOG
+// ==================================================================
+function log(level, cat, msg){
+  const body = $('console-body'); if(!body) return;
+  const e = document.createElement('div');
+  e.className = 'log-entry ' + (level||'info');
+  e.innerHTML = '<span class="log-time">'+esc(nowTime())+'</span><span class="log-cat">'+esc(cat)+'</span><span class="log-msg">'+esc(msg)+'</span>';
+  body.appendChild(e);
+  while(body.children.length > 400) body.removeChild(body.firstChild);
+  body.scrollTop = body.scrollHeight;
+  logCount++;
+  const b = $('console-badge'); if(b) b.textContent = logCount;
+}
+function clearConsole(){$('console-body').innerHTML='';logCount=0;$('console-badge').textContent='0'}
+function copyConsole(){
+  const txt = Array.from(document.querySelectorAll('#console-body .log-entry')).map(el=>{
+    const t = el.querySelector('.log-time')?.textContent || '';
+    const c = el.querySelector('.log-cat')?.textContent || '';
+    const m = el.querySelector('.log-msg')?.textContent || '';
+    return t+' ['+c+'] '+m;
+  }).join('\n');
+  copyToClipboard(txt).then(ok=>toast(ok?'Copiée':'Échec', ok?'ok':'err'));
+}
+async function copyToClipboard(t){
+  try{ if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(t); return true } }catch(e){}
+  try{ const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();const ok=document.execCommand('copy');document.body.removeChild(ta);return ok }catch(e){return false}
+}
+let toastTO=null;
+function toast(msg, type){
+  type = type||'ok';
+  const t = $('toast'); if(!t) return;
+  t.classList.remove('visible','error','warn','gold'); t.textContent = msg;
+  if(type==='err') t.classList.add('error');
+  if(type==='warn') t.classList.add('warn');
+  if(type==='gold') t.classList.add('gold');
+  void t.offsetWidth; t.classList.add('visible');
+  if(toastTO) clearTimeout(toastTO);
+  toastTO = setTimeout(()=>t.classList.remove('visible'), 2800);
+}
+
+// ==================================================================
+// LIGHTBOX
+// ==================================================================
+let lightboxImgId = null;
+function openLightbox(img){
+  if(!img || !img.url) return;
+  lightboxImgId = img.id;
+  $('lightbox-img').src = img.url;
+  const spec = angleOf(img.category);
+  $('lightbox-caption').textContent = [spec.label, img.label].filter(Boolean).join(' · ');
+  $('lightbox').classList.add('visible');
+}
+function closeLightbox(){
+  const lb = $('lightbox'), im = $('lightbox-img');
+  lb.classList.remove('visible');
+  lightboxImgId = null;
+  setTimeout(()=>{ if(!lb.classList.contains('visible')) im.src = '' }, 250);
+}
+
+// ==================================================================
+// JSON EXTRACTION ULTRA-ROBUSTE
+// ==================================================================
+function extractJson(raw){
+  if(!raw) return null;
+  let c = String(raw).trim();
+  c = c.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+  const fb = c.indexOf('{'); const lb = c.lastIndexOf('}');
+  if(fb < 0 || lb < 0 || lb < fb) return null;
+  c = c.slice(fb, lb+1);
+  try{ return JSON.parse(c) }catch(e){}
+  let out = '', inS = false, esc = false;
+  for(let i=0; i<c.length; i++){
+    const ch = c[i];
+    if(esc){ out += ch; esc = false; continue }
+    if(ch === '\\'){ out += ch; esc = true; continue }
+    if(ch === '"'){ inS = !inS; out += ch; continue }
+    if(inS){
+      if(ch === '\n'){ out += '\\n'; continue }
+      if(ch === '\r'){ out += '\\r'; continue }
+      if(ch === '\t'){ out += '\\t'; continue }
+      const code = ch.charCodeAt(0);
+      if(code < 32){ out += '\\u' + code.toString(16).padStart(4,'0'); continue }
+    }
+    out += ch;
+  }
+  out = out.replace(/,\s*([}\]])/g, '$1');
+  try{ return JSON.parse(out) }catch(e){}
+  try{
+    const fixed = out.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '\\"');
+    return JSON.parse(fixed);
+  }catch(e){}
+  return null;
+}
+
+// ==================================================================
+// WAKE LOCK
+// ==================================================================
+async function activateWakeLock(){
+  try{ if('wakeLock' in navigator && typeof navigator.wakeLock.request === 'function'){ state.wakeLockSentinel = await navigator.wakeLock.request('screen'); return true } }catch(e){}
+  try{
+    const canvas = $('noSleepCanvas'), video = $('noSleepVideo'), ctx = canvas.getContext('2d');
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,2,2);
+    if(typeof canvas.captureStream === 'function'){
+      state.canvasStream = canvas.captureStream(1);
+      let t = false;
+      state.canvasInterval = setInterval(()=>{ t=!t; ctx.fillStyle = t?'#000':'#010101'; ctx.fillRect(0,0,2,2) }, 1000);
+      video.srcObject = state.canvasStream; video.muted = true; video.playsInline = true; video.play().catch(()=>{});
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+async function deactivateWakeLock(){
+  if(state.wakeLockSentinel){try{await state.wakeLockSentinel.release()}catch(e){} state.wakeLockSentinel=null}
+  if(state.canvasInterval){clearInterval(state.canvasInterval); state.canvasInterval=null}
+  const v = $('noSleepVideo'); if(v){try{v.pause(); v.srcObject=null}catch(e){}}
+  if(state.canvasStream){try{state.canvasStream.getTracks().forEach(t=>t.stop())}catch(e){} state.canvasStream=null}
+}
+
+// ==================================================================
+// FICHIERS
+// ==================================================================
+function fileToDataUri(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=()=>rej(new Error('Lecture'));r.readAsDataURL(f)})}
+function compressDataUri(uri, maxSide){
+  return new Promise(resolve=>{
+    const img = new Image();
+    img.onload = ()=>{try{let w=img.width,h=img.height;const s=Math.min(1,maxSide/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);resolve(c.toDataURL('image/jpeg',0.92))}catch(e){resolve(uri)}};
+    img.onerror = ()=>resolve(uri);
+    img.src = uri;
+  });
+}
+function downloadUrl(url, name){const a=document.createElement('a');a.href=url;a.download=name;a.target='_blank';document.body.appendChild(a);a.click();document.body.removeChild(a)}
+
+// ==================================================================
+// CLÉS
+// ==================================================================
+function parseKeys(raw){
+  const out=[], seen={};
+  for(const line of String(raw||'').split(/\r?\n/)){
+    const l = line.trim(); if(!l || l.startsWith('#')) continue;
+    let key = l, rpm = 20;
+    const m = l.match(/^([^=|]+?)\s*[=|]\s*(\d+)\s*$/);
+    if(m){ key = m[1].trim(); const r = parseInt(m[2],10); if(!isNaN(r)&&r>0) rpm = Math.min(500, Math.max(1,r)) }
+    key = key.trim();
+    if(!key.startsWith('sk-') || seen[key]) continue;
+    seen[key] = true;
+    out.push({key, imgRpm: rpm});
+  }
+  return out;
+}
+function getAvailableKey(){
+  const now = Date.now(), cutoff = now - 60000;
+  const cands = [];
+  for(const k of state.keys){
+    if(!k.active || k.cooldownUntil > now) continue;
+    k.imgTimes = (k.imgTimes||[]).filter(t=>t>cutoff);
+    if(k.imgTimes.length >= k.imgRpm) continue;
+    cands.push(k);
+  }
+  if(!cands.length) return null;
+  cands.sort((a,b)=>a.imgTimes.length - b.imgTimes.length);
+  return cands[0];
+}
+function getSoonestMs(){
+  const now = Date.now(), cutoff = now - 60000;
+  let soonest = Infinity, any = false;
+  for(const k of state.keys){
+    if(!k.active) continue; any = true;
+    if(k.cooldownUntil > now){ soonest = Math.min(soonest, k.cooldownUntil - now); continue }
+    k.imgTimes = (k.imgTimes||[]).filter(t=>t>cutoff);
+    if(k.imgTimes.length >= k.imgRpm){ const o = Math.min(...k.imgTimes); soonest = Math.min(soonest, o + 60000 - now) }
+    else return 0;
+  }
+  if(!any) return 30000;
+  if(soonest === Infinity) return 500;
+  return Math.max(150, soonest);
+}
+// Attente interrompue dès que « Arrêter » est cliqué
+async function waitStop(ms){ const end = Date.now()+ms; while(Date.now() < end && !state.stopRequested) await sleep(Math.min(500, end-Date.now())) }
+async function acquireKey(){
+  while(true){
+    if(state.stopRequested) throw new Error('Arrêt');
+    // toutes les clés désactivées (401/403) : erreur claire au lieu d'une attente sans fin
+    if(!state.keys.some(k=>k.active)) throw new Error('Aucune clé API active (clés refusées 401/403). Vérifiez vos clés dans Admin.');
+    const k = getAvailableKey();
+    if(k) return k;
+    const w = getSoonestMs();
+    log('warn','CLÉS','Attente '+Math.ceil(w/1000)+'s');
+    await waitStop(w + 80);
+  }
+}
+// Début / fin d'une génération lancée par l'utilisatrice (bouton « Arrêter »)
+function beginOp(){ state.stopRequested = false; state.abortCtrl = (typeof AbortController === 'function') ? new AbortController() : null }
+function endOp(){ state.stopRequested = false; state.abortCtrl = null }
+function requestStop(){
+  if(!(state.isRunning || state.isAnalyzing)) return;
+  state.stopRequested = true;
+  if(state.abortCtrl) state.abortCtrl.abort();
+  log('warn','STOP','Arrêt demandé');
+  toast('Arrêt en cours…','warn');
+}
+async function registerRequest(k){
+  k.imgTimes = (k.imgTimes||[]); k.imgTimes.push(Date.now());
+  k.imgUsage = (k.imgUsage||0) + 1; k.lastUsed = Date.now();
+  try{ const s = await dbGet('keys', k.id); if(s){ s.imgUsage = k.imgUsage; s.lastUsed = k.lastUsed; await dbPut('keys', s) } }catch(e){}
+  renderKeysTable();
+}
+
+// ==================================================================
+// API
+// ==================================================================
+async function callImage(prompt, refUri, keyObj){
+  const body = {model:MODEL_IMAGE, prompt, n:1, size:IMG_SIZE, ratio:IMG_RATIO, extra_body:{response_format:'url'}};
+  if(refUri) body.extra_body.image = [refUri];
+  await registerRequest(keyObj);
+  log('api','IMAGE', (refUri?'+ref ':'text ')+keyObj.key.slice(-4));
+  const res = await fetch(API_BASE + '/images/generations', {method:'POST', headers:{'Authorization':'Bearer '+keyObj.key,'Content-Type':'application/json'}, body: JSON.stringify(body), signal: state.abortCtrl ? state.abortCtrl.signal : undefined});
+  if(res.status===429){ keyObj.cooldownUntil = Date.now()+30000; const e=new Error('HTTP 429'); e.status=429; throw e }
+  if(res.status===401||res.status===403){ keyObj.errorCount=(keyObj.errorCount||0)+1; if(keyObj.errorCount>=3) keyObj.active=false; const e=new Error('HTTP '+res.status); e.status=res.status; throw e }
+  if(!res.ok){ const t = await res.text().catch(()=>''); throw new Error('HTTP '+res.status+' '+t.slice(0,100)) }
+  const data = await res.json();
+  const item = data.data && data.data[0];
+  if(!item) throw new Error('Pas d\'image');
+  if(item.url) return item.url;
+  if(item.b64_json) return 'data:image/png;base64,'+item.b64_json;
+  throw new Error('Format');
+}
+async function callVision(sysPrompt, userText, imageUri, keyObj, maxTokens){
+  const body = {model:MODEL_TEXT, messages:[{role:'system',content:sysPrompt},{role:'user',content:[{type:'text',text:userText},{type:'image_url',image_url:{url:imageUri}}]}], temperature:0.75, max_tokens:maxTokens||4000, response_format:{type:'json_object'}};
+  await registerRequest(keyObj);
+  log('api','VISION', keyObj.key.slice(-4));
+  const res = await fetch(API_BASE + '/chat/completions', {method:'POST', headers:{'Authorization':'Bearer '+keyObj.key,'Content-Type':'application/json'}, body: JSON.stringify(body), signal: state.abortCtrl ? state.abortCtrl.signal : undefined});
+  if(res.status===429){ keyObj.cooldownUntil = Date.now()+30000; const e=new Error('HTTP 429'); e.status=429; throw e }
+  if(res.status===401||res.status===403){ keyObj.errorCount=(keyObj.errorCount||0)+1; if(keyObj.errorCount>=3) keyObj.active=false; const e=new Error('HTTP '+res.status); e.status=res.status; throw e }
+  if(!res.ok){ const t = await res.text().catch(()=>''); throw new Error('HTTP '+res.status+' '+t.slice(0,100)) }
+  const data = await res.json();
+  const ch = data.choices && data.choices[0];
+  let content = ch && ch.message && ch.message.content;
+  if(!content && ch && ch.message && ch.message.reasoning_content) content = ch.message.reasoning_content;
+  if(!content) throw new Error('Pas de contenu');
+  return content;
+}
+async function callText(sysPrompt, userText, keyObj, maxTokens, temp){
+  const body = {model:MODEL_TEXT, messages:[{role:'system',content:sysPrompt},{role:'user',content:userText}], temperature: temp!==undefined?temp:0.95, max_tokens:maxTokens||8000, response_format:{type:'json_object'}};
+  await registerRequest(keyObj);
+  log('api','TEXT', keyObj.key.slice(-4));
+  const res = await fetch(API_BASE + '/chat/completions', {method:'POST', headers:{'Authorization':'Bearer '+keyObj.key,'Content-Type':'application/json'}, body: JSON.stringify(body), signal: state.abortCtrl ? state.abortCtrl.signal : undefined});
+  if(res.status===429){ keyObj.cooldownUntil = Date.now()+30000; const e=new Error('HTTP 429'); e.status=429; throw e }
+  if(res.status===401||res.status===403){ keyObj.errorCount=(keyObj.errorCount||0)+1; if(keyObj.errorCount>=3) keyObj.active=false; const e=new Error('HTTP '+res.status); e.status=res.status; throw e }
+  if(!res.ok){ const t = await res.text().catch(()=>''); throw new Error('HTTP '+res.status+' '+t.slice(0,100)) }
+  const data = await res.json();
+  const ch = data.choices && data.choices[0];
+  let content = ch && ch.message && ch.message.content;
+  if(!content && ch && ch.message && ch.message.reasoning_content) content = ch.message.reasoning_content;
+  if(!content) throw new Error('Pas de contenu');
+  return content;
+}
+
+// ==================================================================
+// SESSIONS
+// ==================================================================
+async function loadSessionsIndex(){
+  try{ const a = await dbGetAll('sessions'); return a.sort((x,y)=>(y.updatedAt||0)-(x.updatedAt||0)) }catch(e){ return [] }
+}
+async function saveSessionData(){
+  if(!state.currentSessionId) return;
+  const meta = state.sessionsIndex.find(s=>s.id===state.currentSessionId)||{};
+  const data = {
+    id: state.currentSessionId, name: meta.name || 'Session',
+    createdAt: meta.createdAt || Date.now(), updatedAt: Date.now(),
+    reference: state.reference,
+    analysis: state.analysis,
+    analysisSignature: state.analysisSignature,
+    action: state.action,
+    images: state.images.map(i=>({id:i.id, category:i.category, label:i.label, prompt:i.prompt, status:i.status, url:i.url, keyLast4:i.keyLast4, error:i.error}))
+  };
+  try{ await dbPut('sessions', data) }catch(e){ log('warn','SESSION','save '+e.message) }
+  if(meta){ meta.updatedAt = data.updatedAt; meta.imageCount = state.images.filter(i=>i.status==='done').length }
+}
+// Changer de session pendant une génération perdait les images en cours (et débloquait un 2e lancement)
+function sessionBusy(){
+  if(state.isRunning || state.isAnalyzing){ toast('Génération en cours : attendez la fin avant de changer de session','warn'); renderSessionBar(); return true }
+  return false;
+}
+async function switchToSession(id){
+  if(sessionBusy()) return;
+  await saveSessionData();
+  state.currentSessionId = id;
+  await dbPut('config', {key:'currentSession', value:id});
+  const data = await dbGet('sessions', id);
+  if(data){
+    state.reference = data.reference || null;
+    state.analysis = data.analysis || null;
+    state.analysisSignature = data.analysisSignature || null;
+    state.action = data.action || '';
+    state.images = (data.images||[]).map(i=>{ if(i.status==='loading'){ i.status='error'; i.error='Interrompu' } return i });
+    nextImgId = Math.max(1, ...state.images.map(i=>i.id||0)) + 1;
+  } else {
+    state.reference=null; state.analysis=null; state.analysisSignature=null; state.action=''; state.images=[];
+  }
+  state.isRunning=false; state.isAnalyzing=false;
+  renderAll();
+}
+async function createSession(name){
+  if(sessionBusy()) return;
+  const id = uid('sess');
+  const s = {id, name: name||('Session '+(state.sessionsIndex.length+1)), createdAt:Date.now(), updatedAt:Date.now(), imageCount:0};
+  state.sessionsIndex.push(s);
+  await dbPut('sessions', s);
+  await switchToSession(id);
+}
+async function deleteSession(){
+  if(sessionBusy()) return;
+  if(state.sessionsIndex.length <= 1){ toast('Au moins une session requise','warn'); return }
+  if(!confirm('Supprimer cette session ?')) return;
+  await dbDelete('sessions', state.currentSessionId);
+  state.sessionsIndex = state.sessionsIndex.filter(s=>s.id !== state.currentSessionId);
+  state.currentSessionId = null; // sinon switchToSession() ré-enregistre aussitôt la session supprimée
+  await switchToSession(state.sessionsIndex[0].id);
+}
+
+// ==================================================================
+// RENDER
+// ==================================================================
+function renderSessionBar(){
+  const sel = $('session-select'); if(!sel) return;
+  sel.innerHTML = state.sessionsIndex.map(s=>'<option value="'+s.id+'"'+(s.id===state.currentSessionId?' selected':'')+'>'+esc(s.name)+' · '+(s.imageCount||0)+' img</option>').join('');
+}
+function renderPills(){
+  const k=$('pill-keys'), i=$('pill-images'), d=$('pill-db');
+  const active = state.keys.filter(x=>x.active).length;
+  k.textContent = active+' clé'+(active>1?'s':''); k.className = 'head-pill '+(active>0?'on':'');
+  const done = state.images.filter(x=>x.status==='done').length;
+  i.textContent = done+' image'+(done>1?'s':''); i.className = 'head-pill '+(done>0?'on':'');
+  d.textContent = 'DB ✓'; d.className = 'head-pill on';
+}
+function renderAll(){
+  renderSessionBar();
+  const ki = $('keys-input');
+  if(ki && state.keys.length) ki.value = state.keys.map(k=>k.imgRpm!==20 ? (k.key+' = '+k.imgRpm) : k.key).join('\n');
+  renderKeysStatus();
+  renderReference();
+  renderAnalysisInfo();
+  const ai = $('action-input');
+  if(ai && ai.value !== state.action) ai.value = state.action;
+  renderActionBadge();
+  renderGallery();
+  renderKeysTable();
+  renderAdminStats();
+  renderPromptsAdmin();
+  renderPills();
+  updateButtons();
+}
+function renderKeysStatus(){
+  const line=$('keys-status-line'), txt=$('keys-status-text'); if(!line) return;
+  if(!state.keys.length){ line.classList.remove('ok'); txt.textContent='Aucune clé'; return }
+  line.classList.add('ok');
+  const active = state.keys.filter(k=>k.active).length;
+  const total = state.keys.reduce((s,k)=>s+(k.active?k.imgRpm:0),0);
+  txt.textContent = active+' clé(s) · '+total+' RPM image';
+}
+function renderKeysTable(){
+  const tb = document.querySelector('#keys-table tbody'); if(!tb) return;
+  tb.innerHTML = state.keys.map((k,i)=>
+    '<tr><td>'+(i+1)+'</td><td class="trunc" title="'+esc(k.key)+'">'+esc(k.key.slice(0,10))+'…'+esc(k.key.slice(-4))+'</td><td>'+k.imgRpm+'</td><td>'+(k.imgUsage||0)+'</td><td>'+(k.active?'ON':'OFF')+'</td><td><button class="btn ghost small" data-del-key="'+k.id+'" style="width:auto;margin:0;padding:.15rem .4rem">✕</button></td></tr>'
+  ).join('');
+  tb.querySelectorAll('[data-del-key]').forEach(b=>b.addEventListener('click', async ()=>{
+    if(!confirm('Supprimer cette clé ?')) return;
+    await dbDelete('keys', b.dataset.delKey);
+    state.keys = state.keys.filter(x=>String(x.id) !== b.dataset.delKey);
+    renderAll();
+  }));
+}
+function renderReference(){
+  const drop = $('ref-drop'); if(!drop) return;
+  const badge = $('ref-badge');
+  if(state.reference){
+    drop.classList.add('has-image');
+    drop.innerHTML = '<div class="ref-preview"><img src="'+esc(state.reference)+'" alt=""><button type="button" class="ref-remove" id="ref-remove">✕</button></div>';
+    drop.querySelector('#ref-remove').addEventListener('click', e=>{
+      e.stopPropagation();
+      state.reference = null;
+      state.analysis = null; state.analysisSignature = null;
+      saveSessionData(); renderAll();
+    });
+    if(badge){ badge.textContent = state.analysis ? 'Analysée' : 'Prête'; badge.className = 'badge ' + (state.analysis ? 'green' : 'gray') }
+  } else {
+    drop.classList.remove('has-image');
+    drop.innerHTML = '<input type="file" accept="image/*" id="ref-input"><div class="ref-icon">◯</div><div class="ref-text"><strong>Choisir une photo</strong>Les personnages seront reproduits à l\'identique sur toutes les images.</div>';
+    bindRefInput();
+    if(badge){ badge.textContent = 'En attente'; badge.className = 'badge gray' }
+  }
+}
+function bindRefInput(){
+  const inp = $('ref-input'); if(!inp) return;
+  inp.addEventListener('change', async e=>{
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    if(!f.type.startsWith('image/')){ toast('Pas une image','err'); return }
+    try{
+      const raw = await fileToDataUri(f);
+      const comp = await compressDataUri(raw, 1280);
+      state.reference = comp;
+      state.analysis = null; state.analysisSignature = null;
+      await saveSessionData();
+      renderAll();
+      toast('Photo prête','ok');
+      if(!state.isRunning && !state.isAnalyzing){ beginOp(); analyzeReference().catch(e=>log('warn','ANALYSE','Auto '+e.message)).finally(endOp) }
+    }catch(e){ toast('Erreur','err') }
+  });
+}
+function renderAnalysisInfo(){
+  const box = $('analysis-info'); if(!box) return;
+  if(!state.analysis){ box.style.display='none'; return }
+  box.style.display = 'block';
+  const a = state.analysis;
+  const chars = (a.characters || []).slice(0, 6).map(c=>
+    '<div class="ai-char"><b>'+esc(c.name||c.role||'?')+'</b> — '+esc((c.description||'').slice(0,140))+'</div>'
+  ).join('');
+  box.innerHTML = '<div class="ai-title">✓ Photo analysée — personnages verrouillés</div>'+
+    '<div class="ai-row"><span class="ai-k">Style :</span> '+esc((a.art_style||'').slice(0,180))+'</div>'+
+    '<div class="ai-row"><span class="ai-k">Décor :</span> '+esc((a.environment||'').slice(0,180))+'</div>'+
+    '<div class="ai-row"><span class="ai-k">Lumière :</span> '+esc((a.lighting||'').slice(0,180))+'</div>'+
+    (chars ? '<div class="ai-chars"><div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#0a7a3e;margin-bottom:.3rem">Personnages détectés ('+(a.characters||[]).length+')</div>'+chars+'</div>' : '');
+}
+function renderActionBadge(){
+  const b = $('action-badge'); if(!b) return;
+  const n = (state.action||'').trim().length;
+  if(n === 0){ b.textContent = 'À remplir'; b.className = 'badge gray' }
+  else if(n < 40){ b.textContent = 'Court'; b.className = 'badge gold' }
+  else { b.textContent = '✓ Prête'; b.className = 'badge green' }
+}
+function renderGallery(){
+  const gallery = $('gallery'), empty = $('gallery-empty');
+  if(!gallery) return;
+  if(!state.images.length){ gallery.innerHTML=''; if(empty) empty.style.display='block'; updateGalleryBadge(); return }
+  if(empty) empty.style.display = 'none';
+  gallery.innerHTML = state.images.map((img,i) => renderImageCard(img, i+1)).join('');
+  gallery.querySelectorAll('.image-card').forEach(card=>{
+    const id = parseInt(card.dataset.imgId, 10);
+    const img = state.images.find(x=>x.id === id);
+    if(!img) return;
+    const thumb = card.querySelector('.thumb');
+    if(thumb && img.status === 'done' && img.url) thumb.addEventListener('click', ()=>openLightbox(img));
+    card.querySelectorAll('button[data-act]').forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        e.stopPropagation();
+        const act = btn.dataset.act;
+        if(act==='prompt') openPromptModal(img.label, img.prompt);
+        else if(act==='download' && img.url) downloadUrl(img.url, 'scene-'+img.id+'.jpg');
+        else if(act==='regenerate') regenerateImage(img.id);
+      });
+    });
+  });
+  updateGalleryBadge();
+}
+function renderImageCard(img, index){
+  const spec = angleOf(img.category);
+  let thumbInner = '';
+  if(img.status === 'loading'){
+    const phase = state.loaderPhases[img.id] || 'Génération…';
+    thumbInner = '<div class="loader-wrap"><div class="loader-spin"></div><div class="loader-txt">'+esc(phase)+'</div></div>';
+  } else if(img.status === 'error'){
+    thumbInner = '<div class="placeholder err">✕ '+esc((img.error||'Erreur').slice(0,80))+'</div>';
+  } else {
+    thumbInner = '<img src="'+esc(img.url)+'" alt="" loading="lazy" referrerpolicy="no-referrer">';
+  }
+  const isDone = img.status === 'done';
+  const cardCls = 'image-card'+(img.status==='loading'?' loading':'')+(img.status==='error'?' error':'');
+
+  return '<div class="'+cardCls+'" data-img-id="'+img.id+'">'+
+    '<div class="thumb">'+
+      thumbInner+
+      '<div class="kind-badge" style="background:'+spec.color+'">'+spec.icon+' '+esc(spec.label)+'</div>'+
+      '<div class="index-badge">#'+index+'</div>'+
+    '</div>'+
+    '<div class="cap"><span class="cap-lbl" title="'+esc(img.label)+'">'+esc(img.label||'')+'</span><span class="cap-key">'+(img.keyLast4||'')+'</span></div>'+
+    '<div class="acts">'+
+      '<button type="button" data-act="prompt">📝 Prompt</button>'+
+      '<button type="button" data-act="download" '+(isDone?'':'disabled')+'>⬇ Télécharger</button>'+
+      '<button type="button" data-act="regenerate" '+(isDone||img.status==='error'?'':'disabled')+'>↺ Régénérer</button>'+
+    '</div>'+
+  '</div>';
+}
+function updateGalleryBadge(){
+  const b = $('gallery-badge'); if(!b) return;
+  const d = state.images.filter(i=>i.status==='done').length;
+  b.textContent = d+' / '+state.images.length;
+}
+function renderAdminStats(){
+  const c = $('stats-content'), k = $('stats-keys');
+  if(!c) return;
+  c.innerHTML = [
+    ['Sessions', state.sessionsIndex.length],
+    ['Clés API', state.keys.length],
+    ['Images (session)', state.images.length],
+    ['Images terminées', state.images.filter(i=>i.status==='done').length],
+    ['Personnages détectés', (state.analysis?.characters||[]).length]
+  ].map(([a,b])=>'<div class="admin-stat"><span class="as-k">'+a+'</span><span class="as-v">'+b+'</span></div>').join('');
+  if(k){
+    const t = state.keys.reduce((s,x)=>s+(x.imgUsage||0),0);
+    k.innerHTML = [['Utilisations', t],['Actives', state.keys.filter(x=>x.active).length]].map(([a,b])=>'<div class="admin-stat"><span class="as-k">'+a+'</span><span class="as-v">'+b+'</span></div>').join('');
+  }
+}
+function renderPromptsAdmin(){
+  if($('prompt-analysis')) $('prompt-analysis').value = state.config.prompt_analysis || DEFAULT_PROMPTS.analysis;
+  if($('prompt-scene')) $('prompt-scene').value = state.config.prompt_scene || DEFAULT_PROMPTS.scene;
+}
+function updateButtons(){
+  const hasRef = !!state.reference;
+  const hasAction = (state.action||'').trim().length >= 10;
+  const hasKey = state.keys.filter(k=>k.active).length > 0;
+  const busy = state.isRunning || state.isAnalyzing;
+  const lb = $('launch-btn');
+  if(lb){
+    lb.disabled = !hasRef || !hasAction || !hasKey || busy;
+    lb.textContent = state.isAnalyzing ? '⏳ Analyse en cours…' :
+                     state.isRunning ? '⏳ Génération en cours…' :
+                     '🎬 Générer 40 angles de cette scène';
+  }
+  const sb = $('stop-btn');
+  if(sb) sb.style.display = busy ? '' : 'none';
+}
+
+// ==================================================================
+// HUMAN LOADER HELPERS
+// ==================================================================
+function showLoader(phase, message, sub, pct){
+  const hl = $('human-loader');
+  hl.classList.remove('hidden','ok','err');
+  $('hl-phase').textContent = phase;
+  $('hl-message').textContent = message;
+  $('hl-sub').textContent = sub || '';
+  $('pb-fill').style.width = (pct || 0) + '%';
+}
+function setLoaderOk(phase, message, sub){
+  const hl = $('human-loader');
+  hl.classList.remove('hidden','err'); hl.classList.add('ok');
+  $('hl-phase').textContent = phase;
+  $('hl-message').textContent = message;
+  $('hl-sub').textContent = sub || '';
+  $('pb-fill').style.width = '100%';
+}
+function setLoaderErr(phase, message, sub){
+  const hl = $('human-loader');
+  hl.classList.remove('hidden','ok'); hl.classList.add('err');
+  $('hl-phase').textContent = phase;
+  $('hl-message').textContent = message;
+  $('hl-sub').textContent = sub || '';
+}
+function hideLoader(){ $('human-loader').classList.add('hidden') }
+function setProgress(pct){ $('pb-fill').style.width = Math.max(0, Math.min(100,pct)) + '%' }
+
+// ==================================================================
+// ANALYSE PHOTO
+// ==================================================================
+async function analyzeReference(force){
+  if(!state.reference) throw new Error('Pas de photo');
+  if(state.analysis && state.analysisSignature === state.reference && !force) return state.analysis;
+  if(state.keys.filter(k=>k.active).length === 0) throw new Error('Pas de clé API');
+  state.isAnalyzing = true; updateButtons();
+  const stl = $('launch-status-line'), stt = $('launch-status-text');
+  stl.classList.remove('ok','err','gold'); stl.classList.add('gold');
+  stt.textContent = '🔍 Analyse de la photo en cours…';
+  try{
+    const keyObj = await acquireKey();
+    const sys = state.config.prompt_analysis || DEFAULT_PROMPTS.analysis;
+    const userText = 'Analyse cette image. Décris tous les personnages en détail pour qu\'ils puissent être recréés à l\'identique. Réponds uniquement par un objet JSON valide, sans markdown.';
+    let content = null, att = 0;
+    while(!content && att < 3){
+      att++;
+      try{ content = await callVision(sys, userText, state.reference, keyObj, 4000) }
+      catch(e){ if(state.stopRequested) throw new Error('Arrêt'); if(e.status===429 && att<3){ await waitStop(15000); continue } if(att>=3) throw e; await sleep(2000) }
+    }
+    if(!content) throw new Error('Pas de contenu');
+    const parsed = extractJson(content);
+    if(!parsed || !parsed.style_lock) throw new Error('JSON invalide');
+    state.analysis = {
+      scene_summary: parsed.scene_summary || '',
+      art_style: parsed.art_style || '',
+      style_lock: parsed.style_lock || '',
+      characters: Array.isArray(parsed.characters) ? parsed.characters : [],
+      environment: parsed.environment || '',
+      lighting: parsed.lighting || '',
+      atmosphere: parsed.atmosphere || '',
+      color_palette: parsed.color_palette || ''
+    };
+    state.analysisSignature = state.reference;
+    await saveSessionData();
+    renderAnalysisInfo();
+    stl.classList.remove('gold'); stl.classList.add('ok');
+    stt.textContent = '✓ Photo analysée · '+(state.analysis.characters.length)+' personnage(s) détecté(s). Remplissez l\'action puis lancez.';
+    log('success','ANALYSE', (state.analysis.characters.length)+' personnages décrits');
+    return state.analysis;
+  } catch(e){
+    stl.classList.remove('gold','ok'); stl.classList.add('err');
+    stt.textContent = state.stopRequested ? '■ Analyse arrêtée.' : ('✕ Analyse : '+e.message.slice(0,80));
+    throw e;
+  } finally {
+    state.isAnalyzing = false; updateButtons();
+  }
+}
+
+// ==================================================================
+// LAUNCH FULL GENERATION
+// ==================================================================
+async function launchGeneration(){
+  if(!state.reference){ toast('Ajoutez une photo','err'); return }
+  if((state.action||'').trim().length < 10){ toast('Décrivez l\'action (au moins quelques mots)','err'); return }
+  if(state.keys.filter(k=>k.active).length === 0){ toast('Ajoutez une clé API','err'); return }
+  if(state.isRunning || state.isAnalyzing){ toast('Déjà en cours','warn'); return }
+
+  // Verrou : isRunning n'était jamais mis à true → bouton actif pendant la génération (2e lancement, régénérations concurrentes)
+  beginOp();
+  state.isRunning = true;
+  updateButtons();
+  // La galerie précédente n'est remplacée qu'une fois le nouveau plan prêt (state.images = newImgs plus bas) :
+  // un échec d'analyse/scénario ne l'efface plus.
+
+  showLoader('🎬 Préparation', 'C\'est parti ! L\'IA prépare la scène…', 'Initialisation', 2);
+
+  try{
+    await activateWakeLock();
+    // 1) Analyse si nécessaire
+    if(!state.analysis || state.analysisSignature !== state.reference){
+      showLoader('🔍 Analyse', 'L\'IA étudie votre photo pour verrouiller l\'identité de chaque personnage (visages, peluches, couleurs, vêtements)…', 'Étape 1/3', 5);
+      await analyzeReference();
+    } else {
+      showLoader('🔍 Analyse', 'Analyse déjà prête : '+(state.analysis.characters||[]).length+' personnages verrouillés.', 'Étape 1/3', 15);
+    }
+
+    // 2) Scénario
+    showLoader('✍️ Scénario', 'L\'IA écrit le découpage de votre scène : 4 plans d\'ensemble, 6 plans larges, 8 plans moyens, 6 gros plans, 6 moments-clés, 6 angles extrêmes, 4 plans atmosphériques — tous avec vos personnages identiques.', 'Étape 2/3', 25);
+    const tasks = await generateScenePrompts();
+    if(!tasks || !tasks.length) throw new Error('Aucun prompt généré');
+
+    // 3) Images
+    const tasks2 = tasks.slice(0, TOTAL_IMAGES);
+    while(tasks2.length < TOTAL_IMAGES){
+      tasks2.push({
+        category: 'medium',
+        label: 'Bonus '+(tasks2.length+1),
+        prompt: fallbackPrompt(state.analysis, state.action, 'medium')
+      });
+    }
+
+    showLoader('🎨 Génération', 'Le premier angle commence à apparaître. Chaque image préserve vos personnages à l\'identique…', '0 / '+TOTAL_IMAGES, 30);
+
+    const newImgs = tasks2.map(t=>({
+      id: nextImgId++,
+      category: t.category,
+      label: t.label,
+      prompt: t.prompt,
+      status: 'loading', url: null, keyLast4: '', error: null
+    }));
+    state.images = newImgs;
+    renderGallery();
+
+    const workers = Math.min(Math.max(1, state.keys.filter(k=>k.active).length), newImgs.length);
+    const q = newImgs.slice();
+    let done = 0;
+    const startTime = Date.now();
+
+    const worker = async ()=>{
+      while(q.length > 0 && !state.stopRequested){
+        const img = q.shift(); if(!img) break;
+        let att = 0; const max = Math.max(5, state.keys.length*2); let ok = false;
+        while(att < max && !state.stopRequested && !ok){
+          att++;
+          let k = null;
+          try{ k = await acquireKey() }catch(e){ img.status='error'; img.error = e.message==='Arrêt' ? 'Arrêté' : 'Pas de clé'; delete state.loaderPhases[img.id]; renderGallery(); return }
+          img.keyLast4 = k.key.slice(-4);
+          state.loaderPhases[img.id] = 'Génération…';
+          renderGallery();
+          try{
+            const url = await callImage(img.prompt, state.reference, k);
+            img.status = 'done'; img.url = url; ok = true; done++;
+            delete state.loaderPhases[img.id];
+            renderGallery();
+            await saveSessionData();
+            // Update loader
+            setProgress(30 + (done/TOTAL_IMAGES)*65);
+            const el = (Date.now()-startTime)/1000;
+            const rate = done/Math.max(1, el);
+            const eta = rate > 0 ? Math.round((TOTAL_IMAGES-done)/rate) : 0;
+            showLoader('🎨 Génération',
+              'Image '+done+' / '+TOTAL_IMAGES+' prête. Les personnages restent identiques, seuls les angles changent.',
+              'Environ '+Math.floor(eta/60)+'m '+String(eta%60).padStart(2,'0')+'s restantes',
+              30 + (done/TOTAL_IMAGES)*65);
+          }catch(e){
+            if(e.message === 'Arrêt' || state.stopRequested){ img.status='error'; img.error='Arrêté'; delete state.loaderPhases[img.id]; renderGallery(); return }
+            if(e.status === 429 && att < max){ continue }
+            if(att >= max){ img.status='error'; img.error=(e.message||'Erreur').slice(0,50); done++; delete state.loaderPhases[img.id]; renderGallery(); }
+            else await sleep(700);
+          }
+        }
+      }
+    };
+    const ws = []; for(let i=0; i<workers; i++) ws.push(worker());
+    await Promise.all(ws);
+    state.isRunning = false;
+
+    // Images jamais démarrées (arrêt, plus aucune clé) : ne pas les laisser « en cours »
+    const stopped = state.stopRequested;
+    const noKey = !state.keys.some(k=>k.active);
+    newImgs.forEach(i=>{ if(i.status==='loading'){ i.status='error'; i.error = stopped ? 'Arrêté' : (noKey ? 'Pas de clé' : 'Non traité'); delete state.loaderPhases[i.id] } });
+
+    const ok = newImgs.filter(i=>i.status==='done').length;
+    if(stopped){
+      setLoaderErr('Arrêté', '■ Génération arrêtée : '+ok+' / '+TOTAL_IMAGES+' images créées.', 'Les images non créées peuvent être régénérées une par une (↺)');
+      toast('Génération arrêtée','warn');
+    } else if(noKey && newImgs.some(i=>i.error==='Pas de clé')){
+      setLoaderErr('Erreur', '✕ Aucune clé API active (clés refusées 401/403) : '+ok+' / '+TOTAL_IMAGES+' images créées.', 'Vérifiez vos clés dans Admin');
+      toast('Aucune clé API active','err');
+    } else if(ok > 0){
+      setLoaderOk('✓ Terminé', ok+' / '+TOTAL_IMAGES+' angles de votre scène sont prêts. Cliquez sur une image pour la voir en grand.', 'Session sauvegardée');
+      toast(ok+' images générées','ok');
+    } else {
+      setLoaderErr('Erreur', 'Aucune image n\'a pu être générée. Vérifiez vos clés API.', '');
+      toast('Aucune image générée','err');
+    }
+    await saveSessionData();
+    renderGallery();
+
+    // Refresh button state
+    setTimeout(updateButtons, 100);
+  } catch(e){
+    const stopped = state.stopRequested || e.message === 'Arrêt';
+    log(stopped?'warn':'error','SCENE', stopped ? 'Arrêté' : e.message);
+    if(stopped){ setLoaderErr('Arrêté', '■ Génération arrêtée.', ''); toast('Génération arrêtée','warn') }
+    else { setLoaderErr('Erreur', '✕ '+e.message.slice(0,120), 'Réessayez ou changez l\'action'); toast('Échec : '+e.message.slice(0,50),'err') }
+    state.isAnalyzing = false;
+    state.isRunning = false;
+    updateButtons();
+  } finally {
+    endOp();
+    deactivateWakeLock();
+  }
+}
+
+// ==================================================================
+// GENERATE SCENE PROMPTS (40 angles)
+// ==================================================================
+async function generateScenePrompts(){
+  const keyObj = await acquireKey();
+  const sys = state.config.prompt_scene || DEFAULT_PROMPTS.scene;
+  const a = state.analysis;
+  const userAction = (state.action||'').trim();
+
+  // Détail des personnages
+  const charsList = (a.characters || []).slice(0,10).map((c,i)=>
+    '#'+(i+1)+' ['+ (c.role||'?') +'] '+ (c.name||'?') +' : '+(c.description||'')
+  ).join('\n');
+
+  const userText = [
+    '═══ IMAGE DE RÉFÉRENCE ═══',
+    'Résumé : ' + (a.scene_summary || ''),
+    'Style : ' + (a.art_style || ''),
+    'Style lock : ' + (a.style_lock || ''),
+    'Décor : ' + (a.environment || ''),
+    'Lumière : ' + (a.lighting || ''),
+    'Atmosphère : ' + (a.atmosphere || ''),
+    'Palette : ' + (a.color_palette || ''),
+    '',
+    '═══ PERSONNAGES À RECRÉER À L\'IDENTIQUE ═══',
+    charsList || '(aucun personnage décrit)',
+    '',
+    '═══ ACTION À DÉPEINDRE (fournie par l\'utilisateur) ═══',
+    userAction,
+    '',
+    '═══ CONSIGNES ═══',
+    '1) Les 40 images montrent TOUTES cette même action (l\'action ci-dessus).',
+    '2) Les personnages doivent être STRICTEMENT IDENTIQUES à ceux de la référence (mêmes espèces, mêmes matériaux, mêmes couleurs, mêmes vêtements, mêmes proportions). L\'image de référence sera fournie au modèle d\'image.',
+    '3) Chaque prompt varie uniquement : angle de caméra, cadrage, moment de l\'action.',
+    '4) Rappel dans chaque prompt : "Keep all characters EXACTLY identical to the reference (same plush materials, faces, outfits, colors)."',
+    '',
+    'RAPPEL JSON : pas de markdown, pas de backticks, apostrophe droite uniquement.',
+    'Retourne UNIQUEMENT : { "images": [ { "category":"...", "label":"Court label", "prompt":"Full English prompt on one line" }, ... 40 ] }'
+  ].join('\n');
+
+  let content = null, att = 0;
+  while(!content && att < 3){
+    att++;
+    try{ content = await callText(sys, userText, keyObj, 9000, 1.0) }
+    catch(e){ if(state.stopRequested) throw new Error('Arrêt'); if(e.status===429 && att<3){ await waitStop(15000); continue } if(att>=3) throw e; await sleep(2000) }
+  }
+  const parsed = extractJson(content);
+  if(!parsed || !Array.isArray(parsed.images)) throw new Error('Plan invalide (JSON)');
+
+  // Normaliser : exactement 40 par catégorie
+  const byCat = {};
+  parsed.images.forEach(x=>{
+    if(!x || !x.prompt) return;
+    const cat = ANGLE_SPEC[x.category] ? x.category : 'medium';
+    if(!byCat[cat]) byCat[cat] = [];
+    byCat[cat].push(x);
+  });
+  const result = [];
+  Object.keys(ANGLE_SPEC).forEach(cat=>{
+    const spec = ANGLE_SPEC[cat];
+    const pool = byCat[cat] || [];
+    for(let i=0; i<spec.count; i++){
+      if(pool[i]) result.push({category:cat, label:pool[i].label || (spec.label+' '+(i+1)), prompt:pool[i].prompt});
+      else result.push({category:cat, label:spec.label+' '+(i+1), prompt: fallbackPrompt(state.analysis, state.action, cat)});
+    }
+  });
+  return result;
+}
+
+function fallbackPrompt(a, action, cat){
+  const chars = (a.characters||[]).slice(0,4).map(c=>c.name+': '+(c.description||'').slice(0,100)).join(' | ');
+  const style = a.style_lock || 'match the reference visual style';
+  const anglePart = cat === 'establishing' ? 'very wide establishing shot, full environment visible' :
+                    cat === 'wide' ? 'wide shot, entire scene visible' :
+                    cat === 'medium' ? 'medium shot, characters centered' :
+                    cat === 'closeup' ? 'close-up on one character' :
+                    cat === 'action' ? 'key moment of the action, dynamic angle' :
+                    cat === 'extreme' ? 'unusual camera angle (low/high/dutch/fisheye)' :
+                    'atmospheric detail shot, textures and light';
+  return 'Using the reference image, keep all characters EXACTLY identical (same faces, plush materials, outfits, colors). ' +
+    'Characters: '+chars+'. ' +
+    'Scene action: '+action+'. ' +
+    'Camera: '+anglePart+'. ' +
+    'STYLE: '+style+'.';
+}
+
+// ==================================================================
+// RÉGÉNÉRER UNE IMAGE
+// ==================================================================
+async function regenerateImage(imgId){
+  const img = state.images.find(i=>i.id === imgId);
+  if(!img) return;
+  if(state.isRunning || state.isAnalyzing){ toast('Une génération est en cours','warn'); return }
+  if(state.keys.filter(k=>k.active).length === 0){ toast('Ajoutez une clé','err'); return }
+  if(!state.reference){ toast('Ajoutez une photo','err'); return }
+  if(!img.prompt){ toast('Prompt manquant','err'); return }
+
+  const oldStatus = img.status, oldUrl = img.url, oldError = img.error;
+  img.status = 'loading'; img.url = null; img.error = null;
+  beginOp();
+  state.isRunning = true; updateButtons();
+  renderGallery();
+  try{
+    const k = await acquireKey();
+    img.keyLast4 = k.key.slice(-4);
+    const url = await callImage(img.prompt, state.reference, k);
+    img.status = 'done'; img.url = url;
+    await saveSessionData();
+    toast('Image régénérée','ok');
+  }catch(e){
+    const stopped = state.stopRequested || e.message === 'Arrêt';
+    img.status = 'error'; img.error = stopped ? 'Arrêté' : (e.message||'Erreur').slice(0,60);
+    log(stopped?'warn':'error','REGEN', stopped ? 'Arrêté' : e.message);
+    toast(stopped ? 'Régénération arrêtée' : 'Échec régénération', stopped ? 'warn' : 'err');
+  } finally {
+    endOp();
+    state.isRunning = false; updateButtons();
+    renderGallery();
+  }
+}
+
+// ==================================================================
+// EXPORT / IMPORT / RESET
+// ==================================================================
+async function exportDB(){
+  // Les clés API ne sont jamais écrites dans le fichier exporté (l'import accepte encore les anciennes sauvegardes avec clés)
+  const dump = {
+    version: DB_VERSION, exportedAt: new Date().toISOString(),
+    note: 'Clés API non incluses : à ressaisir dans Admin après import.',
+    sessions: await dbGetAll('sessions'),
+    config: state.config
+  };
+  const blob = new Blob([JSON.stringify(dump, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'scene-studio-'+Date.now()+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Sauvegarde exportée (sans vos clés API)','ok');
+}
+async function importDB(){
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = async e=>{
+    const f = e.target.files[0]; if(!f) return;
+    try{
+      const data = JSON.parse(await f.text());
+      if(!confirm('Remplacer la base ?')) return;
+      // clé déjà présente sous un autre id → ConstraintError (index unique) qui annulait tout l'import
+      if(data.keys) for(const k of data.keys){ if(!k.id) k.id = uid('k'); try{ await dbPut('keys', k) }catch(err){ log('warn','IMPORT','Clé déjà présente, ignorée') } }
+      if(data.sessions) for(const s of data.sessions) await dbPut('sessions', s);
+      if(data.config) for(const key of Object.keys(data.config)) await dbPut('config', {key, value: data.config[key]});
+      location.reload();
+    } catch(e){ toast('Erreur','err') }
+  };
+  inp.click();
+}
+async function resetDB(){
+  if(!confirm('Effacer TOUT ?')) return;
+  if(!confirm('Vraiment sûr ?')) return;
+  await dbClear('keys'); await dbClear('sessions'); await dbClear('config');
+  location.reload();
+}
+
+// ==================================================================
+// MODAL / CONSOLE
+// ==================================================================
+function toggleConsole(){
+  const d = $('console-dock'), b = $('console-toggle');
+  const collapsed = d.classList.toggle('collapsed');
+  b.textContent = collapsed ? '▴' : '▾';
+}
+function openPromptModal(label, prompt){
+  $('prompt-modal-title').textContent = label || 'Prompt';
+  $('prompt-modal-text').value = prompt || '';
+  $('prompt-modal').classList.add('visible');
+}
+
+// ==================================================================
+// INIT
+// ==================================================================
+async function init(){
+  log('state','INIT','Ouverture DB…');
+  try{ db = await openDB() }
+  catch(e){ alert('Impossible d\'ouvrir IndexedDB'); return }
+  log('success','DB','DB ouverte');
+
+  try{ const cs = await dbGetAll('config'); cs.forEach(c=>{ state.config[c.key] = c.value }) }catch(e){}
+  try{ state.keys = await dbGetAll('keys') }catch(e){ state.keys = [] }
+  state.keys.forEach(k=>{ k.imgTimes = []; k.active = k.active !== false; k.cooldownUntil = 0; k.errorCount = 0 });
+
+  state.sessionsIndex = await loadSessionsIndex();
+  if(!state.sessionsIndex.length){
+    const id = uid('sess');
+    const s = {id, name:'Session 1', createdAt: Date.now(), updatedAt: Date.now(), imageCount:0};
+    state.sessionsIndex.push(s);
+    await dbPut('sessions', s);
+  }
+
+  const savedCurrent = state.config.currentSession;
+  const exists = state.sessionsIndex.find(s=>s.id===savedCurrent);
+  state.currentSessionId = exists ? savedCurrent : state.sessionsIndex[0].id;
+  const data = await dbGet('sessions', state.currentSessionId);
+  if(data){
+    state.reference = data.reference || null;
+    state.analysis = data.analysis || null;
+    state.analysisSignature = data.analysisSignature || null;
+    state.action = data.action || '';
+    state.images = (data.images||[]).map(i=>{ if(i.status==='loading'){ i.status='error'; i.error='Interrompu' } return i });
+    nextImgId = Math.max(1, ...state.images.map(i=>i.id||0)) + 1;
+  }
+
+  renderAll();
+
+  // Tabs
+  document.querySelectorAll('.main-tab').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      document.querySelectorAll('.main-tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      $('tab-'+t.dataset.tab).classList.add('active');
+      if(t.dataset.tab === 'admin'){ renderAdminStats(); renderKeysTable(); renderPromptsAdmin() }
+    });
+  });
+  // Sections
+  document.querySelectorAll('[data-toggle]').forEach(h=>{
+    h.addEventListener('click', ()=>{
+      const el = $(h.dataset.toggle);
+      if(el) el.classList.toggle('open');
+    });
+  });
+  // Sessions
+  $('session-select').addEventListener('change', e=>switchToSession(e.target.value));
+  $('new-session-btn').addEventListener('click', ()=>{
+    const name = prompt('Nom :', 'Session '+(state.sessionsIndex.length+1));
+    if(name !== null) createSession(name.trim() || undefined);
+  });
+  $('delete-session-btn').addEventListener('click', deleteSession);
+  // Action
+  const ai = $('action-input');
+  ai.addEventListener('input', ()=>{
+    state.action = ai.value;
+    renderActionBadge();
+    updateButtons();
+    saveSessionData();
+  });
+  // Examples
+  document.querySelectorAll('.ex-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      ai.value = chip.dataset.ex;
+      state.action = chip.dataset.ex;
+      renderActionBadge();
+      updateButtons();
+      saveSessionData();
+      toast('Exemple chargé','ok');
+    });
+  });
+  // Launch
+  $('launch-btn').addEventListener('click', e=>{ e.preventDefault(); launchGeneration() });
+  $('stop-btn').addEventListener('click', e=>{ e.preventDefault(); requestStop() });
+  // Keys
+  $('save-keys-btn').addEventListener('click', async ()=>{
+    const parsed = parseKeys($('keys-input').value);
+    if(!parsed.length){ toast('Aucune clé','err'); return }
+    for(const p of parsed){
+      const ex = state.keys.find(x=>x.key === p.key);
+      if(ex){ ex.imgRpm = p.imgRpm; await dbPut('keys', ex) }
+      else{
+        const k = {id: uid('k'), key:p.key, imgRpm:p.imgRpm, createdAt:Date.now(), imgUsage:0, lastUsed:null, active:true};
+        await dbPut('keys', k);
+        k.imgTimes = []; k.cooldownUntil = 0; k.errorCount = 0;
+        state.keys.push(k);
+      }
+    }
+    renderAll();
+    toast(parsed.length+' clé(s) enregistrée(s)','ok');
+  });
+  // Prompts
+  $('save-prompts-btn').addEventListener('click', async ()=>{
+    await dbPut('config', {key:'prompt_analysis', value: $('prompt-analysis').value});
+    await dbPut('config', {key:'prompt_scene', value: $('prompt-scene').value});
+    state.config.prompt_analysis = $('prompt-analysis').value;
+    state.config.prompt_scene = $('prompt-scene').value;
+    toast('Enregistrés','ok');
+  });
+  $('reset-prompts-btn').addEventListener('click', async ()=>{
+    if(!confirm('Restaurer ?')) return;
+    $('prompt-analysis').value = DEFAULT_PROMPTS.analysis;
+    $('prompt-scene').value = DEFAULT_PROMPTS.scene;
+    await dbPut('config', {key:'prompt_analysis', value: DEFAULT_PROMPTS.analysis});
+    await dbPut('config', {key:'prompt_scene', value: DEFAULT_PROMPTS.scene});
+    state.config.prompt_analysis = DEFAULT_PROMPTS.analysis;
+    state.config.prompt_scene = DEFAULT_PROMPTS.scene;
+    toast('Restaurés','ok');
+  });
+  // Export etc.
+  $('export-db-btn').addEventListener('click', exportDB);
+  $('import-db-btn').addEventListener('click', importDB);
+  $('reset-db-btn').addEventListener('click', resetDB);
+  // Prompt modal
+  $('prompt-modal-close').addEventListener('click', ()=>$('prompt-modal').classList.remove('visible'));
+  $('prompt-modal').addEventListener('click', e=>{ if(e.target === $('prompt-modal')) $('prompt-modal').classList.remove('visible') });
+  $('prompt-modal-copy').addEventListener('click', async ()=>{ const ok = await copyToClipboard($('prompt-modal-text').value); toast(ok?'Copié':'Échec', ok?'ok':'err') });
+  // Lightbox
+  const lb = $('lightbox'), lbImg = $('lightbox-img');
+  if(lbImg) lbImg.addEventListener('click', e=>{ e.stopPropagation(); closeLightbox() });
+  if(lb) lb.addEventListener('click', e=>{ if(e.target === lb) closeLightbox() });
+  $('lightbox-close').addEventListener('click', e=>{ e.stopPropagation(); closeLightbox() });
+  document.addEventListener('keydown', e=>{
+    if(e.key === 'Escape'){
+      if(lb && lb.classList.contains('visible')) closeLightbox();
+      else if($('prompt-modal').classList.contains('visible')) $('prompt-modal').classList.remove('visible');
+    }
+  });
+  // Console
+  $('console-header').addEventListener('click', e=>{ if(e.target.tagName === 'BUTTON') return; toggleConsole() });
+  $('console-toggle').addEventListener('click', e=>{ e.stopPropagation(); toggleConsole() });
+  $('console-copy').addEventListener('click', e=>{ e.stopPropagation(); copyConsole() });
+  $('console-clear').addEventListener('click', e=>{ e.stopPropagation(); clearConsole() });
+
+  setInterval(async ()=>{ if(state.currentSessionId && !state.isRunning) await saveSessionData() }, 5000);
+  window.addEventListener('beforeunload', ()=>{ if(state.currentSessionId) saveSessionData() });
+
+  log('success','INIT', state.keys.length+' clés · '+state.sessionsIndex.length+' sessions');
+  log('info','ASTUCE','1) Uploadez une photo → l\'IA verrouille l\'identité des personnages.');
+  log('info','ASTUCE','2) Décrivez l\'action → l\'IA écrit le scénario de 40 angles.');
+  log('info','ASTUCE','3) Générez → les personnages restent identiques, la scène change selon votre texte.');
+}
+init();
+</script>
+</body>
+</html>

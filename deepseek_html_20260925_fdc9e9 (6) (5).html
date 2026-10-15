@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dessin Animé IA — De l'idée à l'écran</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    :root {
+        --bg: #0f0f13; --panel: #1a1a22; --panel-2: #22222e; --border: #2e2e3e;
+        --ink: #e8e8f0; --ink-dim: #8888a0; --ink-faint: #55556a;
+        --success: #2d8a4e; --error: #c0392b; --warn: #d4a017; --info: #4a6cf7;
+        --accent: #e94560; --radius: 12px;
+    }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background: var(--bg); color: var(--ink); min-height: 100vh;
+        padding: 1.5rem 1rem 8rem; font-size: 15px; line-height: 1.5;
+        max-width: 1000px; margin: 0 auto;
+    }
+    header { margin-bottom: 1.5rem; text-align: center; }
+    h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 0.3rem;
+         background: linear-gradient(135deg, #e94560, #4a6cf7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { font-size: 0.85rem; color: var(--ink-dim); }
+
+    .toast {
+        position: fixed; top: 1.5rem; left: 50%;
+        transform: translateX(-50%) translateY(-100px);
+        background: var(--panel); color: var(--ink);
+        padding: 0.85rem 1.4rem; border-radius: 10px;
+        font-size: 0.85rem; font-weight: 500;
+        box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+        border: 1px solid var(--border);
+        z-index: 1000; opacity: 0;
+        transition: transform 0.35s ease, opacity 0.35s ease;
+        max-width: 90vw; text-align: center;
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+    .toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.success { border-color: var(--success); }
+    .toast.error { border-color: var(--error); }
+    .toast.warn { border-color: var(--warn); }
+
+    .section {
+        background: var(--panel); border: 1px solid var(--border);
+        border-radius: var(--radius); margin-bottom: 1rem;
+        overflow: hidden;
+    }
+    .section-header {
+        padding: 1rem 1.2rem; cursor: pointer; user-select: none;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .section-header:active { background: var(--panel-2); }
+    .section-title {
+        font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em;
+        color: var(--ink-dim); font-weight: 700;
+    }
+    .section-title .badge {
+        display: inline-block; margin-left: 0.5rem; padding: 0.15rem 0.5rem;
+        background: var(--accent); color: #fff; border-radius: 10px;
+        font-size: 0.65rem; letter-spacing: 0;
+    }
+    .section-title .badge.soft { background: var(--info); }
+    .section-title .badge.count { background: var(--success); }
+    .section-title .badge.measure { background: var(--warn); }
+    .section-header .chevron {
+        font-size: 0.7rem; color: var(--ink-faint); transition: transform 0.2s;
+    }
+    .section.open .section-header .chevron { transform: rotate(180deg); }
+    .section-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+    .section.open .section-body { max-height: 10000px; }
+    .section-content { padding: 0 1.2rem 1.2rem; }
+
+    .api-panel {
+        background: var(--panel); border: 1px solid var(--border);
+        border-radius: var(--radius); padding: 1rem 1.2rem;
+        margin-bottom: 1rem;
+    }
+    .api-key-input {
+        width: 100%; padding: 0.85rem 1rem;
+        border-radius: 8px; border: 1px solid var(--border);
+        background: var(--bg); color: var(--ink);
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+        font-size: 0.85rem; margin-bottom: 0.6rem;
+    }
+    .api-key-input:focus { outline: none; border-color: var(--accent); }
+    .api-save-btn {
+        width: 100%; padding: 0.8rem 1.2rem;
+        border-radius: 8px; border: none;
+        background: var(--accent); color: #fff;
+        font-size: 0.9rem; font-weight: 700; font-family: inherit;
+        cursor: pointer; transition: opacity 0.2s;
+        margin-bottom: 0.6rem;
+    }
+    .api-save-btn:active { opacity: 0.7; }
+    .api-status-line {
+        font-size: 0.75rem; padding: 0.55rem 0.85rem;
+        border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;
+        background: var(--panel-2); color: var(--ink-dim);
+    }
+    .api-status-line.ok { background: #1a2e1a; color: var(--success); }
+    .status-dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: var(--ink-faint); flex-shrink: 0;
+    }
+    .api-status-line.ok .status-dot { background: var(--success); }
+
+    textarea, input[type="text"] {
+        width: 100%; padding: 0.85rem 1rem; border-radius: 8px;
+        border: 1px solid var(--border); background: var(--bg);
+        color: var(--ink); font-family: inherit; font-size: 0.9rem;
+        resize: vertical;
+    }
+    textarea:focus, input[type="text"]:focus { outline: none; border-color: var(--accent); }
+    textarea { min-height: 100px; line-height: 1.5; }
+
+    .control-row { margin-bottom: 0.9rem; }
+    .control-label {
+        display: block; font-size: 0.72rem; color: var(--ink-dim);
+        margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.06em;
+        font-weight: 700;
+    }
+    select {
+        width: 100%; padding: 0.7rem 0.9rem; border-radius: 8px;
+        border: 1px solid var(--border); background: var(--bg);
+        color: var(--ink); font-family: inherit; font-size: 0.88rem;
+        -webkit-appearance: none; appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%238888a0' d='M0 0l5 6 5-6z'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 0.9rem center;
+        background-size: 10px;
+    }
+    select:focus { outline: none; border-color: var(--accent); }
+
+    .style-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 0.5rem; margin-top: 0.5rem;
+    }
+    .style-card {
+        padding: 0.7rem 0.8rem; border-radius: 8px;
+        border: 1px solid var(--border); background: var(--panel-2);
+        cursor: pointer; transition: all 0.15s; text-align: center;
+    }
+    .style-card:active { transform: scale(0.97); }
+    .style-card.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .style-card .style-emoji { font-size: 1.5rem; display: block; margin-bottom: 0.3rem; }
+    .style-card .style-name { font-size: 0.75rem; font-weight: 600; }
+
+    .btn-primary {
+        width: 100%; padding: 1.1rem; border-radius: var(--radius);
+        border: none; background: linear-gradient(135deg, #e94560, #4a6cf7);
+        color: #fff; font-size: 1rem; font-weight: 700; font-family: inherit;
+        cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+        margin-bottom: 1rem;
+    }
+    .btn-primary:active:not(:disabled) { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .btn-stop {
+        width: 100%; padding: 0.8rem; border-radius: var(--radius);
+        border: 1px solid var(--error); background: transparent;
+        color: var(--error); font-size: 0.85rem; font-weight: 700;
+        font-family: inherit; cursor: pointer; margin-bottom: 1rem;
+        display: none;
+    }
+    .btn-stop.visible { display: block; }
+
+    .limits-panel {
+        background: var(--panel); border: 1px solid var(--border);
+        border-radius: var(--radius); padding: 1rem 1.2rem;
+        margin-bottom: 1rem;
+    }
+    .limits-panel h3 {
+        font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em;
+        color: var(--ink-dim); margin-bottom: 0.7rem; font-weight: 700;
+    }
+    .limit-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 0.4rem 0; font-size: 0.78rem;
+        border-bottom: 1px solid var(--border);
+    }
+    .limit-row:last-child { border-bottom: none; }
+    .limit-label { color: var(--ink-dim); }
+    .limit-value { font-family: ui-monospace, monospace; color: var(--ink); font-weight: 600; }
+    .limit-bar {
+        width: 80px; height: 6px; background: var(--panel-2);
+        border-radius: 3px; overflow: hidden; margin-left: 0.5rem;
+    }
+    .limit-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+    .limit-bar-fill.ok { background: var(--success); }
+    .limit-bar-fill.warn { background: var(--warn); }
+    .limit-bar-fill.danger { background: var(--error); }
+
+    .console-panel {
+        background: #0a0a0e; border: 1px solid var(--border);
+        border-radius: var(--radius); padding: 0.8rem 1rem;
+        margin-bottom: 1rem; max-height: 300px; overflow-y: auto;
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+        font-size: 0.72rem; line-height: 1.6;
+    }
+    .console-panel .log-line { padding: 0.15rem 0; }
+    .console-panel .log-time { color: var(--ink-faint); margin-right: 0.5rem; }
+    .console-panel .log-info { color: var(--info); }
+    .console-panel .log-success { color: var(--success); }
+    .console-panel .log-error { color: var(--error); }
+    .console-panel .log-warn { color: var(--warn); }
+    .console-panel .log-text { color: var(--ink); }
+    .console-panel .log-heartbeat { color: #8a8aff; }
+    .console-panel .log-measure { color: #ffb84d; font-weight: 700; }
+
+    .scenario-display {
+        background: var(--panel-2); border-radius: 8px;
+        padding: 1rem; margin-bottom: 1rem;
+    }
+    .scenario-display h3 { font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--accent); }
+    .scenario-display .scene-item {
+        padding: 0.6rem 0.8rem; border-left: 3px solid var(--info);
+        margin-bottom: 0.4rem; background: var(--panel);
+        border-radius: 0 6px 6px 0; font-size: 0.8rem;
+    }
+    .scenario-display .scene-item .scene-num {
+        font-weight: 700; color: var(--info); margin-right: 0.3rem;
+    }
+
+    .generated-images {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 0.5rem; margin-bottom: 1rem;
+    }
+    .gen-image-card {
+        border-radius: 8px; overflow: hidden;
+        border: 1px solid var(--border); background: var(--panel-2);
+        animation: fadeIn 0.4s ease;
+    }
+    .gen-image-card img { width: 100%; aspect-ratio: 9/16; object-fit: cover; display: block; }
+    .gen-image-card .gen-label {
+        padding: 0.3rem 0.5rem; font-size: 0.65rem;
+        color: var(--ink-dim); text-align: center;
+    }
+
+    .generated-videos {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 0.8rem; margin-bottom: 1rem;
+    }
+    .gen-video-card {
+        border-radius: 8px; overflow: hidden;
+        border: 1px solid var(--border); background: var(--panel-2);
+        animation: fadeIn 0.5s ease;
+    }
+    .gen-video-card.newly-added {
+        border-color: var(--success);
+        box-shadow: 0 0 16px rgba(45,138,78,0.5);
+        animation: successPulse 1.5s ease;
+    }
+    .gen-video-card video {
+        width: 100%; aspect-ratio: 9/16; object-fit: cover;
+        display: block; background: #000;
+    }
+    .gen-video-card .gen-label {
+        padding: 0.4rem 0.5rem; font-size: 0.68rem;
+        color: var(--ink); text-align: center;
+        background: var(--panel);
+        border-top: 1px solid var(--border);
+        font-weight: 600;
+    }
+    .gen-video-card .gen-dialogue {
+        padding: 0.4rem 0.6rem; font-size: 0.68rem;
+        color: var(--accent); font-style: italic;
+        background: var(--panel);
+        border-top: 1px solid var(--border);
+    }
+    .gen-video-card .gen-timing {
+        padding: 0.35rem 0.5rem; font-size: 0.65rem;
+        color: var(--warn); text-align: center;
+        background: var(--panel);
+        border-top: 1px solid var(--border);
+        font-family: ui-monospace, monospace;
+    }
+
+    .pending-video-card {
+        border-radius: 8px; overflow: hidden;
+        border: 1px solid var(--border); background: var(--panel-2);
+        padding: 1rem 0.8rem;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        min-height: 300px; text-align: center;
+        transition: border-color 0.3s;
+    }
+    .pending-video-card .pending-spinner {
+        width: 40px; height: 40px;
+        border: 3px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+    .pending-video-card .pending-label {
+        font-size: 0.85rem; color: var(--ink); font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    .pending-video-card .pending-progress-text {
+        font-size: 0.72rem; color: var(--ink-dim);
+        font-family: ui-monospace, monospace;
+        margin-bottom: 0.6rem;
+    }
+    .pending-video-card .pending-eta {
+        font-size: 0.7rem; color: var(--warn);
+        font-weight: 600; margin-bottom: 0.8rem;
+    }
+    .pending-video-card .pending-progress-bar {
+        width: 100%; height: 8px;
+        background: var(--bg); border-radius: 4px;
+        overflow: hidden;
+    }
+    .pending-video-card .pending-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #e94560, #4a6cf7);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+        width: 0%;
+    }
+    .pending-video-card.measuring {
+        border-color: var(--info);
+    }
+    .pending-video-card.measuring .pending-spinner {
+        border-top-color: var(--info);
+    }
+
+    .video-player-container {
+        background: #000; border-radius: var(--radius);
+        overflow: hidden; margin-bottom: 1rem;
+    }
+    .video-player-container video {
+        width: 100%; display: block; max-height: 70vh;
+        object-fit: contain; background: #000;
+    }
+    .player-controls {
+        display: flex; gap: 0.5rem; padding: 0.7rem;
+        background: var(--panel); flex-wrap: wrap;
+    }
+    .player-controls button {
+        flex: 1; min-width: 80px; padding: 0.6rem 0.8rem;
+        border-radius: 8px; border: 1px solid var(--border);
+        background: var(--panel-2); color: var(--ink);
+        font-family: inherit; font-size: 0.75rem; font-weight: 700;
+        cursor: pointer;
+    }
+    .player-controls button:active { background: var(--border); }
+    .player-controls button.playing { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .progress-bar {
+        height: 4px; background: var(--panel-2); border-radius: 2px;
+        overflow: hidden; margin-top: 0.5rem;
+    }
+    .progress-bar-fill {
+        height: 100%; background: linear-gradient(90deg, #e94560, #4a6cf7);
+        border-radius: 2px; transition: width 0.3s;
+    }
+
+    .status-bar {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        background: var(--panel); border-top: 1px solid var(--border);
+        color: var(--ink); padding: 0.8rem 1.2rem;
+        font-size: 0.78rem; display: flex; align-items: center; gap: 0.6rem;
+        transform: translateY(100%); transition: transform 0.3s;
+        z-index: 100;
+    }
+    .status-bar.visible { transform: translateY(0); }
+    .spinner {
+        width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2);
+        border-top-color: var(--accent); border-radius: 50%;
+        animation: spin 0.8s linear infinite; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes successPulse {
+        0% { box-shadow: 0 0 0 rgba(45,138,78,0); }
+        50% { box-shadow: 0 0 24px rgba(45,138,78,0.7); }
+        100% { box-shadow: 0 0 16px rgba(45,138,78,0.5); }
+    }
+    .hidden { display: none !important; }
+
+    #noSleepCanvas { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0.01; pointer-events: none; z-index: -1; }
+    #noSleepVideo { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0.01; pointer-events: none; z-index: -1; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Dessin Animé IA</h1>
+    <p class="subtitle">Décrivez une idée. L'IA crée le dessin animé entier.</p>
+</header>
+
+<div class="api-panel" id="api-panel">
+    <input type="password" class="api-key-input" id="api-key-input"
+           placeholder="Collez votre clé API ici (sk-...)" autocomplete="off" spellcheck="false">
+    <button type="button" class="api-save-btn" id="api-save-btn">Enregistrer la clé</button>
+    <div class="api-status-line" id="api-status-line">
+        <span class="status-dot"></span>
+        <span id="api-status-text">Aucune clé API enregistrée</span>
+    </div>
+</div>
+
+<div class="limits-panel" id="limits-panel">
+    <h3>📊 Limites API & Vitesse mesurée</h3>
+    <div class="limit-row">
+        <span class="limit-label">Requêtes texte</span>
+        <span class="limit-value"><span id="limit-text-count">0</span>
+            <span class="limit-bar"><span class="limit-bar-fill ok" id="limit-text-bar" style="width:0%"></span></span>
+        </span>
+    </div>
+    <div class="limit-row">
+        <span class="limit-label">Images générées</span>
+        <span class="limit-value"><span id="limit-image-count">0</span>
+            <span class="limit-bar"><span class="limit-bar-fill ok" id="limit-image-bar" style="width:0%"></span></span>
+        </span>
+    </div>
+    <div class="limit-row">
+        <span class="limit-label">Vidéo (secondes)</span>
+        <span class="limit-value"><span id="limit-video-count">0</span>s
+            <span class="limit-bar"><span class="limit-bar-fill ok" id="limit-video-bar" style="width:0%"></span></span>
+        </span>
+    </div>
+    <div class="limit-row">
+        <span class="limit-label">Vidéo RPM (gratuit : 1/min)</span>
+        <span class="limit-value"><span id="limit-video-rpm">0</span>/1</span>
+    </div>
+    <div class="limit-row">
+        <span class="limit-label">⚡ Vitesse Agnes mesurée</span>
+        <span class="limit-value"><span id="limit-measured-speed">en attente</span></span>
+    </div>
+</div>
+
+<div class="section open" id="section-idea">
+    <div class="section-header" data-toggle="section-idea">
+        <span class="section-title">💡 Votre idée de dessin animé <span class="badge">obligatoire</span></span>
+        <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="section-content">
+            <textarea id="idea-input" placeholder="Décrivez l'histoire que vous voulez générer..."></textarea>
+        </div>
+    </div>
+</div>
+
+<div class="section open" id="section-style">
+    <div class="section-header" data-toggle="section-style">
+        <span class="section-title">🎨 Style visuel <span class="badge soft">choisissez-en un</span></span>
+        <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="section-content">
+            <div class="style-grid" id="style-grid"></div>
+        </div>
+    </div>
+</div>
+
+<div class="section open" id="section-tone">
+    <div class="section-header" data-toggle="section-tone">
+        <span class="section-title">🎭 Ton & Public</span>
+        <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="section-content">
+            <div class="control-row">
+                <label class="control-label">Ton du dessin animé</label>
+                <select id="tone-select">
+                    <option value="humoristique">😄 Humoristique</option>
+                    <option value="dramatique">🎭 Dramatique</option>
+                    <option value="poetique">🌙 Poétique</option>
+                    <option value="aventure">⚔️ Aventure épique</option>
+                    <option value="contemplatif">🧘 Contemplatif</option>
+                    <option value="mystérieux">🔮 Mystérieux</option>
+                    <option value="action">💥 Action</option>
+                    <option value="romantique">💕 Romantique</option>
+                </select>
+            </div>
+            <div class="control-row">
+                <label class="control-label">Public cible</label>
+                <select id="audience-select">
+                    <option value="enfants">👶 Enfants (3-8 ans)</option>
+                    <option value="famille" selected>👨‍👩‍👧‍👦 Famille (tout public)</option>
+                    <option value="ados">🧑 Ados (12-18 ans)</option>
+                    <option value="adultes">🍷 Adultes</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section" id="section-tech">
+    <div class="section-header" data-toggle="section-tech">
+        <span class="section-title">📷 Paramètres techniques</span>
+        <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="section-content">
+            <div class="control-row">
+                <label class="control-label">Nombre de scènes</label>
+                <select id="scene-count-select">
+                    <option value="3">3 scènes (court)</option>
+                    <option value="5" selected>5 scènes (recommandé)</option>
+                    <option value="8">8 scènes (long)</option>
+                </select>
+            </div>
+            <div class="control-row">
+                <label class="control-label">Durée par clip</label>
+                <select id="clip-duration-select">
+                    <option value="121">5 secondes (121 frames)</option>
+                    <option value="241" selected>10 secondes (241 frames)</option>
+                    <option value="361">15 secondes (361 frames)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button type="button" class="btn-primary" id="generate-btn" disabled>
+    🎬 Générer le dessin animé
+</button>
+
+<button type="button" class="btn-stop" id="stop-btn">
+    ⏹ Arrêter la génération
+</button>
+
+<div class="console-panel" id="console-panel">
+    <div class="log-line"><span class="log-time">--:--:--</span><span class="log-info">[Système]</span> <span class="log-text">En attente de votre idée...</span></div>
+</div>
+
+<div class="section hidden" id="section-scenario">
+    <div class="section-header" data-toggle="section-scenario">
+        <span class="section-title">📜 Scénario généré</span>
+        <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="section-content">
+            <div class="scenario-display" id="scenario-display"></div>
+        </div>
+    </div>
+</div>
+
+<div class="section hidden" id="section-images">
+    <div class="section-header" data-toggle="section-images">
+        <span class="section-title">🖼️ Images générées <span class="badge count" id="images-badge">0</span></span>
+        <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="section-content">
+            <div class="generated-images" id="generated-images"></div>
+        </div>
+    </div>
+</div>
+
+<div class="section hidden open" id="section-videos">
+    <div class="section-header" data-toggle="section-videos">
+        <span class="section-title">🎞️ Clips vidéo générés <span class="badge count" id="videos-badge">0</span> <span class="badge measure hidden" id="videos-measure-badge">⚡</span></span>
+        <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="section-content">
+            <div class="generated-videos" id="generated-videos"></div>
+        </div>
+    </div>
+</div>
+
+<div class="section hidden" id="section-player">
+    <div class="section-header" data-toggle="section-player">
+        <span class="section-title">🎬 Lecture séquentielle (plan-séquence)</span>
+        <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="section-content">
+            <div class="video-player-container">
+                <video id="player-video" controls playsinline></video>
+            </div>
+            <div class="player-controls">
+                <button type="button" id="play-all-btn">▶ Lire tout</button>
+                <button type="button" id="stop-all-btn">⏹ Arrêter</button>
+            </div>
+            <div class="progress-bar"><div class="progress-bar-fill" id="player-progress" style="width:0%"></div></div>
+            <div style="font-size:0.75rem;color:var(--ink-dim);margin-top:0.5rem;text-align:center;" id="player-info">
+                Scène 1 / 5
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="status-bar" id="status-bar">
+    <div class="spinner"></div>
+    <span id="status-text">Préparation…</span>
+</div>
+
+<div class="toast" id="toast">
+    <span class="toast-icon" id="toast-icon">✓</span>
+    <span id="toast-text">Message</span>
+</div>
+
+<canvas id="noSleepCanvas" width="2" height="2"></canvas>
+<video id="noSleepVideo" playsinline muted loop></video>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// CONFIGURATION
+// ══════════════════════════════════════════════════════════════════
+const API_BASE = 'https://apihub.agnes-ai.com/v1';
+const POLL_BASE = 'https://apihub.agnes-ai.com/agnesapi';
+const MODEL_TEXT = 'agnes-2.5-flash';
+const MODEL_IMAGE = 'agnes-image-2.5-flash';
+const MODEL_VIDEO = 'agnes-video-v2.0';
+
+// ⚡ Création parallèle : 1 tâche toutes les 62 secondes
+const CREATE_INTERVAL_MS = 62000;
+
+// ⏱️ Système d'estimation adaptatif
+const INITIAL_WAIT_SECONDS = 105;    // 1 min 45 pour le premier clip
+const POLL_INTERVAL_SECONDS = 5;      // Polling toutes les 5 secondes
+const SAFETY_MARGIN = 1.10;          // +10% de marge de sécurité
+
+const LIMITS = {
+    textRpm: 30,
+    imagesPerDay: 4000,
+    videoSecondsPerDay: 500,
+    videoRpm: 1
+};
+
+let counters = {
+    textRequests: 0,
+    imagesGenerated: 0,
+    videoSeconds: 0,
+    videoRequestsThisMinute: 0,
+    lastVideoRequestTime: 0,
+    lastResetTime: Date.now()
+};
+
+// ══════════════════════════════════════════════════════════════════
+// MESURE DE VITESSE — état persistant
+// ══════════════════════════════════════════════════════════════════
+let measuredSpeed = {
+    value: null,        // en secondes (durée réelle mesurée du 1er clip)
+    usedForEstimate: null, // valeur × 1.10 utilisée comme estimation
+    sampleCount: 0
+};
+
+function loadMeasuredSpeed() {
+    try {
+        const raw = localStorage.getItem('agnes_measured_speed');
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            measuredSpeed = parsed;
+            logConsole('Vitesse Agnes chargée depuis le cache : ' + Math.round(measuredSpeed.value) + 's', 'info');
+        }
+    } catch (e) {}
+}
+
+function saveMeasuredSpeed() {
+    try {
+        localStorage.setItem('agnes_measured_speed', JSON.stringify(measuredSpeed));
+    } catch (e) {}
+}
+
+function updateMeasuredSpeedDisplay() {
+    const el = document.getElementById('limit-measured-speed');
+    if (!el) return;
+    if (measuredSpeed.value === null) {
+        el.textContent = 'en attente';
+    } else {
+        el.textContent = Math.round(measuredSpeed.value) + 's réel / ' + Math.round(measuredSpeed.usedForEstimate) + 's estimé';
+    }
+}
+
+function getEstimatedWaitSeconds() {
+    // Si on a mesuré une vitesse, on l'utilise
+    if (measuredSpeed.usedForEstimate !== null) {
+        return measuredSpeed.usedForEstimate;
+    }
+    // Sinon on utilise la valeur par défaut
+    return INITIAL_WAIT_SECONDS;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// STYLES
+// ══════════════════════════════════════════════════════════════════
+const STYLES = [
+    { id: 'simpson', name: 'Les Simpson', emoji: '🍩', prompt: 'The Simpsons cartoon style, yellow-skinned characters, thick black outlines, flat saturated colors' },
+    { id: 'south-park', name: 'South Park', emoji: '🏔️', prompt: 'South Park animation style, simple geometric character shapes, flat colors, thick outlines' },
+    { id: 'kubrick', name: 'Kubrick 2001', emoji: '🚀', prompt: 'Stanley Kubrick 2001 A Space Odyssey style, symmetrical composition, cold minimal lighting' },
+    { id: 'wes-anderson', name: 'Wes Anderson', emoji: '🏨', prompt: 'Wes Anderson style, symmetrical framing, pastel color palette, centered composition' },
+    { id: 'chaplin', name: 'Charlie Chaplin', emoji: '🎩', prompt: 'Charlie Chaplin silent film style, black and white, 1920s aesthetic, soft vignette' },
+    { id: 'ghibli', name: 'Studio Ghibli', emoji: '🌿', prompt: 'Studio Ghibli anime style, Hayao Miyazaki aesthetic, hand-painted watercolor backgrounds' },
+    { id: 'manga-nb', name: 'Manga N&B', emoji: '🖤', prompt: 'Black and white Japanese manga style, stark ink outlines, dramatic screentones' },
+    { id: 'pixar', name: 'Pixar 3D', emoji: '✨', prompt: 'High-quality 3D computer animation, Pixar-style rendering, cinematic lighting' },
+    { id: 'cyberpunk', name: 'Cyberpunk', emoji: '🌃', prompt: 'Cyberpunk futuristic aesthetic, neon pink and cyan lighting, Blade Runner atmosphere' },
+    { id: 'watercolor', name: 'Aquarelle', emoji: '🎨', prompt: 'Dreamy watercolor painting aesthetic, soft bleeding edges, paper texture' },
+    { id: 'oil', name: 'Huile classique', emoji: '🖼️', prompt: 'Classical oil painting style, visible impasto brushstrokes, old master technique' },
+    { id: 'claymation', name: 'Claymation', emoji: '🧱', prompt: 'Claymation stop-motion animation, plasticine texture, fingerprint details' }
+];
+
+// ══════════════════════════════════════════════════════════════════
+// ÉTAT
+// ══════════════════════════════════════════════════════════════════
+const state = {
+    isRunning: false,
+    stopRequested: false,
+    idea: '',
+    selectedStyle: null,
+    tone: 'humoristique',
+    audience: 'famille',
+    sceneCount: 5,
+    numFrames: 241,
+    scenario: null,
+    images: [],
+    videos: [],
+    currentSceneIndex: 0,
+    isPlayingSequence: false,
+    lastTextRequestTime: 0,
+    femaleCharacters: []
+};
+
+// ══════════════════════════════════════════════════════════════════
+// ANTI-VEILLE
+// ══════════════════════════════════════════════════════════════════
+let wakeLockSentinel = null;
+let canvasStream = null;
+
+async function activateWakeLock() {
+    if ('wakeLock' in navigator) {
+        try { wakeLockSentinel = await navigator.wakeLock.request('screen'); } catch (e) {}
+    }
+    if (!wakeLockSentinel) {
+        try {
+            const canvas = document.getElementById('noSleepCanvas');
+            const video = document.getElementById('noSleepVideo');
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 2, 2);
+            canvasStream = canvas.captureStream(1);
+            video.srcObject = canvasStream;
+            video.play().catch(() => {});
+        } catch (e) {}
+    }
+}
+
+async function deactivateWakeLock() {
+    if (wakeLockSentinel) { try { await wakeLockSentinel.release(); } catch (e) {} wakeLockSentinel = null; }
+    if (canvasStream) { try { canvasStream.getTracks().forEach(t => t.stop()); } catch (e) {} canvasStream = null; }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════════
+let toastTimeout = null;
+function showToast(message, type = 'success', duration = 2500) {
+    const toast = document.getElementById('toast');
+    const icon = document.getElementById('toast-icon');
+    const text = document.getElementById('toast-text');
+    toast.classList.remove('visible', 'success', 'error', 'warn');
+    void toast.offsetWidth;
+    const icons = { success: '✓', error: '✕', warn: '⚠' };
+    icon.textContent = icons[type] || '✓';
+    text.textContent = message;
+    toast.classList.add(type);
+    requestAnimationFrame(() => toast.classList.add('visible'));
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => toast.classList.remove('visible'), duration);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// LOG
+// ══════════════════════════════════════════════════════════════════
+function logConsole(message, type = 'info') {
+    const panel = document.getElementById('console-panel');
+    const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const typeLabels = { info: '[Info]', success: '[OK]', error: '[Erreur]', warn: '[Attention]', text: '[Texte]', heartbeat: '[En cours]', measure: '[Mesure]' };
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    line.innerHTML = '<span class="log-time">' + time + '</span>' +
+        '<span class="log-' + type + '">' + (typeLabels[type] || '[Info]') + '</span> ' +
+        '<span class="log-text">' + esc(message) + '</span>';
+    panel.appendChild(line);
+    panel.scrollTop = panel.scrollHeight;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// LIMITES
+// ══════════════════════════════════════════════════════════════════
+function updateLimitsPanel() {
+    const now = Date.now();
+    if (now - counters.lastResetTime > 60000) {
+        counters.videoRequestsThisMinute = 0;
+        counters.lastResetTime = now;
+    }
+    document.getElementById('limit-text-count').textContent = counters.textRequests;
+    document.getElementById('limit-text-bar').style.width = Math.min((counters.textRequests / LIMITS.textRpm) * 100, 100) + '%';
+    document.getElementById('limit-image-count').textContent = counters.imagesGenerated;
+    document.getElementById('limit-image-bar').style.width = Math.min((counters.imagesGenerated / LIMITS.imagesPerDay) * 100, 100) + '%';
+    document.getElementById('limit-video-count').textContent = Math.round(counters.videoSeconds);
+    document.getElementById('limit-video-bar').style.width = Math.min((counters.videoSeconds / LIMITS.videoSecondsPerDay) * 100, 100) + '%';
+    document.getElementById('limit-video-rpm').textContent = counters.videoRequestsThisMinute;
+    updateMeasuredSpeedDisplay();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// UTILITAIRES
+// ══════════════════════════════════════════════════════════════════
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+}
+// Lecture tolérante du JSON renvoyé par l'IA : bloc ```json ou texte autour,
+// sauts de ligne bruts dans les chaînes, virgules finales (même approche que les autres outils).
+function extractJson(text) {
+    if (!text) return null;
+    let c = String(text).trim();
+    const fm = c.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fm) c = fm[1].trim();
+    const fb = c.indexOf('{'); const lb = c.lastIndexOf('}');
+    if (fb >= 0 && lb > fb) c = c.slice(fb, lb + 1);
+    try { return JSON.parse(c); } catch (e) {}
+    let out = '', inStr = false, escNext = false;
+    for (let i = 0; i < c.length; i++) {
+        const ch = c[i];
+        if (inStr) {
+            if (escNext) { escNext = false; out += ch; continue; }
+            if (ch === '\\') { escNext = true; out += ch; continue; }
+            if (ch === '"') { inStr = false; out += ch; continue; }
+            if (ch === '\n') { out += '\\n'; continue; }
+            if (ch === '\r') { out += '\\r'; continue; }
+            if (ch === '\t') { out += '\\t'; continue; }
+            out += ch; continue;
+        }
+        if (ch === '"') { inStr = true; out += ch; continue; }
+        if (ch === ',') {
+            let j = i + 1;
+            while (j < c.length && /\s/.test(c[j])) j++;
+            if (c[j] === '}' || c[j] === ']') continue; // virgule finale
+        }
+        out += ch;
+    }
+    try { return JSON.parse(out); } catch (e) { return null; }
+}
+function setStatus(text) {
+    const bar = document.getElementById('status-bar');
+    const txt = document.getElementById('status-text');
+    if (text) { bar.classList.add('visible'); txt.textContent = text; }
+    else bar.classList.remove('visible');
+}
+function formatTime(seconds) {
+    if (seconds < 0) seconds = 0;
+    const m = Math.floor(seconds / 60);
+    const s = Math.round(seconds % 60);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+}
+function playNotificationSound() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 880; osc.type = 'sine';
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+        osc.start(); osc.stop(ctx.currentTime + 0.5);
+        setTimeout(() => {
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.connect(gain2); gain2.connect(ctx.destination);
+            osc2.frequency.value = 1320; osc2.type = 'sine';
+            gain2.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+            osc2.start(); osc2.stop(ctx.currentTime + 0.5);
+        }, 180);
+    } catch (e) {}
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CLÉ API
+// ══════════════════════════════════════════════════════════════════
+function getApiKey() {
+    try { return (localStorage.getItem('agnes_api_key') || '').trim(); }
+    catch (e) { return ''; }
+}
+function saveApiKey() {
+    const input = document.getElementById('api-key-input');
+    const key = input.value.trim();
+    if (!key) {
+        localStorage.removeItem('agnes_api_key');
+        updateApiPanel();
+        showToast('Clé supprimée', 'warn');
+        return;
+    }
+    localStorage.setItem('agnes_api_key', key);
+    updateApiPanel();
+    showToast('Clé API enregistrée ✓', 'success');
+    input.blur();
+}
+function updateApiPanel() {
+    const panel = document.getElementById('api-panel');
+    const input = document.getElementById('api-key-input');
+    const statusLine = document.getElementById('api-status-line');
+    const statusText = document.getElementById('api-status-text');
+    const key = getApiKey();
+    if (key) {
+        panel.classList.add('ok');
+        statusLine.classList.add('ok');
+        statusText.textContent = 'Clé API active · ' + key.slice(0, 8) + '…' + key.slice(-4);
+        input.value = key;
+    } else {
+        panel.classList.remove('ok');
+        statusLine.classList.remove('ok');
+        statusText.textContent = 'Aucune clé API enregistrée';
+        input.value = '';
+    }
+    updateGenerateBtn();
+}
+function updateGenerateBtn() {
+    const btn = document.getElementById('generate-btn');
+    const hasKey = !!getApiKey();
+    const hasIdea = document.getElementById('idea-input').value.trim().length > 10;
+    btn.disabled = !hasKey || !hasIdea || state.isRunning;
+    if (state.isRunning) btn.textContent = 'Génération en cours…';
+    else if (!hasKey) btn.textContent = 'Ajoutez votre clé API';
+    else if (!hasIdea) btn.textContent = 'Décrivez votre idée';
+    else btn.textContent = '🎬 Générer le dessin animé';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FETCH RETRY
+// ══════════════════════════════════════════════════════════════════
+async function fetchWithRetry(url, options = {}, maxRetries = 3, label = 'API') {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        if (state.stopRequested) throw new Error('Arrêt demandé');
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 60000);
+            const res = await fetch(url, { ...options, signal: controller.signal });
+            clearTimeout(timeout);
+            if ((res.status === 500 || res.status === 502 || res.status === 503 || res.status === 520) && attempt < maxRetries) {
+                const wait = Math.pow(2, attempt) * 3000 + Math.random() * 2000;
+                logConsole(label + ' : HTTP ' + res.status + ', retry dans ' + Math.round(wait/1000) + 's…', 'warn');
+                await sleep(wait);
+                continue;
+            }
+            if (res.status === 429 && attempt < maxRetries) {
+                const wait = 65000;
+                logConsole(label + ' : 429, attente de ' + (wait/1000) + 's…', 'warn');
+                await sleep(wait);
+                continue;
+            }
+            return res;
+        } catch (e) {
+            if (e.message === 'Arrêt demandé') throw e;
+            if (attempt < maxRetries) {
+                const wait = Math.pow(2, attempt) * 2000 + Math.random() * 1000;
+                logConsole(label + ' : ' + (e.name === 'AbortError' ? 'timeout' : 'réseau') + ', retry…', 'warn');
+                await sleep(wait);
+            } else {
+                throw new Error(label + ' : échec — ' + e.message);
+            }
+        }
+    }
+    throw new Error(label + ' : échec');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// APPELS API TEXTE + IMAGE
+// ══════════════════════════════════════════════════════════════════
+async function callTextAPI(messages, options = {}) {
+    const now = Date.now();
+    if (now - state.lastTextRequestTime < 2000) await sleep(2000 - (now - state.lastTextRequestTime));
+    state.lastTextRequestTime = Date.now();
+    counters.textRequests++;
+    updateLimitsPanel();
+    const body = {
+        model: MODEL_TEXT,
+        messages: messages,
+        temperature: options.temperature ?? 0.8,
+        max_tokens: options.maxTokens ?? 4096
+    };
+    logConsole('Requête texte → ' + MODEL_TEXT, 'info');
+    const res = await fetchWithRetry(API_BASE + '/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + getApiKey(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    }, 3, 'Texte');
+    if (!res.ok) throw new Error('Text API HTTP ' + res.status);
+    const data = await res.json();
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) throw new Error('Pas de contenu texte');
+    return content;
+}
+
+async function callImageAPI(prompt, size = '768x1024') {
+    counters.imagesGenerated++;
+    updateLimitsPanel();
+    logConsole('Requête image → ' + MODEL_IMAGE, 'info');
+    const body = {
+        model: MODEL_IMAGE,
+        prompt: prompt,
+        size: size,
+        extra_body: { response_format: 'url' }
+    };
+    const res = await fetchWithRetry(API_BASE + '/images/generations', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + getApiKey(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    }, 3, 'Image');
+    if (!res.ok) throw new Error('Image API HTTP ' + res.status);
+    const data = await res.json();
+    const b64 = data.data?.[0]?.b64_json;
+    const url = data.data?.[0]?.url || (b64 ? 'data:image/png;base64,' + b64 : null);
+    if (!url) throw new Error('Pas d\'URL d\'image');
+    return url;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CRÉATION DE TÂCHE VIDÉO
+// ══════════════════════════════════════════════════════════════════
+async function createVideoTaskOnly(item) {
+    const now = Date.now();
+    if (counters.videoRequestsThisMinute >= LIMITS.videoRpm) {
+        const waitTime = Math.ceil((60000 - (now - counters.lastResetTime)) / 1000);
+        if (waitTime > 0) {
+            logConsole('Limite RPM vidéo. Attente de ' + waitTime + 's…', 'warn');
+            await sleep(waitTime * 1000);
+            counters.videoRequestsThisMinute = 0;
+            counters.lastResetTime = Date.now();
+        }
+    }
+    counters.videoRequestsThisMinute++;
+    counters.lastVideoRequestTime = Date.now();
+    counters.videoSeconds += state.numFrames / 24;
+    updateLimitsPanel();
+
+    const body = {
+        model: MODEL_VIDEO,
+        prompt: item.prompt,
+        extra_body: {
+            image: [item.startImage.url, item.endImage.url],
+            mode: 'keyframes'
+        },
+        num_frames: state.numFrames,
+        frame_rate: 24,
+        height: 1024,
+        width: 576
+    };
+
+    logConsole('Requête vidéo → ' + MODEL_VIDEO + ' (keyframes, ' + state.numFrames + ' frames)', 'info');
+
+    const res = await fetchWithRetry(API_BASE + '/videos', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + getApiKey(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    }, 3, 'Vidéo');
+
+    if (!res.ok) {
+        const err = await res.text();
+        throw new Error('Video API HTTP ' + res.status + ' — ' + err.slice(0, 250));
+    }
+
+    const data = await res.json();
+    const videoId = data.video_id;
+    if (!videoId) throw new Error('Pas de video_id retourné');
+
+    item.videoId = videoId;
+    item.startTime = Date.now();
+    logConsole('✓ Clip ' + (item.index + 1) + ' — video_id = ' + String(videoId).slice(0, 25) + '…', 'success');
+    return videoId;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// POLLING VIDÉO — AVEC ESTIMATION ADAPTATIVE
+// ══════════════════════════════════════════════════════════════════
+async function pollVideoForItem(item) {
+    const startTime = Date.now();
+
+    // ─── PHASE 1 : attendre l'estimation AVANT de poller ───
+    // Pour le premier clip : 105s (1min45)
+    // Pour les clips suivants : vitesse mesurée × 1.10
+    const waitBeforeFirstPoll = getEstimatedWaitSeconds();
+    const isFirstClip = (item.index === 0 && measuredSpeed.value === null);
+
+    logConsole('Clip ' + (item.index + 1) + ' — attente initiale de ' + Math.round(waitBeforeFirstPoll) + 's avant premier check ' +
+        (isFirstClip ? '(estimation par défaut)' : '(basée sur vitesse mesurée)'), 'info');
+
+    // Marquer la carte comme "en mesure"
+    const card = document.getElementById('pending-video-' + item.index);
+    if (card) card.classList.add('measuring');
+
+    // Attente initiale avec affichage du décompte
+    for (let r = Math.round(waitBeforeFirstPoll); r > 0; r--) {
+        if (state.stopRequested) throw new Error('Arrêt demandé');
+        const elapsed = Math.round((Date.now() - startTime) / 1000);
+        const progress = Math.min(Math.round((elapsed / waitBeforeFirstPoll) * 100), 95);
+        updatePendingVideoCard(item.index, 'Préparation…', progress, elapsed);
+        setStatus('Clip ' + (item.index + 1) + ' — attente initiale : ' + r + 's');
+        await sleep(1000);
+    }
+
+    // ─── PHASE 2 : polling toutes les 5 secondes ───
+    logConsole('Clip ' + (item.index + 1) + ' — début du polling (toutes les 5s)', 'info');
+
+    let consecutiveErrors = 0;
+    let lastHeartbeat = Date.now();
+    let pollCount = 0;
+    let seenNotReady = false; // l'API a répondu « pas encore prêt » au moins une fois
+
+    for (let attempt = 0; attempt < 400; attempt++) {
+        if (state.stopRequested) throw new Error('Arrêt demandé');
+
+        pollCount++;
+        const url = POLL_BASE + '?video_id=' + encodeURIComponent(item.videoId) +
+                    '&model_name=' + encodeURIComponent(MODEL_VIDEO);
+
+        try {
+            const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + getApiKey() } });
+
+            if (res.status === 429) {
+                logConsole('Polling : 429, pause de 20s…', 'warn');
+                await sleep(20000);
+                continue;
+            }
+            if (res.status === 404) {
+                await sleep(POLL_INTERVAL_SECONDS * 1000);
+                continue;
+            }
+            if (!res.ok) {
+                consecutiveErrors++;
+                if (consecutiveErrors >= 15) {
+                    logConsole('Polling : trop d\'erreurs, pause de 30s…', 'warn');
+                    await sleep(30000);
+                    consecutiveErrors = 0;
+                }
+                await sleep(POLL_INTERVAL_SECONDS * 1000);
+                continue;
+            }
+
+            consecutiveErrors = 0;
+            const d = await res.json();
+            const status = d.status || 'unknown';
+            const apiProgress = d.progress || 0;
+            const elapsed = Math.round((Date.now() - startTime) / 1000);
+
+            // Affichage : on prend le max entre la progression API et la progression temporelle
+            const timeBasedProgress = Math.min(Math.round((elapsed / waitBeforeFirstPoll) * 100), 95);
+            const displayProgress = Math.max(apiProgress, timeBasedProgress);
+
+            updatePendingVideoCard(item.index, 'Génération…', displayProgress, elapsed);
+
+            // Heartbeat toutes les 20s
+            if (Date.now() - lastHeartbeat > 20000) {
+                lastHeartbeat = Date.now();
+                logConsole('Clip ' + (item.index + 1) + ' — API ' + apiProgress + '% — ' + elapsed + 's — poll #' + pollCount, 'heartbeat');
+            }
+
+            if (status === 'completed' || status === 'succeeded' || status === 'done') {
+                const videoUrl = (d.metadata && d.metadata.url) || d.url || (d.output && d.output.url);
+                if (!videoUrl) throw new Error('Terminé mais pas d\'URL');
+
+                const actualDuration = Math.round((Date.now() - startTime) / 1000);
+
+                // ⚡ MESURE DE VITESSE : enregistrer le temps réel
+                measuredSpeed.value = actualDuration;
+                if (seenNotReady) {
+                    measuredSpeed.usedForEstimate = Math.round(actualDuration * SAFETY_MARGIN);
+                } else {
+                    // Prêt dès le 1er contrôle : durée réelle inconnue (≤ attente). Stocker attente × 1.10
+                    // faisait grimper l'attente de 10 % à chaque clip, sans limite (et gardée en cache).
+                    measuredSpeed.usedForEstimate = Math.max(INITIAL_WAIT_SECONDS,
+                        Math.round((measuredSpeed.usedForEstimate ?? INITIAL_WAIT_SECONDS) / SAFETY_MARGIN));
+                }
+                measuredSpeed.sampleCount++;
+                saveMeasuredSpeed();
+                updateMeasuredSpeedDisplay();
+
+                logConsole('══════════════════════════════', 'measure');
+                logConsole('⚡ MESURE — Clip ' + (item.index + 1) + ' généré en ' + actualDuration + 's (' + formatTime(actualDuration) + ')', 'measure');
+                logConsole('⚡ Estimation pour clips suivants : ' + measuredSpeed.usedForEstimate + 's ' + (seenNotReady ? '(+10%)' : '(clip prêt dès le 1er contrôle)'), 'measure');
+                logConsole('══════════════════════════════', 'measure');
+
+                item.actualDuration = actualDuration;
+                return { item, videoUrl, actualDuration };
+            }
+            if (status === 'failed' || status === 'error' || status === 'cancelled') {
+                throw new Error('Échec (' + status + ')');
+            }
+            seenNotReady = true;
+        } catch (e) {
+            if (e.message === 'Arrêt demandé') throw e;
+            if (e.message.startsWith('Échec') || e.message === 'Terminé mais pas d\'URL') throw e;
+            consecutiveErrors++;
+            if (consecutiveErrors >= 15) {
+                logConsole('Polling : erreurs consécutives, pause de 20s…', 'warn');
+                await sleep(20000);
+                consecutiveErrors = 0;
+            }
+        }
+
+        // Polling toutes les 5 secondes
+        await sleep(POLL_INTERVAL_SECONDS * 1000);
+    }
+    throw new Error('Délai maximal dépassé');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PIPELINE
+// ══════════════════════════════════════════════════════════════════
+async function runFullPipeline() {
+    if (state.isRunning) return;
+    const idea = document.getElementById('idea-input').value.trim();
+    if (idea.length < 10) { showToast('Idée trop courte', 'error'); return; }
+    if (!getApiKey()) { showToast('Ajoutez votre clé API', 'error'); return; }
+
+    state.isRunning = true;
+    state.stopRequested = false;
+    state.idea = idea;
+    state.sceneCount = parseInt(document.getElementById('scene-count-select').value);
+    state.numFrames = parseInt(document.getElementById('clip-duration-select').value);
+    state.tone = document.getElementById('tone-select').value;
+    state.audience = document.getElementById('audience-select').value;
+    state.images = [];
+    state.videos = [];
+
+    document.getElementById('stop-btn').classList.add('visible');
+    document.getElementById('generate-btn').disabled = true;
+    document.getElementById('console-panel').innerHTML = '';
+    document.getElementById('generated-images').innerHTML = '';
+    document.getElementById('generated-videos').innerHTML = '';
+    document.getElementById('images-badge').textContent = '0';
+    document.getElementById('videos-badge').textContent = '0';
+    document.getElementById('videos-measure-badge').classList.add('hidden');
+    document.getElementById('section-scenario').classList.add('hidden');
+    document.getElementById('section-images').classList.add('hidden');
+    document.getElementById('section-videos').classList.add('hidden');
+    document.getElementById('section-player').classList.add('hidden');
+
+    logConsole('Démarrage — « ' + idea.slice(0, 60) + '… »', 'info');
+    logConsole('Style : ' + (state.selectedStyle?.name || 'aucun') + ' · Ton : ' + state.tone, 'info');
+    logConsole('Mode : créations parallèles + polling adaptatif', 'success');
+
+    if (measuredSpeed.value !== null) {
+        logConsole('⚡ Vitesse mesurée en cache : ' + measuredSpeed.value + 's → estimation : ' + measuredSpeed.usedForEstimate + 's', 'measure');
+    } else {
+        logConsole('⏱️ Première génération — estimation par défaut : ' + INITIAL_WAIT_SECONDS + 's avant le premier check', 'info');
+    }
+
+    await activateWakeLock();
+    setStatus('Initialisation…');
+
+    try {
+        // ═══ ÉTAPE 1 : SCÉNARIO ═══
+        logConsole('══════════════════════════════', 'text');
+        logConsole('ÉTAPE 1/4 — Scénario', 'success');
+        logConsole('══════════════════════════════', 'text');
+        setStatus('L\'IA écrit le scénario…');
+
+        const stylePrompt = state.selectedStyle ? state.selectedStyle.prompt : '';
+        const toneLabel = { humoristique: 'humoristique', dramatique: 'dramatique', poetique: 'poétique', aventure: 'épique', contemplatif: 'contemplatif', mystérieux: 'mystérieux', action: 'plein d\'action', romantique: 'romantique' }[state.tone] || 'neutre';
+        const audienceLabel = { enfants: 'jeunes enfants', famille: 'tout public familial', ados: 'adolescents', adultes: 'adultes' }[state.audience] || 'tout public';
+
+        const scenarioPrompt = `Tu es un scénariste de dessins animés. L'utilisateur veut créer un dessin animé avec cette idée :
+
+"${idea}"
+
+Contraintes :
+- Style visuel : ${stylePrompt || 'libre'}
+- Ton : ${toneLabel}
+- Public : ${audienceLabel}
+- Nombre de scènes : ${state.sceneCount}
+- Durée par scène : ${state.numFrames / 24} secondes
+
+Génère un scénario complet en JSON :
+{
+  "title": "Titre",
+  "logline": "Résumé en une phrase",
+  "characters": [
+    { "name": "Nom", "gender": "homme ou femme", "appearance": "Description physique précise" }
+  ],
+  "scenes": [
+    {
+      "scene_number": 1,
+      "description": "Description visuelle détaillée",
+      "image_prompt": "Prompt en anglais pour générer l'image en style ${state.selectedStyle?.id || 'cartoon'}, portrait 9:16",
+      "dialogue": { "character": "Nom", "text": "Phrase en français (max 15 mots)" },
+      "camera_movement": "Mouvement de caméra"
+    }
+  ]
+}
+
+IMPORTANT : Chaque personnage a un genre précis. Chaque scène a UN SEUL dialogue court. Génère exactement ${state.sceneCount} scènes. Réponds UNIQUEMENT en JSON valide.`;
+
+        const scenarioRaw = await callTextAPI([
+            { role: 'system', content: 'Tu réponds UNIQUEMENT en JSON valide, sans markdown.' },
+            { role: 'user', content: scenarioPrompt }
+        ], { temperature: 0.8, maxTokens: 4096 });
+
+        const scenario = extractJson(scenarioRaw);
+        if (!scenario || !Array.isArray(scenario.scenes) || scenario.scenes.length === 0) throw new Error('JSON invalide');
+        if (!Array.isArray(scenario.characters)) scenario.characters = [];
+
+        state.scenario = scenario;
+        state.femaleCharacters = scenario.characters
+            .filter(c => c.gender === 'femme' || /fifi|luna|chat|miss|mme|madame|bijou/i.test(c.name))
+            .map(c => c.name.toLowerCase());
+
+        logConsole('Scénario : « ' + scenario.title + ' »', 'success');
+        displayScenario(scenario);
+
+        // ═══ ÉTAPE 2 : IMAGES ═══
+        logConsole('══════════════════════════════', 'text');
+        logConsole('ÉTAPE 2/4 — Images', 'success');
+        logConsole('══════════════════════════════', 'text');
+        setStatus('L\'IA dessine les personnages…');
+
+        const characterDescriptions = scenario.characters.map(c => c.name + ' (' + c.gender + ') : ' + c.appearance).join('. ');
+
+        for (let i = 0; i < scenario.scenes.length; i++) {
+            if (state.stopRequested) break;
+            const scene = scenario.scenes[i];
+            logConsole('Image ' + (i + 1) + '/' + scenario.scenes.length, 'info');
+            setStatus('Image ' + (i + 1) + '/' + scenario.scenes.length + '…');
+            const imagePrompt = scene.image_prompt + '. ' + characterDescriptions + '. ' +
+                (state.selectedStyle ? state.selectedStyle.prompt + '. ' : '') +
+                'Portrait orientation 9:16 vertical, no text.';
+            try {
+                const imageUrl = await callImageAPI(imagePrompt, '768x1024');
+                state.images.push({ sceneIndex: i, url: imageUrl, scene: scene });
+                logConsole('Image ' + (i + 1) + ' ✓', 'success');
+                displayGeneratedImage(imageUrl, 'Scène ' + scene.scene_number);
+            } catch (e) {
+                logConsole('Erreur image ' + (i + 1) + ' : ' + e.message, 'error');
+            }
+            await sleep(1500);
+        }
+
+        if (state.images.length < 2) throw new Error('Pas assez d\'images');
+
+        // ═══ ÉTAPE 3 : VIDÉOS PARALLÈLE ═══
+        logConsole('══════════════════════════════', 'text');
+        logConsole('ÉTAPE 3/4 — Clips vidéo (PARALLÈLE + adaptatif)', 'success');
+        logConsole('══════════════════════════════', 'text');
+
+        const firstWait = Math.round(getEstimatedWaitSeconds());
+        logConsole('⚡ Stratégie : attente initiale de ' + firstWait + 's, puis polling toutes les ' + POLL_INTERVAL_SECONDS + 's', 'info');
+        if (measuredSpeed.value === null) {
+            logConsole('⏱️ Clip 1 : attente par défaut de ' + INITIAL_WAIT_SECONDS + 's. La vitesse réelle sera mesurée.', 'warn');
+        } else {
+            logConsole('⏱️ Clips suivants : attente de ' + measuredSpeed.usedForEstimate + 's (vitesse mesurée × 1.10)', 'info');
+        }
+        setStatus('Création des tâches vidéo…');
+
+        const totalClips = state.images.length - 1;
+
+        for (let i = 0; i < totalClips; i++) {
+            createPendingVideoCard(i, totalClips);
+        }
+
+        document.getElementById('section-videos').classList.remove('hidden');
+        document.getElementById('section-videos').classList.add('open');
+        document.getElementById('section-videos').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        const videoTasks = [];
+        const pollingPromises = [];
+
+        // ─── PHASE 1 : création des tâches avec espacement de 62s ───
+        for (let i = 0; i < totalClips; i++) {
+            if (state.stopRequested) break;
+
+            const startImg = state.images[i];
+            const endImg = state.images[i + 1];
+            const scene = state.images[i].scene || {};
+            const cameraMove = scene.camera_movement || 'slow continuous tracking shot';
+            const dialogueText = scene.dialogue ? scene.dialogue.text : '';
+            const dialogueChar = scene.dialogue ? scene.dialogue.character : '';
+
+            const videoPrompt = [
+                'ONE SINGLE UNBROKEN SHOT. NO CUTS.',
+                'Smooth keyframe interpolation between the first and last frame.',
+                'Camera: ' + cameraMove,
+                'Style: ' + (state.selectedStyle?.prompt || 'cartoon animation'),
+                'Portrait 9:16 vertical.',
+                dialogueText ? 'Dialogue: ' + dialogueChar + ' says "' + dialogueText + '"' : '',
+                'No text, no watermarks.'
+            ].filter(Boolean).join('. ');
+
+            const item = {
+                index: i,
+                startImage: startImg,
+                endImage: endImg,
+                scene: scene,
+                prompt: videoPrompt,
+                videoId: null,
+                startTime: null,
+                actualDuration: null
+            };
+
+            updatePendingVideoCard(i, 'Création de la tâche…', 0, 0);
+
+            try {
+                logConsole('──────────────────────────────', 'text');
+                logConsole('Création tâche clip ' + (i + 1) + '/' + totalClips, 'info');
+                await createVideoTaskOnly(item);
+                updatePendingVideoCard(i, 'Tâche créée, en file…', 0, 0);
+                videoTasks.push(item);
+
+                // ⚡ Lancer le polling en arrière-plan
+                pollingPromises.push(
+                    pollVideoForItem(item).then(result => {
+                        const { item: it, videoUrl, actualDuration } = result;
+                        const videoData = {
+                            sceneIndex: it.index,
+                            url: videoUrl,
+                            dialogue: it.scene.dialogue || null,
+                            sceneNumber: it.scene.scene_number || it.index + 1,
+                            actualDuration: actualDuration
+                        };
+                        state.videos[it.index] = videoData;
+                        logConsole('✅ Clip ' + (it.index + 1) + ' prêt en ' + actualDuration + 's !', 'success');
+                        replacePendingWithVideo(it.index, videoUrl, it.scene.dialogue, it.index + 1, actualDuration);
+                        playNotificationSound();
+                        showToast('Clip ' + (it.index + 1) + ' prêt en ' + actualDuration + 's !', 'success', 3000);
+                        return result;
+                    }).catch(e => {
+                        logConsole('Erreur clip ' + (item.index + 1) + ' : ' + e.message, 'error');
+                        markPendingFailed(item.index, e.message, e.message === 'Arrêt demandé' ? 'Arrêté' : '');
+                        return null;
+                    })
+                );
+            } catch (e) {
+                logConsole('Échec création tâche ' + (i + 1) + ' : ' + e.message, 'error');
+                markPendingFailed(i, e.message, e.message === 'Arrêt demandé' ? 'Arrêté' : '');
+            }
+
+            // Espacement de 62s entre deux créations
+            if (i < totalClips - 1 && !state.stopRequested) {
+                for (let r = 62; r > 0; r--) {
+                    if (state.stopRequested) break;
+                    setStatus('Prochaine tâche clip ' + (i + 2) + ' dans ' + r + 's');
+                    await sleep(1000);
+                }
+            }
+        }
+
+        // Arrêt : les clips jamais créés gardaient leur spinner « En attente… »
+        if (state.stopRequested) {
+            for (let i = 0; i < totalClips; i++) {
+                const card = document.getElementById('pending-video-' + i);
+                if (card && card.querySelector('.pending-spinner') && !videoTasks.some(t => t.index === i)) {
+                    markPendingFailed(i, 'Clip non créé', 'Arrêté');
+                }
+            }
+        }
+
+        // ─── PHASE 2 : attendre toutes les pollings ───
+        logConsole('══════════════════════════════', 'text');
+        logConsole('Toutes les tâches créées. Attente des générations parallèles…', 'info');
+        logConsole('══════════════════════════════', 'text');
+        setStatus('Attente des ' + pollingPromises.length + ' clips en parallèle…');
+
+        const results = await Promise.allSettled(pollingPromises);
+        const successCount = results.filter(r => r.status === 'fulfilled' && r.value).length;
+        logConsole(successCount + '/' + totalClips + ' clips générés avec succès', successCount > 0 ? 'success' : 'error');
+
+        // ═══ ÉTAPE 4 : FIN ═══
+        logConsole('══════════════════════════════', 'text');
+        logConsole('ÉTAPE 4/4 — Terminé', 'success');
+        logConsole('══════════════════════════════', 'text');
+
+        const readyVideos = state.videos.filter(v => v && v.url);
+        logConsole('Clips prêts : ' + readyVideos.length + '/' + totalClips, 'text');
+
+        // Calcul de la moyenne des temps mesurés
+        const durations = readyVideos.map(v => v.actualDuration).filter(d => d);
+        if (durations.length > 0) {
+            const avg = Math.round(durations.reduce((a, b) => a + b, 0) / durations.length);
+            logConsole('⚡ Durée moyenne mesurée : ' + avg + 's par clip', 'measure');
+        }
+
+        if (readyVideos.length > 0) {
+            document.getElementById('section-player').classList.remove('hidden');
+            document.getElementById('videos-measure-badge').classList.remove('hidden');
+        }
+
+        setStatus('✦ Dessin animé terminé ✦');
+        await sleep(3000);
+        setStatus(null);
+        showToast(readyVideos.length + ' clip' + (readyVideos.length > 1 ? 's' : '') + ' généré' + (readyVideos.length > 1 ? 's' : ''), 'success');
+
+    } catch (e) {
+        logConsole('ERREUR GLOBALE : ' + e.message, 'error');
+        setStatus('Erreur : ' + e.message.slice(0, 50));
+        await sleep(4000);
+        setStatus(null);
+        showToast('Erreur : ' + e.message.slice(0, 60), 'error');
+    }
+
+    state.isRunning = false;
+    state.stopRequested = false;
+    document.getElementById('stop-btn').classList.remove('visible');
+    updateGenerateBtn();
+    await deactivateWakeLock();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// AFFICHAGE
+// ══════════════════════════════════════════════════════════════════
+function displayScenario(scenario) {
+    const section = document.getElementById('section-scenario');
+    const display = document.getElementById('scenario-display');
+    section.classList.remove('hidden');
+    section.classList.add('open');
+
+    let html = '<h3>🎬 ' + esc(scenario.title) + '</h3>';
+    html += '<p style="font-size:0.8rem;color:var(--ink-dim);margin-bottom:0.8rem;">' + esc(scenario.logline || '') + '</p>';
+    html += '<div style="font-size:0.75rem;color:var(--ink-dim);margin-bottom:0.6rem;">Personnages : ' +
+        scenario.characters.map(c => esc(c.name) + ' (' + esc(c.gender) + ')').join(', ') + '</div>';
+    scenario.scenes.forEach(s => {
+        html += '<div class="scene-item">';
+        html += '<span class="scene-num">Scène ' + s.scene_number + '</span>';
+        html += esc(s.description);
+        if (s.dialogue && s.dialogue.text) {
+            html += '<div style="margin-top:0.3rem;font-style:italic;color:var(--accent);">' +
+                '💬 ' + esc(s.dialogue.character) + ' : « ' + esc(s.dialogue.text) + ' »</div>';
+        }
+        html += '</div>';
+    });
+    display.innerHTML = html;
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function displayGeneratedImage(url, label) {
+    const section = document.getElementById('section-images');
+    const grid = document.getElementById('generated-images');
+    section.classList.remove('hidden');
+    const card = document.createElement('div');
+    card.className = 'gen-image-card';
+    card.innerHTML = '<img src="' + url + '" alt="" loading="lazy">' +
+        '<div class="gen-label">' + esc(label) + '</div>';
+    grid.appendChild(card);
+    document.getElementById('images-badge').textContent = grid.children.length;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// GALERIE VIDÉO
+// ══════════════════════════════════════════════════════════════════
+function createPendingVideoCard(index, total) {
+    const grid = document.getElementById('generated-videos');
+    const card = document.createElement('div');
+    card.className = 'pending-video-card';
+    card.id = 'pending-video-' + index;
+    card.innerHTML =
+        '<div class="pending-spinner"></div>' +
+        '<div class="pending-label">Clip ' + (index + 1) + ' / ' + total + '</div>' +
+        '<div class="pending-progress-text" id="pending-progress-' + index + '">En attente…</div>' +
+        '<div class="pending-eta" id="pending-eta-' + index + '"></div>' +
+        '<div class="pending-progress-bar"><div class="pending-progress-fill" id="pending-fill-' + index + '"></div></div>';
+    grid.appendChild(card);
+}
+
+function updatePendingVideoCard(index, label, progress, elapsed) {
+    const progEl = document.getElementById('pending-progress-' + index);
+    const etaEl = document.getElementById('pending-eta-' + index);
+    const fillEl = document.getElementById('pending-fill-' + index);
+
+    if (progEl) {
+        let text = label;
+        if (progress > 0) text += ' ' + progress + '%';
+        if (elapsed > 0) text += ' · ' + elapsed + 's';
+        progEl.textContent = text;
+    }
+    if (etaEl && elapsed > 0) {
+        const estWait = getEstimatedWaitSeconds();
+        const remaining = Math.max(0, estWait - elapsed);
+        etaEl.textContent = remaining > 0 ? '≈ ' + formatTime(remaining) + ' restantes' : 'Bientôt terminé…';
+    }
+    if (fillEl && progress > 0) {
+        fillEl.style.width = progress + '%';
+    }
+}
+
+function replacePendingWithVideo(index, videoUrl, dialogue, sceneNumber, actualDuration) {
+    const pending = document.getElementById('pending-video-' + index);
+    if (!pending) return;
+    const card = document.createElement('div');
+    card.className = 'gen-video-card newly-added';
+    card.id = 'video-card-' + index;
+    card.innerHTML =
+        '<video src="' + videoUrl + '" controls playsinline preload="metadata"></video>' +
+        '<div class="gen-label">🎬 Clip ' + sceneNumber + '</div>' +
+        (actualDuration ?
+            '<div class="gen-timing">⚡ Généré en ' + actualDuration + 's (' + formatTime(actualDuration) + ')</div>' : '') +
+        (dialogue && dialogue.text ?
+            '<div class="gen-dialogue">💬 ' + esc(dialogue.character) + ' : « ' + esc(dialogue.text) + ' »</div>' : '');
+    pending.parentNode.replaceChild(card, pending);
+    setTimeout(() => card.classList.remove('newly-added'), 3000);
+    const grid = document.getElementById('generated-videos');
+    document.getElementById('videos-badge').textContent = grid.querySelectorAll('.gen-video-card').length;
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function markPendingFailed(index, errorMessage, label) {
+    const pending = document.getElementById('pending-video-' + index);
+    if (!pending) return;
+    pending.innerHTML =
+        '<div style="color:var(--error);font-size:2rem;">✕</div>' +
+        '<div class="pending-label" style="color:var(--error);">' + esc(label || 'Échec') + '</div>' +
+        '<div class="pending-progress-text">' + esc(errorMessage.slice(0, 80)) + '</div>';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// LECTEUR SÉQUENTIEL
+// ══════════════════════════════════════════════════════════════════
+function playAllVideos() {
+    const readyVideos = state.videos.filter(v => v && v.url);
+    if (!readyVideos.length) return;
+    state.isPlayingSequence = true;
+    state.currentSceneIndex = 0;
+    document.getElementById('play-all-btn').textContent = '⏸ Lecture…';
+    document.getElementById('play-all-btn').classList.add('playing');
+    document.getElementById('section-player').classList.add('open');
+    playVideoAt(0);
+}
+
+function playVideoAt(index) {
+    while (index < state.videos.length && (!state.videos[index] || !state.videos[index].url)) {
+        index++;
+    }
+    if (index >= state.videos.length || !state.isPlayingSequence) {
+        state.isPlayingSequence = false;
+        document.getElementById('play-all-btn').textContent = '▶ Lire tout';
+        document.getElementById('play-all-btn').classList.remove('playing');
+        return;
+    }
+    const video = document.getElementById('player-video');
+    const v = state.videos[index];
+    video.src = v.url;
+    video.currentTime = 0;
+    video.play().catch(() => {});
+    document.getElementById('player-info').textContent = 'Scène ' + (index + 1) + ' / ' + state.videos.length;
+    document.getElementById('player-progress').style.width = ((index + 1) / state.videos.length * 100) + '%';
+    if (v.dialogue && v.dialogue.text) {
+        setTimeout(() => speakText(v.dialogue.text, v.dialogue.character), 500);
+    }
+    video.onended = () => {
+        if (state.isPlayingSequence) setTimeout(() => playVideoAt(index + 1), 300);
+    };
+}
+
+function stopAllVideos() {
+    state.isPlayingSequence = false;
+    const video = document.getElementById('player-video');
+    video.pause();
+    video.currentTime = 0;
+    stopSpeech();
+    document.getElementById('play-all-btn').textContent = '▶ Lire tout';
+    document.getElementById('play-all-btn').classList.remove('playing');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TTS
+// ══════════════════════════════════════════════════════════════════
+let speechSynth = null;
+function initSpeech() {
+    if ('speechSynthesis' in window) {
+        speechSynth = window.speechSynthesis;
+        speechSynth.getVoices();
+    }
+}
+function isFemaleCharacter(characterName) {
+    if (!characterName) return false;
+    const name = characterName.toLowerCase();
+    return state.femaleCharacters.some(f => name.includes(f) || f.includes(name));
+}
+function speakText(text, characterName) {
+    return new Promise((resolve) => {
+        if (!speechSynth) { resolve(); return; }
+        speechSynth.cancel();
+        setTimeout(() => {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'fr-FR';
+            utterance.rate = 0.95;
+            utterance.pitch = isFemaleCharacter(characterName) ? 1.3 : 0.8;
+            const voices = speechSynth.getVoices();
+            const frVoices = voices.filter(v => v.lang && v.lang.startsWith('fr'));
+            if (frVoices.length > 0) {
+                const femaleVoice = frVoices.find(v => /amelie|marie|audrey|female|denise|julie/i.test(v.name));
+                const maleVoice = frVoices.find(v => /thomas|nicolas|male|henri|paul/i.test(v.name));
+                if (isFemaleCharacter(characterName) && femaleVoice) utterance.voice = femaleVoice;
+                else if (!isFemaleCharacter(characterName) && maleVoice) utterance.voice = maleVoice;
+                else utterance.voice = frVoices[0];
+            }
+            utterance.onend = resolve;
+            utterance.onerror = resolve;
+            speechSynth.speak(utterance);
+        }, 100);
+    });
+}
+function stopSpeech() { if (speechSynth) speechSynth.cancel(); }
+
+// ══════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════
+(function init() {
+    initSpeech();
+    loadMeasuredSpeed();
+
+    const styleGrid = document.getElementById('style-grid');
+    STYLES.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'style-card';
+        card.innerHTML = '<span class="style-emoji">' + s.emoji + '</span>' +
+            '<span class="style-name">' + s.name + '</span>';
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            state.selectedStyle = s;
+            logConsole('Style : ' + s.name, 'info');
+        });
+        styleGrid.appendChild(card);
+    });
+    document.getElementById('api-save-btn').addEventListener('click', saveApiKey);
+    document.getElementById('api-key-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); saveApiKey(); }
+    });
+    document.getElementById('generate-btn').addEventListener('click', runFullPipeline);
+    document.getElementById('stop-btn').addEventListener('click', () => {
+        state.stopRequested = true;
+        logConsole('Arrêt demandé', 'warn');
+        setStatus('Arrêt en cours…');
+    });
+    document.getElementById('idea-input').addEventListener('input', updateGenerateBtn);
+    document.querySelectorAll('[data-toggle]').forEach(header => {
+        header.addEventListener('click', () => {
+            document.getElementById(header.dataset.toggle).classList.toggle('open');
+        });
+    });
+    document.getElementById('play-all-btn').addEventListener('click', () => {
+        if (state.isPlayingSequence) stopAllVideos();
+        else playAllVideos();
+    });
+    document.getElementById('stop-all-btn').addEventListener('click', stopAllVideos);
+
+    updateApiPanel();
+    updateLimitsPanel();
+    updateGenerateBtn();
+    const savedKey = getApiKey();
+    if (savedKey) document.getElementById('api-key-input').value = savedKey;
+    logConsole('Application prête.', 'info');
+})();
+</script>
+
+</body>
+</html>

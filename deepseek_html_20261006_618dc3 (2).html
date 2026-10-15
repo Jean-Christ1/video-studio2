@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Style Studio — Analyse + Transfert + Vidéo</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --night: #0a0a12; --night-2: #12121c; --night-3: #1a1a28;
+  --panel: #16161f; --panel-2: #1e1e2b; --border: #2a2a3a; --border-soft: #23232f;
+  --orange: #e87b35; --orange-soft: #f0a060; --orange-deep: #b85a1e;
+  --blue: #4a7bc8; --blue-soft: #6a9be0; --blue-deep: #2c4a80;
+  --yellow: #e5c15a; --yellow-soft: #f0d080; --yellow-deep: #b89a3a;
+  --purple: #8b5fc4; --purple-soft: #a880d8; --purple-deep: #5c3a8a;
+  --mint: #a8d8c8; --lavender: #c8b0e0;
+  --ink: #e8e6e0; --ink-dim: #8a8896; --ink-faint: #4a4858;
+  --success: #4a9d6a; --error: #c85a4a; --warn: #d4a017;
+  --radius: 6px; --font-sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+}
+html, body { background: var(--night); }
+body {
+  font-family: var(--font-sans); background: var(--night);
+  background-image: radial-gradient(circle at 15% 0%, rgba(232,123,53,0.06) 0%, transparent 45%),
+    radial-gradient(circle at 85% 100%, rgba(139,95,196,0.06) 0%, transparent 45%);
+  background-attachment: fixed; color: var(--ink); min-height: 100vh;
+  padding: 1.5rem 1rem 24rem; font-size: 15px; line-height: 1.55;
+  max-width: 1000px; margin: 0 auto;
+}
+header { margin-bottom: 1.5rem; text-align: center; padding: 1rem 0 1.5rem; position: relative; }
+header::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 140px; height: 1px; background: linear-gradient(90deg, transparent, var(--orange), var(--yellow), var(--purple), transparent); opacity: 0.5; }
+h1 { font-size: 1.6rem; font-weight: 300; letter-spacing: 0.02em; margin-bottom: 0.4rem; background: linear-gradient(135deg, var(--orange), var(--yellow), var(--mint), var(--lavender), var(--purple)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.subtitle { font-size: 0.85rem; color: var(--ink-dim); }
+
+.toast { position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%) translateY(-120px); background: var(--night-3); color: var(--ink); border: 1px solid var(--border); border-left: 3px solid var(--yellow); padding: 0.85rem 1.4rem; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; box-shadow: 0 8px 32px rgba(0,0,0,0.6); z-index: 1000; opacity: 0; transition: transform 0.35s cubic-bezier(0.2,0.9,0.3,1.2), opacity 0.35s ease; max-width: 90vw; text-align: center; display: flex; align-items: center; gap: 0.6rem; }
+.toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.success { border-left-color: var(--success); }
+.toast.error { border-left-color: var(--error); }
+.toast.warn { border-left-color: var(--warn); }
+
+.info-banner { background: linear-gradient(135deg, rgba(200,176,224,0.06), rgba(168,216,200,0.05)); border: 1px solid var(--border); border-left: 2px solid var(--lavender); padding: 1rem 1.15rem; border-radius: var(--radius); font-size: 0.8rem; color: var(--ink-dim); margin-bottom: 1.2rem; line-height: 1.6; }
+.info-banner strong { color: var(--ink); }
+.info-banner strong.hl-orange { color: var(--orange-soft); }
+.info-banner strong.hl-yellow { color: var(--yellow-soft); }
+.info-banner strong.hl-mint { color: var(--mint); }
+.info-banner strong.hl-lavender { color: var(--lavender); }
+.info-banner ol { padding-left: 1.3rem; margin-top: 0.5rem; }
+.info-banner li { margin-bottom: 0.25rem; }
+
+.section { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; overflow: hidden; }
+.section-header { padding: 1rem 1.2rem; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
+.section-header:active { background: var(--panel-2); }
+.section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink); font-weight: 600; display: flex; align-items: center; gap: 0.6rem; }
+.section-title .badge { padding: 0.15rem 0.55rem; border: 1px solid var(--yellow-deep); color: var(--yellow); border-radius: 2px; font-size: 0.6rem; letter-spacing: 0.15em; font-weight: 600; }
+.section-title .badge.soft { border-color: var(--blue-deep); color: var(--blue-soft); }
+.section-title .badge.success { border-color: var(--orange-deep); color: var(--orange-soft); }
+.section-header .chevron { font-size: 0.7rem; color: var(--ink-faint); transition: transform 0.3s; }
+.section.open .section-header .chevron { transform: rotate(180deg); color: var(--yellow); }
+.section-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+.section.open .section-body { max-height: 12000px; }
+.section-content { padding: 0 1.2rem 1.2rem; }
+
+.api-panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem 1.3rem; margin-bottom: 1rem; }
+.api-panel.ok { box-shadow: inset 3px 0 0 var(--success); }
+.api-key-input { width: 100%; padding: 0.85rem 1rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--night-2); color: var(--ink); font-family: var(--font-mono); font-size: 0.82rem; margin-bottom: 0.6rem; }
+.api-key-input:focus { outline: none; border-color: var(--blue); }
+.api-save-btn { width: 100%; padding: 0.85rem 1.2rem; border-radius: var(--radius); border: 1px solid var(--yellow-deep); background: linear-gradient(135deg, rgba(232,123,53,0.15), rgba(229,193,90,0.1)); color: var(--yellow-soft); font-size: 0.85rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; margin-bottom: 0.7rem; }
+.api-status-line { font-size: 0.75rem; padding: 0.6rem 0.9rem; border-radius: var(--radius); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.6rem; background: var(--night-2); color: var(--ink-dim); border: 1px solid var(--border-soft); }
+.api-status-line.ok { background: rgba(74,157,106,0.08); color: var(--success); border-color: rgba(74,157,106,0.3); }
+.api-status-line .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-faint); flex-shrink: 0; }
+.api-status-line.ok .status-dot { background: var(--success); box-shadow: 0 0 8px var(--success); }
+.api-hint { font-size: 0.72rem; color: var(--ink-dim); margin-top: 0.5rem; }
+.api-hint a { color: var(--blue-soft); text-decoration: none; border-bottom: 1px dotted var(--blue-deep); }
+.stat-line { font-size: 0.72rem; color: var(--ink-dim); margin-top: 0.6rem; padding: 0.5rem 0.7rem; background: var(--night-2); border-radius: var(--radius); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.3rem; border: 1px solid var(--border-soft); font-family: var(--font-mono); }
+.wake-status { font-size: 0.72rem; padding: 0.6rem 0.8rem; border-radius: var(--radius); margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center; background: rgba(74,123,200,0.08); color: var(--blue-soft); border: 1px solid var(--blue-deep); flex-wrap: wrap; gap: 0.5rem; }
+.wake-status.active { background: rgba(74,157,106,0.08); color: var(--success); border-color: rgba(74,157,106,0.3); }
+.wake-status.warn { background: rgba(212,160,23,0.08); color: var(--warn); border-color: rgba(212,160,23,0.3); }
+.wake-status button { background: transparent; border: 1px solid currentColor; color: inherit; padding: 0.3rem 0.7rem; border-radius: var(--radius); font-size: 0.68rem; cursor: pointer; }
+
+.ref-drop { border: 2px dashed var(--border); border-radius: var(--radius); padding: 1.5rem 1rem; background: var(--night-2); text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+.ref-drop:hover { border-color: var(--yellow-deep); background: rgba(229,193,90,0.03); }
+.ref-drop.has-image { padding: 0; border-style: solid; border-color: var(--yellow-deep); }
+.ref-drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.ref-drop .ref-icon { font-size: 2rem; color: var(--yellow); opacity: 0.6; margin-bottom: 0.5rem; }
+.ref-drop .ref-text { font-size: 0.82rem; color: var(--ink-dim); line-height: 1.5; }
+.ref-drop .ref-text strong { color: var(--yellow-soft); }
+.ref-drop .ref-hint { font-size: 0.68rem; color: var(--ink-faint); margin-top: 0.4rem; font-family: var(--font-mono); }
+.ref-preview { position: relative; display: block; width: 100%; max-height: 320px; overflow: hidden; }
+.ref-preview img { width: 100%; height: auto; display: block; max-height: 320px; object-fit: contain; background: #000; }
+.ref-preview .ref-remove { position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(200,90,74,0.85); color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; cursor: pointer; }
+.ref-preview .ref-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 0.5rem 0.7rem; background: linear-gradient(transparent, rgba(10,10,18,0.9)); font-size: 0.7rem; font-family: var(--font-mono); color: var(--yellow-soft); }
+
+.btn-reanalyze { width: 100%; margin-top: 0.7rem; padding: 0.7rem; border-radius: 4px; border: 1px solid var(--yellow-deep); background: rgba(229,193,90,0.1); color: var(--yellow-soft); font-size: 0.78rem; font-weight: 600; cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase; font-family: inherit; }
+.style-analysis { margin-top: 0.8rem; padding: 0.9rem 1rem; background: rgba(168,216,200,0.05); border: 1px solid var(--border); border-left: 2px solid var(--mint); border-radius: var(--radius); font-size: 0.78rem; line-height: 1.6; }
+.style-analysis .sa-title { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--mint); font-weight: 700; margin-bottom: 0.4rem; }
+.style-analysis .sa-name { font-size: 0.95rem; color: var(--yellow-soft); font-weight: 600; margin-bottom: 0.5rem; }
+.style-analysis .sa-row { display: flex; gap: 0.5rem; margin-bottom: 0.35rem; font-size: 0.75rem; }
+.style-analysis .sa-key { color: var(--ink-dim); min-width: 90px; flex-shrink: 0; font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.style-analysis .sa-val { color: var(--ink); flex: 1; }
+.style-analysis .sa-prompt { margin-top: 0.6rem; padding: 0.6rem 0.7rem; background: var(--night-2); border-radius: 4px; font-family: var(--font-mono); font-size: 0.7rem; color: #a8d8b0; max-height: 180px; overflow-y: auto; word-break: break-word; white-space: pre-wrap; }
+
+.preview-panel { margin-top: 0.8rem; padding: 0.9rem 1rem; background: rgba(232,123,53,0.05); border: 1px solid var(--border); border-left: 2px solid var(--orange); border-radius: var(--radius); }
+.preview-panel .prev-title { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--orange-soft); font-weight: 700; margin-bottom: 0.5rem; }
+.preview-panel .prev-hint { font-size: 0.72rem; color: var(--ink-dim); line-height: 1.5; margin-bottom: 0.6rem; }
+.preview-panel .prev-image { display: block; width: 100%; max-width: 340px; margin: 0 auto; border-radius: 4px; border: 1px solid var(--border); background: #000; }
+.preview-panel .prev-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; }
+.preview-panel .btn-prev { flex: 1; min-width: 130px; padding: 0.7rem; border-radius: 4px; border: 1px solid var(--orange-deep); background: rgba(232,123,53,0.12); color: var(--orange-soft); font-size: 0.78rem; font-weight: 600; cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase; font-family: inherit; }
+.preview-panel .btn-prev:disabled { opacity: 0.4; cursor: not-allowed; }
+.preview-panel .prev-loader { display: flex; align-items: center; gap: 0.6rem; padding: 1rem; justify-content: center; color: var(--orange-soft); font-family: var(--font-mono); font-size: 0.75rem; }
+.preview-panel .prev-loader .spin-mini { width: 14px; height: 14px; border: 2px solid rgba(232,123,53,0.3); border-top-color: var(--orange); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+.upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 1.8rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--panel); margin-bottom: 1rem; }
+.upload-zone:active { border-color: var(--orange); background: var(--panel-2); }
+.upload-zone.loading { pointer-events: none; opacity: 0.6; }
+.upload-zone input[type="file"] { display: none; }
+.upload-zone .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.6; }
+.upload-zone .upload-text { font-size: 0.9rem; color: var(--ink); margin-bottom: 0.2rem; }
+.upload-zone .upload-hint { font-size: 0.72rem; color: var(--ink-dim); }
+
+.images-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.6rem; margin-bottom: 1rem; }
+.image-card { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: var(--night-2); position: relative; }
+.image-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; }
+.image-card .remove-btn { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); color: #fff; border: none; width: 24px; height: 24px; border-radius: 50%; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+.control-row { margin-bottom: 0.9rem; }
+.control-label { display: block; font-size: 0.72rem; color: var(--ink-dim); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600; }
+select, input[type="text"] { width: 100%; padding: 0.8rem 0.95rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--night-2); color: var(--ink); font-family: var(--font-sans); font-size: 0.88rem; -webkit-appearance: none; appearance: none; }
+select:focus, input[type="text"]:focus { outline: none; border-color: var(--blue); }
+select { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23e5c15a' d='M0 0l5 6 5-6z'/></svg>"); background-repeat: no-repeat; background-position: right 0.95rem center; background-size: 10px; }
+
+.btn-primary { width: 100%; padding: 1.1rem; border-radius: var(--radius); border: 1px solid var(--yellow-deep); background: linear-gradient(135deg, rgba(232,123,53,0.2), rgba(229,193,90,0.15), rgba(139,95,196,0.15)); color: var(--yellow-soft); font-size: 0.95rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; margin-bottom: 0.8rem; font-family: inherit; }
+.btn-primary:disabled { opacity: 0.25; cursor: not-allowed; }
+.btn-stop { width: 100%; padding: 0.9rem; border-radius: var(--radius); border: 1px solid var(--error); background: transparent; color: var(--error); font-size: 0.82rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; margin-bottom: 1rem; display: none; font-family: inherit; }
+.btn-stop.visible { display: block; }
+
+.transformed-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+.transformed-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; animation: fadeIn 0.4s ease; }
+.transformed-card .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--border); }
+.transformed-card .comparison > div { background: #000; position: relative; }
+.transformed-card .comparison img { width: 100%; aspect-ratio: 9/16; object-fit: cover; display: block; }
+.transformed-card .comparison .cmp-label { position: absolute; top: 4px; left: 4px; padding: 2px 6px; background: rgba(0,0,0,0.7); border-radius: 2px; font-size: 0.6rem; font-family: var(--font-mono); color: var(--ink-dim); letter-spacing: 0.05em; text-transform: uppercase; }
+.transformed-card .trans-label { padding: 0.4rem 0.6rem; font-size: 0.68rem; color: var(--ink-dim); text-align: center; font-family: var(--font-mono); border-top: 1px solid var(--border); }
+.transformed-card .video-prompt-area { padding: 0.6rem; border-top: 1px solid var(--border); background: var(--night-2); }
+.transformed-card .video-prompt-area textarea { width: 100%; padding: 0.5rem 0.6rem; border-radius: 4px; border: 1px solid var(--border); background: var(--night-3); color: var(--ink); font-family: var(--font-sans); font-size: 0.75rem; min-height: 50px; resize: vertical; }
+.transformed-card .video-prompt-area textarea:focus { outline: none; border-color: var(--orange); }
+.transformed-card .video-prompt-area .btn-video { width: 100%; margin-top: 0.4rem; padding: 0.55rem; border-radius: 4px; border: 1px solid var(--orange-deep); background: rgba(232,123,53,0.12); color: var(--orange-soft); font-size: 0.75rem; font-weight: 600; cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase; font-family: inherit; }
+.transformed-card .video-prompt-area .btn-video:disabled { opacity: 0.4; cursor: not-allowed; }
+.transformed-card .video-result { padding: 0.6rem; border-top: 1px solid var(--border); background: #000; }
+.transformed-card .video-result video { width: 100%; aspect-ratio: 9/16; object-fit: cover; display: block; }
+.transformed-card .video-result .video-status { font-size: 0.7rem; color: var(--warn); text-align: center; padding: 0.5rem; font-family: var(--font-mono); }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.queue { margin-top: 1rem; }
+.queue-summary { background: var(--panel); border: 1px solid var(--border); border-left: 2px solid var(--purple); border-radius: var(--radius); padding: 0.8rem 1rem; margin-bottom: 0.7rem; font-size: 0.78rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-family: var(--font-mono); }
+.queue-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.6rem 0.8rem; border-radius: var(--radius); border: 1px solid var(--border-soft); margin-bottom: 0.3rem; background: var(--panel); font-size: 0.78rem; }
+.queue-item.creating { border-color: var(--warn); }
+.queue-item.processing { border-color: var(--blue); }
+.queue-item.done { border-color: var(--success); }
+.queue-item.failed { border-color: var(--error); }
+.queue-item .q-icon { width: 1.4rem; text-align: center; flex-shrink: 0; }
+.queue-item .q-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.queue-item .q-status { font-size: 0.68rem; color: var(--ink-dim); text-align: right; max-width: 55%; font-family: var(--font-mono); }
+
+.debug-panel { position: fixed; bottom: 0; left: 0; right: 0; height: 240px; background: #05050a; border-top: 2px solid var(--yellow-deep); z-index: 200; display: flex; flex-direction: column; font-family: var(--font-mono); box-shadow: 0 -8px 32px rgba(0,0,0,0.7); transition: height 0.3s ease; }
+.debug-panel.collapsed { height: 36px; }
+.debug-header { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.8rem; background: linear-gradient(90deg, #0f0f18, #1a1a28); border-bottom: 1px solid var(--border); flex-shrink: 0; cursor: pointer; user-select: none; }
+.debug-title { font-size: 0.72rem; color: var(--yellow); letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+.debug-title .debug-badge { font-size: 0.6rem; padding: 0.1rem 0.4rem; background: var(--yellow); color: var(--night); border-radius: 2px; font-weight: 700; }
+.debug-actions { display: flex; gap: 0.3rem; }
+.debug-actions button { background: transparent; border: 1px solid var(--border); color: var(--ink-dim); font-size: 0.62rem; padding: 0.25rem 0.55rem; border-radius: 2px; cursor: pointer; }
+.debug-actions button:hover { color: var(--yellow); border-color: var(--yellow-deep); }
+.debug-body { flex: 1; overflow-y: auto; padding: 0.5rem 0.7rem 1rem; font-size: 0.7rem; line-height: 1.45; color: #c8c8d0; }
+.debug-entry { margin-bottom: 0.25rem; padding: 0.2rem 0.4rem; border-left: 2px solid transparent; border-radius: 2px; word-break: break-word; }
+.debug-entry.info { border-left-color: var(--ink-faint); }
+.debug-entry.success { border-left-color: var(--success); background: rgba(74,157,106,0.04); }
+.debug-entry.warn { border-left-color: var(--warn); background: rgba(212,160,23,0.04); }
+.debug-entry.error { border-left-color: var(--error); background: rgba(200,90,74,0.06); color: #f0a0a0; }
+.debug-entry.api { border-left-color: var(--blue); background: rgba(74,123,200,0.04); }
+.debug-entry.response { border-left-color: var(--purple); background: rgba(139,95,196,0.04); }
+.debug-entry.ai { border-left-color: var(--lavender); background: rgba(200,176,224,0.05); }
+.debug-time { color: var(--ink-faint); margin-right: 0.5rem; font-size: 0.62rem; }
+.debug-cat { color: var(--yellow-soft); font-weight: 600; margin-right: 0.4rem; font-size: 0.62rem; }
+.debug-msg { color: #d8d8e0; }
+.debug-data { margin-top: 0.3rem; padding: 0.4rem 0.5rem; background: #0a0a12; border: 1px solid var(--border-soft); border-radius: 2px; font-size: 0.65rem; color: #a8d8b0; max-height: 160px; overflow: auto; white-space: pre-wrap; word-break: break-all; }
+
+.status-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--night-3); border-top: 1px solid var(--border); color: var(--ink); padding: 0.85rem 1.1rem; font-size: 0.78rem; display: flex; align-items: center; gap: 0.7rem; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.2,0.9,0.3,1); z-index: 100; font-family: var(--font-mono); box-shadow: 0 -4px 20px rgba(0,0,0,0.4); }
+.status-bar.visible { transform: translateY(0); }
+.status-bar .spinner { width: 12px; height: 12px; border: 2px solid rgba(229,193,90,0.2); border-top-color: var(--yellow); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+.hidden { display: none !important; }
+
+#noSleepCanvas { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0.01; pointer-events: none; z-index: -1; }
+#noSleepVideo { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0.01; pointer-events: none; z-index: -1; }
+
+@media (max-width: 480px) {
+  h1 { font-size: 1.3rem; }
+  .images-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+  .transformed-grid { grid-template-columns: 1fr; }
+  body { padding-bottom: 22rem; }
+  .debug-panel { height: 200px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Style Studio</h1>
+  <p class="subtitle">Analyse de style précise · Transfert fidèle · Vidéo à la demande</p>
+</header>
+
+<div class="info-banner">
+  <strong>⚡ Nouvelle méthode corrigée :</strong>
+  <ol>
+    <li>Importez une <strong class="hl-yellow">image de référence</strong> → analyse technique en profondeur</li>
+    <li>Un <strong class="hl-orange">aperçu de validation</strong> est généré pour vérifier le style</li>
+    <li>Chaque <strong class="hl-mint">photo</strong> est envoyée SEULE au modèle avec un prompt strict de transfert</li>
+    <li>Vous pouvez ensuite <strong class="hl-lavender">générer une vidéo</strong> pour chaque image transformée</li>
+  </ol>
+  <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border-soft);font-size:0.72rem;color:var(--orange-soft);">
+    🔒 <strong>Anti-fuite de style :</strong> L'image de référence n'est JAMAIS envoyée au modèle de transformation. Seuls le prompt de style (texte) et la photo à transformer sont envoyés.
+  </div>
+</div>
+
+<!-- ═══════════ API ═══════════ -->
+<div class="api-panel" id="api-panel">
+  <input type="password" class="api-key-input" id="api-key-input" placeholder="Collez votre clé API ici (sk-...)" autocomplete="off" spellcheck="false">
+  <button type="button" class="api-save-btn" id="api-save-btn">Enregistrer la clé</button>
+  <div class="api-status-line" id="api-status-line">
+    <span class="status-dot"></span>
+    <span id="api-status-text">Aucune clé API enregistrée</span>
+  </div>
+  <div class="api-hint">
+    Clé gratuite sur <a href="https://platform.agnes-ai.com" target="_blank" rel="noopener">platform.agnes-ai.com</a> → Settings → API Keys
+  </div>
+  <div class="stat-line" id="stat-line">
+    <span>📊 Vitesse vidéo : <span id="stat-speed">en attente</span></span>
+    <span id="stat-samples">0 génération</span>
+  </div>
+  <div class="wake-status" id="wake-status">
+    <span id="wake-status-text">💤 Veille automatique</span>
+    <button type="button" id="wake-toggle-btn">Garder l'écran allumé</button>
+  </div>
+</div>
+
+<!-- ═══════════ ÉTAPE 1 : IMAGE DE RÉFÉRENCE ═══════════ -->
+<div class="section open" id="section-ref">
+  <div class="section-header" data-toggle="section-ref">
+    <span class="section-title">🖼️ Étape 1 — Image de référence <span class="badge">obligatoire</span></span>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+    <div class="ref-drop" id="ref-drop">
+      <input type="file" accept="image/*" id="ref-image-input">
+      <div class="ref-icon">🎨</div>
+      <div class="ref-text"><strong>Cliquez pour choisir une image de référence</strong><br>Tableau, artwork, photo stylisée, illustration…</div>
+      <div class="ref-hint">L'IA analysera uniquement son style (couleurs, lumière, texture).</div>
+    </div>
+    <button type="button" class="btn-reanalyze hidden" id="btn-reanalyze">↻ Relancer l'analyse</button>
+    <div class="style-analysis hidden" id="style-analysis">
+      <div class="sa-title">🔍 Analyse de style</div>
+      <div class="sa-name" id="sa-name">—</div>
+      <div id="sa-details"></div>
+      <div class="sa-prompt" id="sa-prompt"></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ═══════════ ÉTAPE 2 : APERÇU DE VALIDATION ═══════════ -->
+<div class="section open" id="section-preview">
+  <div class="section-header" data-toggle="section-preview">
+    <span class="section-title">👁️ Étape 2 — Aperçu du style <span class="badge soft">validation</span></span>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+    <div class="preview-panel">
+      <div class="prev-title">Prévisualisation du style détecté</div>
+      <div class="prev-hint">
+        Ceci n'est <strong>pas</strong> utilisé pour la transformation finale — c'est juste pour vérifier que le style détecté correspond bien à votre référence.
+        Si le résultat ne vous plaît pas, l'analyse a échoué et il faut retenter.
+      </div>
+      <div id="preview-container">
+        <button type="button" class="btn-prev" id="btn-preview" disabled>👁️ Générer l'aperçu du style</button>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ═══════════ ÉTAPE 3 : PHOTOS À TRANSFORMER ═══════════ -->
+<div class="section open" id="section-photos">
+  <div class="section-header" data-toggle="section-photos">
+    <span class="section-title">📸 Étape 3 — Photos à transformer <span class="badge soft" id="photos-count-badge">0</span></span>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+    <div class="upload-zone" id="upload-zone">
+      <input type="file" id="file-input" accept="image/*" multiple>
+      <div class="upload-icon">＋</div>
+      <div class="upload-text">Ajoutez vos photos</div>
+      <div class="upload-hint">Autant que vous voulez — chacune sera transformée avec le style détecté</div>
+    </div>
+    <div class="images-grid" id="images-grid"></div>
+  </div></div>
+</div>
+
+<!-- ═══════════ RÉGLAGES ═══════════ -->
+<div class="section" id="section-settings">
+  <div class="section-header" data-toggle="section-settings">
+    <span class="section-title">⚙️ Réglages</span>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+    <div class="control-row">
+      <label class="control-label">Intensité du style</label>
+      <select id="style-intensity-select">
+        <option value="subtle">Subtile — préserve la composition et les détails</option>
+        <option value="moderate" selected>Modérée — équilibré (recommandé)</option>
+        <option value="strong">Forte — transformation marquée</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label class="control-label">Format de sortie</label>
+      <select id="output-size-select">
+        <option value="1024x1024">Carré 1:1</option>
+        <option value="1024x1792" selected>Portrait 9:16</option>
+        <option value="1792x1024">Paysage 16:9</option>
+      </select>
+    </div>
+    <div class="control-row">
+      <label class="control-label">Durée des vidéos</label>
+      <select id="video-duration-select">
+        <option value="121">5 secondes (121 frames)</option>
+        <option value="153" selected>6,4 secondes (153 frames)</option>
+        <option value="241">10 secondes (241 frames)</option>
+      </select>
+    </div>
+  </div></div>
+</div>
+
+<!-- ═══════════ BOUTON PRINCIPAL ═══════════ -->
+<button type="button" class="btn-primary" id="generate-btn" disabled>
+  🎨 Transformer les photos
+</button>
+<button type="button" class="btn-stop" id="stop-btn">⏹ Arrêter la génération</button>
+
+<!-- ═══════════ FILE D'ATTENTE ═══════════ -->
+<div class="queue" id="queue" style="display:none;"></div>
+
+<!-- ═══════════ ÉTAPE 4 : IMAGES TRANSFORMÉES ═══════════ -->
+<div class="section hidden open" id="section-transformed">
+  <div class="section-header" data-toggle="section-transformed">
+    <span class="section-title">✨ Étape 4 — Images transformées <span class="badge success" id="transformed-count-badge">0</span></span>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="section-body"><div class="section-content">
+    <div class="transformed-grid" id="transformed-grid"></div>
+  </div></div>
+</div>
+
+<!-- ═══════════ STATUS BAR ═══════════ -->
+<div class="status-bar" id="status-bar">
+  <div class="spinner"></div>
+  <span id="status-text">Préparation…</span>
+</div>
+
+<!-- ═══════════ TOAST ═══════════ -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon">✓</span>
+  <span id="toast-text">Message</span>
+</div>
+
+<!-- ═══════════ DEBUG PANEL ═══════════ -->
+<div class="debug-panel" id="debug-panel">
+  <div class="debug-header" id="debug-header">
+    <div class="debug-title">🖥️ Console de débogage <span class="debug-badge" id="debug-count">0</span></div>
+    <div class="debug-actions">
+      <button type="button" id="debug-copy-btn">Copier</button>
+      <button type="button" id="debug-clear-btn">Effacer</button>
+      <button type="button" id="debug-collapse-btn">−</button>
+    </div>
+  </div>
+  <div class="debug-body" id="debug-body"></div>
+</div>
+
+<canvas id="noSleepCanvas" width="2" height="2"></canvas>
+<video id="noSleepVideo" playsinline muted loop></video>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// CONFIGURATION
+// ══════════════════════════════════════════════════════════════════
+const API_BASE = 'https://apihub.agnes-ai.com/v1';
+const POLL_BASE = 'https://apihub.agnes-ai.com/agnesapi';
+const MODEL_TEXT = 'agnes-2.5-flash';
+const MODEL_IMAGE = 'agnes-image-2.1-flash';
+const MODEL_VIDEO = 'agnes-video-v2.0';
+const FRAME_RATE = 24;
+
+const IMAGE_PARALLEL = 3;
+const IMAGE_INTERVAL_MS = 3400;
+const IMAGE_INTERVAL_MIN = 3200;
+const IMAGE_INTERVAL_MAX = 12000;
+const IMAGE_INTERVAL_SAFE = 4000;
+
+const VIDEO_INTERVAL_MIN = 62000;
+const VIDEO_INTERVAL_MAX = 90000;
+const VIDEO_INTERVAL_SAFE = 75000;
+const VIDEO_FIRST_POLL_DELAY_SEC = 80;
+const VIDEO_POLL_INTERVALS = [8, 8, 12, 12, 20, 20, 25];
+const VIDEO_MAX_POLL_ATTEMPTS = 100;
+
+const TIMING_CACHE_KEY = 'style_studio_timing_v2';
+const API_KEY_STORAGE = 'agnes_api_key';
+const WAKE_LOCK_PREF = 'agnes_wakelock_enabled';
+
+const REF_MAX_SIDE = 1280;
+const DEBUG_MAX_ENTRIES = 800;
+
+// Sujet neutre pour l'aperçu de style (UNIQUEMENT pour valider le style, jamais utilisé pour la transformation)
+const PREVIEW_SUBJECT = 'a calm neutral portrait of a person facing the camera with a serene expression, plain neutral background, centered composition';
+
+let createImageIntervalMs = IMAGE_INTERVAL_SAFE;
+let createVideoIntervalMs = VIDEO_INTERVAL_SAFE;
+let imageAttemptsSinceLastError = 0;
+let videoAttemptsSinceLastError = 0;
+
+// ══════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════
+const state = {
+  referenceImage: null,
+  styleAnalysis: null,
+  analyzing: 0,
+  previewImage: null,
+  previewStatus: 'idle',
+  images: [],
+  transformed: [],
+  isRunning: false,
+  stopRequested: false,
+  styleIntensity: 'moderate',
+  outputSize: '1024x1792',
+  videoDurationFrames: 153,
+  totalTransformed: 0
+};
+
+// ══════════════════════════════════════════════════════════════════
+// DEBUG
+// ══════════════════════════════════════════════════════════════════
+let debugCount = 0;
+let debugEntries = [];
+let debugCollapsed = false;
+
+function debugLog(level, category, message, data) {
+  const body = document.getElementById('debug-body');
+  if (!body) return;
+  const time = new Date().toLocaleTimeString('fr-FR', { hour12: false });
+  const entry = document.createElement('div');
+  entry.className = 'debug-entry ' + level;
+  let html = '<span class="debug-time">' + time + '</span>';
+  html += '<span class="debug-cat">[' + esc(category) + ']</span>';
+  html += '<span class="debug-msg">' + esc(message) + '</span>';
+  if (data !== undefined && data !== null) {
+    let dataStr;
+    if (typeof data === 'string') dataStr = data;
+    else { try { dataStr = JSON.stringify(data, null, 2); } catch (e) { dataStr = String(data); } }
+    if (dataStr.length > 4000) dataStr = dataStr.slice(0, 4000) + '\n…[tronqué]';
+    html += '<pre class="debug-data">' + esc(dataStr) + '</pre>';
+  }
+  entry.innerHTML = html;
+  body.appendChild(entry);
+  debugEntries.push({ time, level, category, message });
+  if (debugEntries.length > DEBUG_MAX_ENTRIES) debugEntries.shift();
+  while (body.children.length > DEBUG_MAX_ENTRIES) body.removeChild(body.firstChild);
+  body.scrollTop = body.scrollHeight;
+  debugCount++;
+  const countEl = document.getElementById('debug-count');
+  if (countEl) countEl.textContent = debugCount;
+}
+
+function clearDebug() {
+  const body = document.getElementById('debug-body');
+  if (body) body.innerHTML = '';
+  debugEntries = []; debugCount = 0;
+  const countEl = document.getElementById('debug-count');
+  if (countEl) countEl.textContent = '0';
+}
+
+function copyDebug() {
+  const lines = debugEntries.map(e => e.time + ' [' + e.category + '] ' + e.message).join('\n');
+  const finish = (ok) => { showToast(ok ? 'Console copiée' : 'Copie impossible', ok ? 'success' : 'error'); };
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(lines).then(() => finish(true)).catch(() => legacyCopy(lines, finish));
+      return;
+    }
+  } catch (e) {}
+  legacyCopy(lines, finish);
+}
+
+function legacyCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.left = '0';
+  ta.style.width = '2em'; ta.style.height = '2em';
+  ta.style.padding = '0'; ta.style.border = 'none'; ta.style.outline = 'none';
+  ta.style.boxShadow = 'none'; ta.style.background = 'transparent'; ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select(); ta.setSelectionRange(0, text.length);
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+  document.body.removeChild(ta);
+  cb(ok);
+}
+
+function toggleDebugCollapse() {
+  const panel = document.getElementById('debug-panel');
+  const btn = document.getElementById('debug-collapse-btn');
+  if (!panel || !btn) return;
+  debugCollapsed = !debugCollapsed;
+  panel.classList.toggle('collapsed', debugCollapsed);
+  btn.textContent = debugCollapsed ? '+' : '−';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════════════
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function formatEta(sec) {
+  if (sec < 60) return Math.round(sec) + 's';
+  const m = Math.floor(sec / 60), s = Math.round(sec % 60);
+  return m + 'm' + (s > 0 ? ' ' + s + 's' : '');
+}
+function setStatus(text) {
+  const bar = document.getElementById('status-bar');
+  const txt = document.getElementById('status-text');
+  if (!bar || !txt) return;
+  if (text) { bar.classList.add('visible'); txt.textContent = text; }
+  else bar.classList.remove('visible');
+}
+
+let toastTimeout = null;
+function showToast(message, type = 'success', duration = 2500) {
+  const toast = document.getElementById('toast');
+  const icon = document.getElementById('toast-icon');
+  const text = document.getElementById('toast-text');
+  if (!toast || !icon || !text) return;
+  toast.classList.remove('visible', 'success', 'error', 'warn');
+  void toast.offsetWidth;
+  const icons = { success: '✓', error: '✕', warn: '⚠' };
+  icon.textContent = icons[type] || '✓';
+  text.textContent = message;
+  toast.classList.add(type);
+  requestAnimationFrame(() => toast.classList.add('visible'));
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toast.classList.remove('visible'), duration);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// WAKE LOCK
+// ══════════════════════════════════════════════════════════════════
+let wakeLockSentinel = null;
+let wakeLockEnabled = false;
+let canvasStream = null;
+let canvasInterval = null;
+
+function isWakeLockSupported() { return 'wakeLock' in navigator && typeof navigator.wakeLock.request === 'function'; }
+
+async function requestWakeLockAPI() {
+  if (!isWakeLockSupported()) return false;
+  try {
+    wakeLockSentinel = await navigator.wakeLock.request('screen');
+    wakeLockSentinel.addEventListener('release', () => { wakeLockSentinel = null; updateWakeStatus(); });
+    return true;
+  } catch (e) { debugLog('warn', 'WAKELOCK', 'Refusé : ' + e.message); return false; }
+}
+
+async function releaseWakeLockAPI() {
+  if (wakeLockSentinel) { try { await wakeLockSentinel.release(); } catch (e) {} wakeLockSentinel = null; }
+}
+
+function startCanvasStream() {
+  if (canvasStream) return true;
+  try {
+    const canvas = document.getElementById('noSleepCanvas');
+    const video = document.getElementById('noSleepVideo');
+    if (!canvas || !video) return false;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return false;
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (typeof canvas.captureStream !== 'function') return false;
+    canvasStream = canvas.captureStream(1);
+    let toggle = false;
+    canvasInterval = setInterval(() => {
+      toggle = !toggle;
+      ctx.fillStyle = toggle ? '#000' : '#010101';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }, 1000);
+    video.srcObject = canvasStream; video.muted = true; video.playsInline = true;
+    const p = video.play(); if (p && p.catch) p.catch(() => {});
+    return true;
+  } catch (e) { debugLog('warn', 'WAKELOCK', 'Canvas échoué : ' + e.message); return false; }
+}
+
+function stopCanvasStream() {
+  if (canvasInterval) { clearInterval(canvasInterval); canvasInterval = null; }
+  const video = document.getElementById('noSleepVideo');
+  if (video) { try { video.pause(); video.srcObject = null; } catch (e) {} }
+  if (canvasStream) { try { canvasStream.getTracks().forEach(t => t.stop()); } catch (e) {} canvasStream = null; }
+}
+
+async function activateWakeLock() {
+  let success = false;
+  if (isWakeLockSupported()) success = await requestWakeLockAPI();
+  if (!success) success = startCanvasStream();
+  if (!success && !canvasStream) success = startCanvasStream();
+  return success;
+}
+
+async function deactivateWakeLock() { await releaseWakeLockAPI(); stopCanvasStream(); }
+
+function updateWakeStatus() {
+  const el = document.getElementById('wake-status');
+  const txt = document.getElementById('wake-status-text');
+  const btn = document.getElementById('wake-toggle-btn');
+  if (!el || !txt || !btn) return;
+  el.classList.remove('active', 'warn');
+  const canvas = document.getElementById('noSleepCanvas');
+  const has = isWakeLockSupported() || (canvas && canvas.captureStream);
+  if (!has) { el.classList.add('warn'); txt.textContent = '⚠️ Non supporté'; btn.style.display = 'none'; return; }
+  btn.style.display = 'inline-block';
+  const isActive = wakeLockSentinel !== null || canvasStream !== null;
+  if (wakeLockEnabled && isActive) { el.classList.add('active'); txt.textContent = '✅ Écran allumé'; btn.textContent = 'Désactiver'; }
+  else if (wakeLockEnabled && !isActive) { el.classList.add('warn'); txt.textContent = '⏳ En attente'; btn.textContent = 'Désactiver'; }
+  else { txt.textContent = '💤 Veille automatique'; btn.textContent = 'Garder l\'écran allumé'; }
+}
+
+async function toggleWakeLock() {
+  if (wakeLockEnabled) {
+    wakeLockEnabled = false; await deactivateWakeLock();
+    try { localStorage.setItem(WAKE_LOCK_PREF, '0'); } catch (e) {}
+    showToast('Veille automatique', 'warn');
+  } else {
+    wakeLockEnabled = true;
+    const ok = await activateWakeLock();
+    try { localStorage.setItem(WAKE_LOCK_PREF, '1'); } catch (e) {}
+    showToast(ok ? 'Écran allumé' : 'Activez manuellement', ok ? 'success' : 'warn');
+  }
+  updateWakeStatus();
+}
+
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible' && wakeLockEnabled) { await activateWakeLock(); updateWakeStatus(); }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// TIMING CACHE
+// ══════════════════════════════════════════════════════════════════
+function loadTimingCache() { try { return JSON.parse(localStorage.getItem(TIMING_CACHE_KEY) || '{}'); } catch (e) { return {}; } }
+function saveTimingCache(c) { try { localStorage.setItem(TIMING_CACHE_KEY, JSON.stringify(c)); } catch (e) {} }
+
+function recordGenerationTime(key, ms) {
+  const c = loadTimingCache();
+  if (!c[key]) c[key] = [];
+  c[key].push(ms);
+  if (c[key].length > 10) c[key] = c[key].slice(-10);
+  saveTimingCache(c); updateTimingDisplay();
+}
+
+function estimateGenerationTime(key, fallbackMs) {
+  const c = loadTimingCache();
+  const s = c[key];
+  if (s && s.length > 0) {
+    const sorted = [...s].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0 ? (sorted[mid-1] + sorted[mid]) / 2 : sorted[mid];
+  }
+  return fallbackMs;
+}
+
+function updateTimingDisplay() {
+  const c = loadTimingCache();
+  const v = c['video'] || [];
+  const s = document.getElementById('stat-speed');
+  const t = document.getElementById('stat-samples');
+  if (!s || !t) return;
+  if (v.length === 0) { s.textContent = 'en attente'; t.textContent = '0 génération'; return; }
+  const avg = v.reduce((a, b) => a + b, 0) / v.length;
+  s.textContent = (avg / 1000).toFixed(1) + ' s en moyenne';
+  t.textContent = v.length + ' génération' + (v.length > 1 ? 's' : '');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CLÉ API
+// ══════════════════════════════════════════════════════════════════
+function getApiKey() { try { return (localStorage.getItem(API_KEY_STORAGE) || '').trim(); } catch (e) { return ''; } }
+
+function saveApiKey() {
+  const input = document.getElementById('api-key-input');
+  if (!input) return;
+  const key = input.value.trim();
+  if (!key) {
+    try { localStorage.removeItem(API_KEY_STORAGE); } catch (e) {}
+    updateApiPanel(); showToast('Clé supprimée', 'warn'); return;
+  }
+  if (!key.startsWith('sk-')) { if (!confirm('La clé ne commence pas par "sk-". Sauvegarder ?')) return; }
+  try {
+    localStorage.setItem(API_KEY_STORAGE, key);
+    updateApiPanel(); showToast('Clé enregistrée ✓', 'success');
+    debugLog('success', 'API', 'Clé : ' + key.slice(0, 8) + '…' + key.slice(-4));
+    input.blur();
+  } catch (e) { showToast('Erreur sauvegarde', 'error'); }
+}
+
+function updateApiPanel() {
+  const panel = document.getElementById('api-panel');
+  const input = document.getElementById('api-key-input');
+  const statusLine = document.getElementById('api-status-line');
+  const statusText = document.getElementById('api-status-text');
+  const key = getApiKey();
+  if (!panel || !input || !statusLine || !statusText) return;
+  if (key) {
+    panel.classList.add('ok'); statusLine.classList.add('ok');
+    statusText.textContent = 'Clé active · ' + key.slice(0, 8) + '…' + key.slice(-4);
+    input.value = key; input.placeholder = '';
+  } else {
+    panel.classList.remove('ok'); statusLine.classList.remove('ok');
+    statusText.textContent = 'Aucune clé API enregistrée';
+    input.value = ''; input.placeholder = 'Collez votre clé API ici (sk-...)';
+  }
+  updateGenerateBtn();
+}
+
+function updateGenerateBtn() {
+  // « Relancer l'analyse » : référence chargée, pas d'analyse valide, aucune analyse en cours
+  const rb = document.getElementById('btn-reanalyze');
+  if (rb) rb.classList.toggle('hidden', !(state.referenceImage && !state.styleAnalysis && !state.analyzing));
+  const btn = document.getElementById('generate-btn');
+  if (!btn) return;
+  const hasKey = !!getApiKey();
+  const hasStyle = !!state.styleAnalysis;
+  const hasImages = state.images.length > 0;
+  btn.disabled = !hasKey || !hasStyle || !hasImages || state.isRunning;
+  if (state.isRunning) btn.textContent = 'Transformation en cours…';
+  else if (!hasKey) btn.textContent = 'Ajoutez votre clé API';
+  else if (!hasStyle) btn.textContent = 'Analysez d\'abord une image de référence';
+  else if (!hasImages) btn.textContent = 'Ajoutez des photos (étape 3)';
+  else btn.textContent = '🎨 Transformer ' + state.images.length + ' photo' + (state.images.length > 1 ? 's' : '');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// API FETCH — backoff et throttling
+// ══════════════════════════════════════════════════════════════════
+async function apiFetch(url, options = {}, label = 'API', kind = 'default') {
+  for (let attempt = 0; attempt < 7; attempt++) {
+    if (state.stopRequested) throw new Error('Arrêt demandé');
+    const method = options.method || 'GET';
+    let bodyPreview = null;
+    if (options.body) {
+      try {
+        const p = JSON.parse(options.body);
+        const c = JSON.parse(JSON.stringify(p));
+        if (c.image && typeof c.image === 'string' && c.image.length > 80) c.image = c.image.slice(0, 80) + '…[b64 ' + c.image.length + ']';
+        if (c.image && Array.isArray(c.image)) c.image = c.image.map(x => typeof x === 'string' && x.length > 80 ? x.slice(0, 80) + '…[b64 ' + x.length + ']' : x);
+        if (c.last_frame && typeof c.last_frame === 'string' && c.last_frame.length > 80) c.last_frame = c.last_frame.slice(0, 80) + '…';
+        bodyPreview = c;
+      } catch (e) { bodyPreview = options.body.slice(0, 500); }
+    }
+    debugLog('api', 'REQ ' + label, method + ' ' + url + ' (tentative ' + (attempt + 1) + ')', bodyPreview);
+    try {
+      const t0 = Date.now();
+      const res = await fetch(url, options);
+      const dt = Date.now() - t0;
+      debugLog('response', 'RÉP ' + label, 'HTTP ' + res.status + ' en ' + dt + 'ms');
+      if (res.status === 429) {
+        if (kind === 'image') {
+          imageAttemptsSinceLastError = 0;
+          if (createImageIntervalMs < IMAGE_INTERVAL_MAX) createImageIntervalMs = Math.min(createImageIntervalMs + 1500, IMAGE_INTERVAL_MAX);
+        } else if (kind === 'video') {
+          videoAttemptsSinceLastError = 0;
+          if (createVideoIntervalMs < VIDEO_INTERVAL_MAX) createVideoIntervalMs = Math.min(createVideoIntervalMs + 8000, VIDEO_INTERVAL_MAX);
+        }
+        const wait = [10, 20, 35, 50, 75, 100, 150][Math.min(attempt, 6)];
+        debugLog('warn', 'RATELIMIT', '429 — attente ' + wait + 's');
+        setStatus('L\'IA se prépare… (' + wait + 's)');
+        await sleep(wait * 1000); continue;
+      }
+      if (res.status === 503) {
+        const wait = [5, 10, 15, 20, 30, 45][Math.min(attempt, 5)];
+        debugLog('warn', 'SERVICE', '503 — attente ' + wait + 's');
+        setStatus('Le service se prépare… (' + wait + 's)');
+        await sleep(wait * 1000); continue;
+      }
+      // 500/502/504 : nouvel essai (texte, image, suivi vidéo), SAUF pour la création de vidéo (POST) :
+      // la tâche a pu être créée malgré l'erreur, un nouvel essai automatique ferait une vidéo en double facturée.
+      if ((res.status === 500 || res.status === 502 || res.status === 504) && !(kind === 'video' && method === 'POST')) {
+        const wait = [3, 6, 10, 15, 20, 30][Math.min(attempt, 5)];
+        debugLog('warn', 'SERVEUR', 'HTTP ' + res.status + ' — nouvel essai dans ' + wait + 's');
+        await sleep(wait * 1000); continue;
+      }
+      if (res.ok) {
+        if (kind === 'image') {
+          imageAttemptsSinceLastError++;
+          if (imageAttemptsSinceLastError >= 5 && createImageIntervalMs > IMAGE_INTERVAL_MIN) { createImageIntervalMs = Math.max(createImageIntervalMs - 200, IMAGE_INTERVAL_MIN); imageAttemptsSinceLastError = 0; }
+        } else if (kind === 'video') {
+          videoAttemptsSinceLastError++;
+          if (videoAttemptsSinceLastError >= 3 && createVideoIntervalMs > VIDEO_INTERVAL_MIN) { createVideoIntervalMs = Math.max(createVideoIntervalMs - 4000, VIDEO_INTERVAL_MIN); videoAttemptsSinceLastError = 0; }
+        }
+      }
+      return res;
+    } catch (e) {
+      if (e.message === 'Arrêt demandé') throw e;
+      // Création de vidéo (POST) : pas de nouvel essai après une coupure réseau (la tâche a pu partir → doublon facturé)
+      if (kind === 'video' && method === 'POST') {
+        debugLog('error', 'NETWORK', e.message + ' — création vidéo non relancée automatiquement');
+        throw new Error('Réseau interrompu (' + e.message + ') — la vidéo a peut-être été lancée. Patientez quelques minutes avant de réessayer.');
+      }
+      const wait = [3, 5, 8, 12, 20, 30][Math.min(attempt, 5)];
+      debugLog('warn', 'NETWORK', e.message + ' — retry ' + wait + 's');
+      setStatus('Connexion… (' + wait + 's)');
+      await sleep(wait * 1000);
+    }
+  }
+  debugLog('error', 'API', 'Tentatives épuisées pour ' + label);
+  return fetch(url, options);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PARSEUR JSON — 5 stratégies
+// ══════════════════════════════════════════════════════════════════
+function escapeControlCharsInStrings(text) {
+  let result = ''; let inString = false; let escape = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (escape) { result += ch; escape = false; continue; }
+    if (ch === '\\') { result += ch; escape = true; continue; }
+    if (ch === '"') { inString = !inString; result += ch; continue; }
+    if (inString) {
+      if (ch === '\n') { result += '\\n'; continue; }
+      if (ch === '\r') { result += '\\r'; continue; }
+      if (ch === '\t') { result += '\\t'; continue; }
+      const code = ch.charCodeAt(0);
+      if (code < 32) { result += '\\u' + code.toString(16).padStart(4, '0'); continue; }
+    }
+    result += ch;
+  }
+  return result;
+}
+
+function balanceJson(text) {
+  let openBraces = 0, openBrackets = 0, inString = false, escape = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (escape) { escape = false; continue; }
+    if (ch === '\\') { escape = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '{') openBraces++;
+    else if (ch === '}') openBraces--;
+    else if (ch === '[') openBrackets++;
+    else if (ch === ']') openBrackets--;
+  }
+  let result = text;
+  if (inString) result += '"';
+  while (openBrackets > 0) { result += ']'; openBrackets--; }
+  while (openBraces > 0) { result += '}'; openBraces--; }
+  return result;
+}
+
+function salvageStyleAnalysis(text) {
+  const nameMatch = text.match(/"style_name"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  const mediumMatch = text.match(/"medium"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  const paletteMatch = text.match(/"color_palette"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  const lightMatch = text.match(/"lighting"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  const techMatch = text.match(/"technique"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  const atmoMatch = text.match(/"atmosphere"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  const compMatch = text.match(/"composition"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  const texMatch = text.match(/"texture"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  const promptMatch = text.match(/"style_prompt"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  if (!promptMatch) return null;
+  return {
+    style_name: nameMatch ? nameMatch[1].replace(/\\"/g, '"') : 'Style sans nom',
+    medium: mediumMatch ? mediumMatch[1].replace(/\\"/g, '"') : '',
+    color_palette: paletteMatch ? paletteMatch[1].replace(/\\"/g, '"') : '',
+    lighting: lightMatch ? lightMatch[1].replace(/\\"/g, '"') : '',
+    technique: techMatch ? techMatch[1].replace(/\\"/g, '"') : '',
+    atmosphere: atmoMatch ? atmoMatch[1].replace(/\\"/g, '"') : '',
+    composition: compMatch ? compMatch[1].replace(/\\"/g, '"') : '',
+    texture: texMatch ? texMatch[1].replace(/\\"/g, '"') : '',
+    style_prompt: promptMatch[1].replace(/\\"/g, '"').replace(/\\n/g, ' ')
+  };
+}
+
+function extractJson(text) {
+  if (!text) return null;
+  let c = text.trim();
+  const fm = c.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fm) c = fm[1].trim();
+  const fb = c.indexOf('{');
+  if (fb < 0) { debugLog('error', 'PARSE', 'Aucun { trouvé'); return null; }
+  c = c.slice(fb);
+  try { const r = JSON.parse(c); debugLog('success', 'PARSE', 'Stratégie 1 (directe) OK'); return r; }
+  catch (e1) { debugLog('warn', 'PARSE', 'Stratégie 1 échouée'); }
+  try { const fixed = escapeControlCharsInStrings(c); const r = JSON.parse(fixed); debugLog('success', 'PARSE', 'Stratégie 2 (échappement) OK'); return r; }
+  catch (e2) { debugLog('warn', 'PARSE', 'Stratégie 2 échouée'); }
+  try {
+    const lb = c.lastIndexOf('}');
+    if (lb > 0) { let trunc = c.slice(0, lb + 1); trunc = escapeControlCharsInStrings(trunc); const r = JSON.parse(trunc); debugLog('success', 'PARSE', 'Stratégie 3 (dernier }) OK'); return r; }
+  } catch (e3) { debugLog('warn', 'PARSE', 'Stratégie 3 échouée'); }
+  try { const balanced = balanceJson(escapeControlCharsInStrings(c)); const r = JSON.parse(balanced); debugLog('success', 'PARSE', 'Stratégie 4 (équilibrage) OK'); return r; }
+  catch (e4) { debugLog('warn', 'PARSE', 'Stratégie 4 échouée'); }
+  try {
+    const salvaged = salvageStyleAnalysis(c);
+    if (salvaged && salvaged.style_prompt) { debugLog('success', 'PARSE', 'Stratégie 5 (regex) OK'); return salvaged; }
+  } catch (e5) { debugLog('error', 'PARSE', 'Stratégie 5 échouée'); }
+  debugLog('error', 'PARSE', 'Aucune stratégie n\'a fonctionné');
+  return null;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ÉTAPE 1 : ANALYSE DE STYLE (agnes-2.5-flash vision)
+// ══════════════════════════════════════════════════════════════════
+async function analyzeStyle(referenceDataUri) {
+  debugLog('state', 'STYLE', 'Analyse du style…');
+  setStatus('Analyse visuelle du style…');
+
+  const systemPrompt = `You are a technical visual analyst specialized in extracting style descriptors from reference images. Your analysis drives style transfer onto OTHER images — you must describe the STYLE only, never the SUBJECT.
+
+STRICT RULES:
+1. NEVER name franchises, studios, artists, brands, movies, video games, or anime titles. Only objective technical vocabulary.
+2. NEVER describe the SUBJECT (person, character, object, animal, place). Only the STYLE.
+3. Describe precisely: color palette (hues, temperature, saturation), lighting (source, direction, quality), medium & technique, atmosphere & mood, composition rules, surface texture.
+4. Use descriptive technical language like "warm amber mid-tones with teal shadows" or "harsh low-key side lighting with clipped highlights", never "looks like X".
+5. The style_prompt must be a ready-to-use English prompt (150-220 words) usable by a text-to-image model to generate ANY subject in this style. Start it with: "Restyle this image with the following visual characteristics:"
+
+Return ONLY valid JSON with this exact structure:
+{
+  "style_name": "short descriptive name WITHOUT any trademark or artist name",
+  "medium": "technique/medium",
+  "color_palette": "precise colors",
+  "lighting": "lighting description",
+  "technique": "technical rendering approach",
+  "atmosphere": "mood",
+  "composition": "framing rules",
+  "texture": "surface texture and grain",
+  "style_prompt": "complete English prompt starting with 'Restyle this image with the following visual characteristics:'"
+}
+
+All values on single lines. No line breaks inside strings. No markdown. No commentary.`;
+
+  const body = {
+    model: MODEL_TEXT,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: [
+        { type: 'text', text: 'Analyze the STYLE of this reference image. Do NOT identify or describe its subject. Return only the JSON.' },
+        { type: 'image_url', image_url: { url: referenceDataUri } }
+      ]}
+    ],
+    temperature: 0.5,
+    max_tokens: 2500,
+    response_format: { type: 'json_object' }
+  };
+
+  const res = await apiFetch(API_BASE + '/chat/completions', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + getApiKey(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }, 'Style', 'text');
+
+  if (!res.ok) {
+    const err = await res.text();
+    debugLog('error', 'STYLE', 'HTTP ' + res.status, err.slice(0, 500));
+    throw new Error('Erreur analyse : HTTP ' + res.status);
+  }
+
+  const data = await res.json();
+  debugLog('response', 'STYLE RAW', 'Réponse brute reçue');
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('Pas de contenu pour l\'analyse');
+
+  const parsed = extractJson(content);
+  if (!parsed || !parsed.style_prompt) {
+    debugLog('error', 'STYLE', 'Parsing échoué', content.slice(0, 800));
+    throw new Error('Analyse de style invalide');
+  }
+
+  debugLog('success', 'STYLE', 'Style : ' + (parsed.style_name || '—'));
+  return parsed;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ÉTAPE 2 : APERÇU DE STYLE (validation uniquement, JAMAIS utilisé pour la transformation)
+// ══════════════════════════════════════════════════════════════════
+async function generateStylePreview(styleAnalysis) {
+  debugLog('state', 'PREVIEW', 'Génération de l\'aperçu de style (validation)…');
+  setStatus('Génération de l\'aperçu…');
+
+  const previewPrompt = [
+    styleAnalysis.style_prompt,
+    '',
+    'Subject: ' + PREVIEW_SUBJECT,
+    '',
+    'Portrait 9:16 vertical. High detail. No text, no watermark, no border.'
+  ].join('\n');
+
+  const body = {
+    model: MODEL_IMAGE,
+    prompt: previewPrompt,
+    n: 1,
+    size: '1024x1792',
+    extra_body: { response_format: 'url' }
+  };
+
+  const res = await apiFetch(API_BASE + '/images/generations', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + getApiKey(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }, 'Aperçu', 'image');
+
+  if (!res.ok) {
+    const err = await res.text();
+    debugLog('error', 'PREVIEW', 'HTTP ' + res.status, err.slice(0, 500));
+    throw new Error('HTTP ' + res.status);
+  }
+
+  const data = await res.json();
+  const item = data.data?.[0];
+  if (!item) throw new Error('Pas de donnée');
+  const url = item.url || (item.b64_json ? 'data:image/png;base64,' + item.b64_json : null);
+  if (!url) throw new Error('Format inconnu');
+  debugLog('success', 'PREVIEW', 'Aperçu généré ✓');
+  return url;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ÉTAPE 3 : TRANSFORMATION D'UNE PHOTO — MÉTHODE CORRIGÉE
+// ══════════════════════════════════════════════════════════════════
+// La photo est envoyée SEULE. Le style vient 100% du texte.
+// Aucune image de référence n'est envoyée → aucune fuite possible.
+function buildStrictStyleTransferPrompt(styleAnalysis, intensity) {
+  const intensityMap = {
+    subtle: 'Apply a subtle style shift. Preserve shape, composition, and details with maximum fidelity. Colors shift gently, lighting quality improves slightly, texture is refined.',
+    moderate: 'Apply a balanced style transformation. Recolor the entire image, replace the lighting with the target lighting quality, apply the target texture and artistic technique — while keeping every subject, object, pose, position, and the exact composition of the input image.',
+    strong: 'Apply a bold, decisive style transformation. Aggressively recolor every element, replace lighting quality completely, apply a strong new surface texture and rendering technique — while strictly preserving the exact subject, pose, and composition of the input image.'
+  };
+
+  return [
+    'You are given ONE single image. Restyle it according to these precise visual characteristics, keeping EVERY ELEMENT of the original scene exactly where it is.',
+    '',
+    'STYLE TO APPLY:',
+    'Palette: ' + (styleAnalysis.color_palette || 'as described'),
+    'Lighting: ' + (styleAnalysis.lighting || 'as described'),
+    'Medium/Technique: ' + (styleAnalysis.technique || 'as described'),
+    'Surface texture: ' + (styleAnalysis.texture || 'as described'),
+    'Atmosphere: ' + (styleAnalysis.atmosphere || 'as described'),
+    '',
+    styleAnalysis.style_prompt,
+    '',
+    'STRICT PRESERVATION RULES — DO NOT VIOLATE:',
+    '1. Keep the EXACT same subject(s), person(s), object(s), animal(s), and/or scene.',
+    '2. Keep the EXACT same pose, expression, gesture, and body position of every figure.',
+    '3. Keep the EXACT same composition, framing, crop, and camera angle.',
+    '4. Keep the EXACT same position, size, and number of every element.',
+    '5. Keep any text, logo, or graphic present in the input image untouched.',
+    '6. Do NOT add ANY new element, character, object, or prop.',
+    '7. Do NOT remove ANY existing element.',
+    '8. Do NOT change the identity, face, or features of any person.',
+    '',
+    'WHAT CHANGES: only the visual appearance — colors, lighting quality, texture, rendering technique, artistic treatment.',
+    '',
+    'INTENSITY: ' + (intensityMap[intensity] || intensityMap.moderate),
+    '',
+    'OUTPUT: same aspect ratio as input. High detail. No text, no watermark, no border added.'
+  ].join('\n');
+}
+
+async function transformPhoto(photoDataUri, styleAnalysis, intensity, outputSize) {
+  const fullPrompt = buildStrictStyleTransferPrompt(styleAnalysis, intensity);
+
+  debugLog('ai', 'TRANSFORM PROMPT', 'Style strict (1 ref = photo seulement)', fullPrompt.slice(0, 500) + '…');
+
+  const body = {
+    model: MODEL_IMAGE,
+    prompt: fullPrompt,
+    n: 1,
+    size: outputSize,
+    extra_body: {
+      image: [photoDataUri],
+      response_format: 'url'
+    }
+  };
+
+  const res = await apiFetch(API_BASE + '/images/generations', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + getApiKey(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }, 'Transform', 'image');
+
+  if (!res.ok) {
+    const err = await res.text();
+    debugLog('error', 'TRANSFORM', 'HTTP ' + res.status, err.slice(0, 500));
+    throw new Error('HTTP ' + res.status);
+  }
+
+  const data = await res.json();
+  const item = data.data?.[0];
+  if (!item) throw new Error('Pas de donnée');
+  const url = item.url || (item.b64_json ? 'data:image/png;base64,' + item.b64_json : null);
+  if (!url) throw new Error('Format inconnu');
+  return url;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ÉTAPE 4 : VIDÉO
+// ══════════════════════════════════════════════════════════════════
+async function generateVideoFromImage(imageUrl, userPrompt, numFrames) {
+  const prompt = [
+    'Animate this exact image as the starting frame.',
+    'The subject must remain IDENTICAL to the input image: same face, same expression, same clothing, same pose, same identity, same composition, same layout.',
+    'This is a CONTINUATION of the source image, not a re-imagination.',
+    userPrompt ? 'Motion direction: ' + userPrompt : 'Subtle motion, breathing, light, and atmosphere animation.',
+    'Portrait 9:16 vertical, 24fps, no text, no subtitles, no watermarks.',
+    'No music. Only natural ambient sounds.'
+  ].filter(Boolean).join('. ');
+
+  const body = {
+    model: MODEL_VIDEO,
+    prompt: prompt,
+    image: imageUrl,
+    num_frames: numFrames,
+    frame_rate: FRAME_RATE
+  };
+
+  debugLog('ai', 'PROMPT VIDÉO', 'Envoyé', prompt.slice(0, 300) + '…');
+
+  const res = await apiFetch(API_BASE + '/videos', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + getApiKey(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }, 'Vidéo', 'video');
+
+  if (!res.ok) {
+    const err = await res.text();
+    debugLog('error', 'VIDÉO', 'HTTP ' + res.status, err.slice(0, 500));
+    // Pas de nouvel essai automatique (voir apiFetch) : message clair, le bouton « ↻ Réessayer » reste disponible
+    if (res.status === 500 || res.status === 502 || res.status === 504) throw new Error('HTTP ' + res.status + ' — serveur incertain : la vidéo a peut-être été lancée. Patientez quelques minutes avant de réessayer.');
+    throw new Error('HTTP ' + res.status);
+  }
+
+  const data = await res.json();
+  const videoId = data.video_id || data.id || data.task_id;
+  if (!videoId) throw new Error('Pas de video_id');
+  return videoId;
+}
+
+async function pollVideo(videoId, onProgress) {
+  const estimatedMs = estimateGenerationTime('video', 30000 + state.videoDurationFrames * 500);
+  const estimatedSec = estimatedMs / 1000;
+  const minWait = Math.min(VIDEO_FIRST_POLL_DELAY_SEC, Math.max(60, Math.floor(estimatedSec * 0.75)));
+  let remaining = minWait;
+  debugLog('info', 'POLLING', 'Attente initiale ' + remaining + 's avant premier poll');
+  while (remaining > 0) {
+    if (state.stopRequested) throw new Error('Arrêt demandé');
+    onProgress('Préparation — ' + remaining + 's');
+    await sleep(1000); remaining--;
+  }
+  for (let attempt = 0; attempt < VIDEO_MAX_POLL_ATTEMPTS; attempt++) {
+    if (state.stopRequested) throw new Error('Arrêt demandé');
+    if (attempt > 0) {
+      const idx = Math.min(attempt - 1, VIDEO_POLL_INTERVALS.length - 1);
+      let r = VIDEO_POLL_INTERVALS[idx];
+      while (r > 0) {
+        if (state.stopRequested) throw new Error('Arrêt demandé');
+        onProgress('Création — ' + r + 's');
+        await sleep(1000); r--;
+      }
+    }
+    const url = POLL_BASE + '?video_id=' + encodeURIComponent(videoId) + '&model_name=' + encodeURIComponent(MODEL_VIDEO);
+    const res = await apiFetch(url, { method: 'GET', headers: { 'Authorization': 'Bearer ' + getApiKey() } }, 'Polling', 'video');
+    // Une réponse passagère illisible (502/504 en HTML…) ne doit pas faire échouer une vidéo en cours de création
+    let d;
+    try { d = await res.json(); }
+    catch (e) { debugLog('warn', 'POLL #' + (attempt + 1), 'HTTP ' + res.status + ' — réponse illisible, nouvel essai'); continue; }
+    const status = d.status || 'unknown';
+    const progress = d.progress || 0;
+    onProgress('Création — ' + progress + '%');
+    debugLog('response', 'POLL #' + (attempt + 1), 'Statut : ' + status + ' (' + progress + '%)');
+    if (status === 'completed' || status === 'succeeded' || status === 'done') {
+      const videoUrl = (d.metadata && d.metadata.url) || d.url || (d.output && d.output.url);
+      if (!videoUrl) throw new Error('Terminé mais pas d\'URL');
+      debugLog('success', 'POLLING', 'Terminé après ' + (attempt + 1) + ' polls');
+      return videoUrl;
+    }
+    if (status === 'failed' || status === 'error' || status === 'cancelled') throw new Error('Échec (' + status + ')');
+  }
+  throw new Error('Délai maximal dépassé');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TRAITEMENT FICHIERS
+// ══════════════════════════════════════════════════════════════════
+function fileToDataUri(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = () => reject(new Error('Erreur lecture'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function compressImage(dataUrl, maxSide) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      const scale = Math.min(1, maxSide / Math.max(width, height));
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', 0.88));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+async function processOneFile(file) {
+  if (!file.type.startsWith('image/')) return null;
+  if (file.size > 15 * 1024 * 1024) {
+    debugLog('warn', 'UPLOAD', 'Fichier trop lourd ignoré : ' + file.name);
+    return null;
+  }
+  try {
+    const raw = await fileToDataUri(file);
+    const compressed = await compressImage(raw, 1280);
+    return { id: Date.now() + Math.random(), dataUri: compressed, name: file.name };
+  } catch (e) {
+    debugLog('error', 'UPLOAD', 'Erreur ' + file.name + ' : ' + e.message);
+    return null;
+  }
+}
+
+async function handleFiles(files) {
+  const list = Array.from(files).filter(f => f.type.startsWith('image/'));
+  if (!list.length) return;
+  const uploadZone = document.getElementById('upload-zone');
+  uploadZone.classList.add('loading');
+  setStatus('Chargement de ' + list.length + ' image(s)…');
+  const BATCH = 5;
+  for (let i = 0; i < list.length; i += BATCH) {
+    const batch = list.slice(i, i + BATCH);
+    const results = await Promise.allSettled(batch.map(f => processOneFile(f)));
+    for (const r of results) {
+      if (r.status === 'fulfilled' && r.value) state.images.push(r.value);
+    }
+    renderImages();
+  }
+  uploadZone.classList.remove('loading');
+  setStatus(null);
+  updateGenerateBtn();
+  document.getElementById('photos-count-badge').textContent = state.images.length;
+  debugLog('success', 'UPLOAD', state.images.length + ' image(s) chargée(s)');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDU — IMAGES IMPORTÉES
+// ══════════════════════════════════════════════════════════════════
+function renderImages() {
+  const grid = document.getElementById('images-grid');
+  if (!grid) return;
+  grid.innerHTML = state.images.map(img =>
+    '<div class="image-card">' +
+      '<img src="' + img.dataUri + '" alt="" loading="lazy">' +
+      '<button class="remove-btn" data-remove="' + img.id + '">✕</button>' +
+    '</div>'
+  ).join('');
+  grid.querySelectorAll('[data-remove]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.images = state.images.filter(x => String(x.id) !== btn.dataset.remove);
+      renderImages();
+      updateGenerateBtn();
+      document.getElementById('photos-count-badge').textContent = state.images.length;
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDU — ANALYSE DE STYLE
+// ══════════════════════════════════════════════════════════════════
+function renderStyleAnalysis(analysis) {
+  const panel = document.getElementById('style-analysis');
+  if (!panel) return;
+  panel.classList.remove('hidden');
+  document.getElementById('sa-name').textContent = analysis.style_name || 'Style détecté';
+  const details = document.getElementById('sa-details');
+  const fields = [
+    ['Médium', analysis.medium],
+    ['Palette', analysis.color_palette],
+    ['Lumière', analysis.lighting],
+    ['Technique', analysis.technique],
+    ['Ambiance', analysis.atmosphere],
+    ['Composition', analysis.composition],
+    ['Texture', analysis.texture]
+  ].filter(f => f[1]);
+  details.innerHTML = fields.map(f =>
+    '<div class="sa-row"><span class="sa-key">' + esc(f[0]) + '</span><span class="sa-val">' + esc(f[1]) + '</span></div>'
+  ).join('');
+  const promptEl = document.getElementById('sa-prompt');
+  if (analysis.style_prompt) promptEl.textContent = analysis.style_prompt;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDU — APERÇU DE STYLE
+// ══════════════════════════════════════════════════════════════════
+function renderPreviewPanel() {
+  const container = document.getElementById('preview-container');
+  if (!container) return;
+
+  if (state.previewStatus === 'generating') {
+    container.innerHTML = '<div class="prev-loader"><div class="spin-mini"></div><span>Génération de l\'aperçu…</span></div>';
+  } else if (state.previewStatus === 'ready' && state.previewImage) {
+    container.innerHTML =
+      '<img class="prev-image" src="' + state.previewImage + '" alt="Aperçu du style">' +
+      '<div class="prev-actions">' +
+        '<button type="button" class="btn-prev" id="btn-prev-regen">↻ Régénérer l\'aperçu</button>' +
+      '</div>';
+    const btn = document.getElementById('btn-prev-regen');
+    if (btn) btn.addEventListener('click', () => launchPreviewGeneration());
+  } else if (state.previewStatus === 'failed') {
+    container.innerHTML = '<button type="button" class="btn-prev" id="btn-prev-retry">↻ Réessayer</button>';
+    const btn = document.getElementById('btn-prev-retry');
+    if (btn) btn.addEventListener('click', () => launchPreviewGeneration());
+  } else {
+    const disabled = !state.styleAnalysis;
+    container.innerHTML = '<button type="button" class="btn-prev" id="btn-preview"' + (disabled ? ' disabled' : '') + '>👁️ Générer l\'aperçu du style</button>';
+    const btn = document.getElementById('btn-preview');
+    if (btn && !disabled) btn.addEventListener('click', () => launchPreviewGeneration());
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDU — IMAGES TRANSFORMÉES
+// ══════════════════════════════════════════════════════════════════
+function renderTransformed() {
+  const grid = document.getElementById('transformed-grid');
+  if (!grid) return;
+  grid.innerHTML = state.transformed.map((item, idx) => {
+    const hasVideo = item.videoUrl;
+    const isGenerating = item.videoStatus === 'generating';
+    const hasError = item.videoStatus === 'failed';
+    return '<div class="transformed-card" id="transformed-' + idx + '">' +
+      '<div class="comparison">' +
+        '<div><img src="' + item.originalThumb + '" alt="Original"><div class="cmp-label">Avant</div></div>' +
+        '<div><img src="' + item.imageUrl + '" alt="Transformé"><div class="cmp-label">Après</div></div>' +
+      '</div>' +
+      '<div class="trans-label">Image ' + (idx + 1) + ' — transformée</div>' +
+      '<div class="video-prompt-area">' +
+        '<textarea id="vprompt-' + idx + '" placeholder="Décrivez le mouvement pour la vidéo… (ex : un vent léger fait bouger les cheveux)" ' + (hasVideo ? 'disabled' : '') + '>' + esc(item.videoPrompt || '') + '</textarea>' +
+        '<button class="btn-video" id="vbtn-' + idx + '" data-video-idx="' + idx + '" ' + (hasVideo || isGenerating ? 'disabled' : '') + '>' +
+          (hasVideo ? '✓ Vidéo générée' : isGenerating ? '⏳ Génération…' : hasError ? '↻ Réessayer' : '🎬 Générer la vidéo') +
+        '</button>' +
+      '</div>' +
+      (hasVideo ? '<div class="video-result"><video src="' + item.videoUrl + '" controls playsinline preload="metadata"></video></div>' : '') +
+      (isGenerating ? '<div class="video-result"><div class="video-status">Génération en cours… <span id="vstatus-' + idx + '"></span></div></div>' : '') +
+      (hasError ? '<div class="video-result"><div class="video-status" style="color:var(--error);">Échec : ' + esc(item.videoError || 'erreur') + '</div></div>' : '') +
+    '</div>';
+  }).join('');
+
+  grid.querySelectorAll('.btn-video').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.videoIdx, 10);
+      const promptEl = document.getElementById('vprompt-' + idx);
+      const userPrompt = promptEl ? promptEl.value.trim() : '';
+      launchVideoGeneration(idx, userPrompt);
+    });
+  });
+
+  grid.querySelectorAll('textarea[id^="vprompt-"]').forEach(ta => {
+    ta.addEventListener('input', () => {
+      const idx = parseInt(ta.id.replace('vprompt-', ''), 10);
+      if (state.transformed[idx]) state.transformed[idx].videoPrompt = ta.value;
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// GESTION IMAGE DE RÉFÉRENCE
+// ══════════════════════════════════════════════════════════════════
+async function handleReferenceImage(file) {
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('Fichier non image', 'error'); return; }
+  setStatus('Chargement de la référence…');
+  try {
+    const raw = await fileToDataUri(file);
+    const compressed = await compressImage(raw, REF_MAX_SIDE);
+    state.referenceImage = compressed;
+    state.styleAnalysis = null;
+    state.previewImage = null;
+    state.previewStatus = 'idle';
+    document.getElementById('style-analysis').classList.add('hidden');
+    updateRefPreview();
+    renderPreviewPanel();
+    updateGenerateBtn();
+    debugLog('success', 'REF', 'Référence chargée (' + Math.round(compressed.length / 1024) + ' Ko)');
+    setStatus(null);
+    showToast('Analyse du style en cours…', 'success');
+    await runStyleAnalysis();
+  } catch (e) {
+    setStatus(null);
+    showToast('Erreur chargement référence', 'error');
+    debugLog('error', 'REF', e.message);
+  }
+}
+
+async function runStyleAnalysis() {
+  if (!state.referenceImage) return;
+  if (!getApiKey()) { showToast('Ajoutez d\'abord votre clé API', 'warn'); updateGenerateBtn(); return; }
+  const ref = state.referenceImage;
+  state.analyzing++;
+  updateGenerateBtn();
+  try {
+    const analysis = await analyzeStyle(ref);
+    if (state.referenceImage !== ref) return; // référence changée pendant l'analyse : résultat ignoré
+    state.styleAnalysis = analysis;
+    renderStyleAnalysis(analysis);
+    renderPreviewPanel();
+    updateGenerateBtn();
+    setStatus(null);
+    showToast('Style analysé : ' + (analysis.style_name || '✓'), 'success');
+    debugLog('success', 'STYLE', 'Analyse terminée');
+  } catch (e) {
+    if (state.referenceImage !== ref) return;
+    setStatus(null);
+    showToast('Échec analyse : ' + e.message.slice(0, 60), 'error');
+    debugLog('error', 'STYLE', e.message);
+  } finally {
+    state.analyzing--;
+    updateGenerateBtn();
+  }
+}
+
+async function launchPreviewGeneration() {
+  if (!state.styleAnalysis) { showToast('Analysez d\'abord la référence', 'warn'); return; }
+  if (!getApiKey()) { showToast('Ajoutez votre clé API', 'warn'); return; }
+  state.previewStatus = 'generating';
+  renderPreviewPanel();
+  try {
+    const url = await generateStylePreview(state.styleAnalysis);
+    state.previewImage = url;
+    state.previewStatus = 'ready';
+    renderPreviewPanel();
+    setStatus(null);
+    showToast('Aperçu prêt ✓', 'success');
+  } catch (e) {
+    state.previewStatus = 'failed';
+    renderPreviewPanel();
+    setStatus(null);
+    showToast('Échec aperçu : ' + e.message.slice(0, 60), 'error');
+    debugLog('error', 'PREVIEW', e.message);
+  }
+}
+
+function updateRefPreview() {
+  const drop = document.getElementById('ref-drop');
+  if (!drop) return;
+  if (state.referenceImage) {
+    drop.classList.add('has-image');
+    drop.innerHTML = '<div class="ref-preview"><img src="' + state.referenceImage + '" alt="Référence"><div class="ref-label">Image de référence</div><button type="button" class="ref-remove" id="ref-remove-btn">✕</button></div>';
+    const btn = document.getElementById('ref-remove-btn');
+    if (btn) btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.referenceImage = null;
+      state.styleAnalysis = null;
+      state.previewImage = null;
+      state.previewStatus = 'idle';
+      document.getElementById('style-analysis').classList.add('hidden');
+      updateRefPreview();
+      renderPreviewPanel();
+      updateGenerateBtn();
+      showToast('Référence supprimée', 'warn');
+    });
+  } else {
+    drop.classList.remove('has-image');
+    drop.innerHTML = '<input type="file" accept="image/*" id="ref-image-input">' +
+      '<div class="ref-icon">🎨</div>' +
+      '<div class="ref-text"><strong>Cliquez pour choisir une image de référence</strong><br>Tableau, artwork, photo stylisée, illustration…</div>' +
+      '<div class="ref-hint">L\'IA analysera uniquement son style (couleurs, lumière, texture).</div>';
+    bindRefInput();
+  }
+}
+
+function bindRefInput() {
+  const input = document.getElementById('ref-image-input');
+  if (!input) return;
+  input.addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) handleReferenceImage(file);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// VIDÉO PAR IMAGE
+// ══════════════════════════════════════════════════════════════════
+async function launchVideoGeneration(index, userPrompt) {
+  const item = state.transformed[index];
+  if (!item || item.videoUrl || item.videoStatus === 'generating') return;
+
+  item.videoStatus = 'generating';
+  item.videoPrompt = userPrompt;
+  item.videoError = null;
+  item.videoStartTime = Date.now();
+  renderTransformed();
+
+  // La grille est redessinée à chaque image/vidéo terminée : on recherche l'élément à chaque mise à jour
+  const updateStatus = (txt) => {
+    if (state.transformed[index] !== item) return;
+    const el = document.getElementById('vstatus-' + index);
+    if (el) el.textContent = txt;
+  };
+
+  try {
+    debugLog('state', 'VIDÉO', 'Lancement vidéo image ' + (index + 1));
+    const videoId = await generateVideoFromImage(item.imageUrl, userPrompt, state.videoDurationFrames);
+    debugLog('success', 'VIDÉO', 'Tâche : ' + videoId);
+    const videoUrl = await pollVideo(videoId, (prog) => updateStatus(prog));
+    const elapsed = Date.now() - item.videoStartTime;
+    recordGenerationTime('video', elapsed);
+    item.videoUrl = videoUrl;
+    item.videoStatus = 'done';
+    renderTransformed();
+    showToast('Vidéo ' + (index + 1) + ' prête !', 'success');
+    debugLog('success', 'VIDÉO', 'Terminée en ' + (elapsed / 1000).toFixed(1) + 's');
+  } catch (e) {
+    item.videoStatus = 'failed';
+    item.videoError = e.message;
+    renderTransformed();
+    debugLog('error', 'VIDÉO', 'Échec image ' + (index + 1) + ' : ' + e.message);
+    showToast('Erreur vidéo : ' + e.message.slice(0, 50), 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PIPELINE PRINCIPAL
+// ══════════════════════════════════════════════════════════════════
+async function startTransformation() {
+  if (state.isRunning) return;
+  if (!state.styleAnalysis) { showToast('Analysez d\'abord une référence', 'error'); return; }
+  if (!state.images.length) { showToast('Ajoutez des photos à transformer', 'error'); return; }
+  if (!getApiKey()) { showToast('Ajoutez votre clé API', 'error'); document.getElementById('api-key-input').focus(); return; }
+
+  state.isRunning = true;
+  state.stopRequested = false;
+  state.totalTransformed = 0;
+  state.transformed = [];
+
+  document.getElementById('stop-btn').classList.add('visible');
+  document.getElementById('generate-btn').disabled = true;
+  document.getElementById('transformed-grid').innerHTML = '';
+  document.getElementById('transformed-count-badge').textContent = '0';
+  document.getElementById('section-transformed').classList.remove('hidden');
+
+  await activateWakeLock();
+
+  const total = state.images.length;
+  let completed = 0;
+  const startTime = Date.now();
+
+  debugLog('state', 'TRANSFORM', 'Début transformation ' + total + ' photos');
+
+  for (let i = 0; i < total; i++) {
+    if (state.stopRequested) break;
+    const img = state.images[i];
+    setStatus('Transformation ' + (i + 1) + ' / ' + total + '…');
+    try {
+      debugLog('info', 'TRANSFORM', 'Image ' + (i + 1) + '/' + total);
+      const imageUrl = await transformPhoto(
+        img.dataUri,
+        state.styleAnalysis,
+        state.styleIntensity,
+        state.outputSize
+      );
+      state.transformed.push({
+        imageUrl: imageUrl,
+        originalThumb: img.dataUri,
+        originalId: img.id,
+        videoPrompt: '',
+        videoUrl: null,
+        videoStatus: null,
+        videoError: null
+      });
+      completed++;
+      state.totalTransformed = completed;
+      renderTransformed();
+      document.getElementById('transformed-count-badge').textContent = completed;
+      debugLog('success', 'TRANSFORM', 'Image ' + (i + 1) + ' ✓');
+    } catch (e) {
+      debugLog('error', 'TRANSFORM', 'Échec image ' + (i + 1) + ' : ' + e.message);
+      showToast('Erreur image ' + (i + 1) + ' : ' + e.message.slice(0, 40), 'error');
+    }
+    if (i < total - 1 && !state.stopRequested) {
+      const secs = Math.ceil(createImageIntervalMs / 1000);
+      for (let r = secs; r > 0; r--) {
+        if (state.stopRequested) break;
+        setStatus('Pause ' + r + 's avant image ' + (i + 2) + '…');
+        await sleep(1000);
+      }
+    }
+  }
+
+  const totalElapsed = (Date.now() - startTime) / 1000;
+  state.isRunning = false;
+  state.stopRequested = false;
+  document.getElementById('stop-btn').classList.remove('visible');
+  updateGenerateBtn();
+  // Ne pas couper « Garder l'écran allumé » si l'utilisatrice l'a activé (vidéos encore en cours)
+  if (!wakeLockEnabled) await deactivateWakeLock();
+  updateWakeStatus();
+  setStatus(completed + ' / ' + total + ' photos transformées en ' + formatEta(totalElapsed) + ' ✦');
+  await sleep(4500);
+  setStatus(null);
+  showToast(completed + ' photo' + (completed > 1 ? 's' : '') + ' transformée' + (completed > 1 ? 's' : ''), 'success');
+  debugLog('success', 'TRANSFORM', 'Terminé : ' + completed + '/' + total);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INITIALISATION
+// ══════════════════════════════════════════════════════════════════
+(function init() {
+  const saveBtn = document.getElementById('api-save-btn');
+  if (saveBtn) saveBtn.addEventListener('click', saveApiKey);
+  const apiInput = document.getElementById('api-key-input');
+  if (apiInput) apiInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveApiKey(); } });
+
+  document.querySelectorAll('[data-toggle]').forEach(header => {
+    header.addEventListener('click', () => {
+      document.getElementById(header.dataset.toggle).classList.toggle('open');
+    });
+  });
+
+  const uploadZone = document.getElementById('upload-zone');
+  const fileInput = document.getElementById('file-input');
+  if (uploadZone && fileInput) {
+    uploadZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', e => { handleFiles(e.target.files); fileInput.value = ''; });
+  }
+
+  bindRefInput();
+  const reanalyzeBtn = document.getElementById('btn-reanalyze');
+  if (reanalyzeBtn) reanalyzeBtn.addEventListener('click', () => runStyleAnalysis());
+
+  const intensitySelect = document.getElementById('style-intensity-select');
+  if (intensitySelect) intensitySelect.addEventListener('change', e => { state.styleIntensity = e.target.value; });
+  const sizeSelect = document.getElementById('output-size-select');
+  if (sizeSelect) sizeSelect.addEventListener('change', e => { state.outputSize = e.target.value; });
+  const durationSelect = document.getElementById('video-duration-select');
+  if (durationSelect) durationSelect.addEventListener('change', e => { state.videoDurationFrames = parseInt(e.target.value, 10); });
+
+  const generateBtn = document.getElementById('generate-btn');
+  if (generateBtn) generateBtn.addEventListener('click', startTransformation);
+
+  const stopBtn = document.getElementById('stop-btn');
+  if (stopBtn) stopBtn.addEventListener('click', () => {
+    state.stopRequested = true;
+    debugLog('warn', 'STOP', 'Arrêt demandé');
+    setStatus('Arrêt en cours…');
+  });
+
+  const wakeBtn = document.getElementById('wake-toggle-btn');
+  if (wakeBtn) wakeBtn.addEventListener('click', toggleWakeLock);
+  try { wakeLockEnabled = localStorage.getItem(WAKE_LOCK_PREF) === '1'; } catch (e) {}
+  if (wakeLockEnabled) activateWakeLock().then(() => updateWakeStatus());
+
+  const debugHeader = document.getElementById('debug-header');
+  if (debugHeader) debugHeader.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') return; toggleDebugCollapse(); });
+  const debugCollapseBtn = document.getElementById('debug-collapse-btn');
+  if (debugCollapseBtn) debugCollapseBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleDebugCollapse(); });
+  const debugClearBtn = document.getElementById('debug-clear-btn');
+  if (debugClearBtn) debugClearBtn.addEventListener('click', (e) => { e.stopPropagation(); clearDebug(); });
+  const debugCopyBtn = document.getElementById('debug-copy-btn');
+  if (debugCopyBtn) debugCopyBtn.addEventListener('click', (e) => { e.stopPropagation(); copyDebug(); });
+
+  updateApiPanel();
+  updateTimingDisplay();
+  updateWakeStatus();
+  const savedKey = getApiKey();
+  if (savedKey) document.getElementById('api-key-input').value = savedKey;
+  updateGenerateBtn();
+  renderImages();
+  renderTransformed();
+  renderPreviewPanel();
+
+  debugLog('success', 'INIT', 'Style Studio prêt');
+  debugLog('info', 'INIT', 'Pipeline : RÉFÉRENCE → ANALYSE → APERÇU → TRANSFORMATION (1 ref seulement) → VIDÉO');
+  debugLog('info', 'INIT', 'Modèles : ' + MODEL_TEXT + ' / ' + MODEL_IMAGE + ' / ' + MODEL_VIDEO);
+  debugLog('info', 'INIT', 'Anti-fuite : la référence N\'EST JAMAIS envoyée au modèle de transformation');
+})();
+</script>
+</body>
+</html>

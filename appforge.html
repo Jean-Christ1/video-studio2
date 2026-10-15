@@ -1,0 +1,187 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>APPFORGE — Générateur d'applications IA</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Space+Mono&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--b:#0a6cff;--k:#0b0d12;--m:#7b8394;--l:#e3e7ee}*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 Inter,sans-serif;color:var(--k);background:linear-gradient(#0a6cff0f 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,#0a6cff0f 1px,transparent 1px) 0 0/44px 44px,#fff}
+.mono,label{font:10px 'Space Mono',monospace;letter-spacing:.12em;color:var(--m);display:block;margin:12px 0 5px}
+.hud{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:14px;padding:10px 22px;background:#fffe;border-bottom:1px solid var(--l);backdrop-filter:blur(8px)}
+.hud .mono{margin:0}.logo{font:700 18px Orbitron;letter-spacing:.2em;cursor:pointer}.sp{flex:1}
+main{max-width:1240px;margin:auto;padding:22px}h1{font:400 clamp(30px,5vw,58px)/1.05 Orbitron;margin:8px 0 14px;letter-spacing:-.02em}h2{font:700 16px Orbitron;margin:0}
+.hero{position:relative;padding:20px 0 26px}.hero .card{max-width:760px}.lead{max-width:600px;color:#4a5160}
+.ring{position:absolute;right:0;top:0;width:300px;opacity:.5;animation:rot 40s linear infinite;pointer-events:none}@keyframes rot{to{transform:rotate(360deg)}}
+.card{position:relative;border:1px solid var(--l);background:#fffd;padding:16px;backdrop-filter:blur(6px)}
+.card:before,.card:after{content:'';position:absolute;width:9px;height:9px;border:1px solid var(--b)}.card:before{top:-1px;left:-1px;border-right:0;border-bottom:0}.card:after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-bottom:26px}
+.pc{cursor:pointer;transition:.2s}.pc:hover{transform:translateY(-3px);border-color:var(--b)}.pc .ic{font-size:30px}.pc h2{margin:8px 0 4px}.pc p{margin:0;color:var(--m);font-size:12px}
+input,select,textarea{width:100%;border:1px solid var(--l);padding:9px 10px;font:inherit;background:#fff;border-radius:0}input:focus,select:focus,textarea:focus{outline:0;border-color:var(--b)}
+textarea{min-height:90px;resize:vertical}input[type=checkbox]{width:auto}input[type=range]{width:88%;padding:0}
+.btn{border:1px solid var(--k);background:var(--k);color:#fff;padding:10px 16px;font:700 11px Orbitron;letter-spacing:.12em;cursor:pointer}.btn.o{background:#fff;color:var(--k)}.btn:hover{background:var(--b);border-color:var(--b);color:#fff}.btn:disabled{opacity:.4;cursor:wait}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.chips button{border:1px solid var(--l);background:#fff;padding:6px 10px;font:12px Inter;cursor:pointer}.chips button.on{background:var(--b);border-color:var(--b);color:#fff}
+.bar2{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}.app{display:grid;grid-template-columns:380px 1fr;gap:18px;align-items:start}@media(max-width:860px){.app{grid-template-columns:1fr}.ring{display:none}}
+.row{display:flex;gap:8px;margin-top:16px}.th img{width:64px;height:64px;object-fit:cover;margin:6px 6px 0 0;border:1px solid var(--l)}
+.bar{height:3px;background:var(--l);margin:8px 0}.bar i{display:block;height:100%;width:0;background:var(--b);transition:.5s}
+#lg{max-height:130px;overflow:auto;font:11px 'Space Mono';color:var(--m)}#lg .ok{color:#138a4b}#lg .err{color:#c62828}#lg .w{color:#a56a00}
+.sec{margin-top:14px}.cells{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:8px}.sec.t .cells{grid-template-columns:1fr}
+.cell{border:1px solid var(--l);background:#fff}.cell img,.cell video{width:100%;display:block}.cell p{margin:0;padding:6px 8px;font-size:12px;color:#4a5160}.dl{display:block;padding:6px 8px;font:10px 'Space Mono';color:var(--b)}
+.ph{padding:30px 10px;text-align:center;color:var(--m);font:11px 'Space Mono'}.ph.err{color:#c62828}pre{margin:0;padding:10px;white-space:pre-wrap;font:12px/1.5 'Space Mono'}
+dialog{border:1px solid var(--k);padding:20px;max-width:580px;width:92%}dialog::backdrop{background:#fffb;backdrop-filter:blur(4px)}
+#toast{position:fixed;right:16px;bottom:16px;background:var(--k);color:#fff;padding:10px 14px;max-width:340px;display:none;z-index:9}
+</style></head><body>
+<header class="hud"><b class="logo" onclick="home()">APPFORGE</b><span class="mono">SYS//AI-STUDIO</span><span class="sp"></span><span class="mono" id="st"></span><button class="btn o" onclick="keys()">CLÉS API</button></header>
+<main id="home"><section class="hero"><svg class="ring" viewBox="0 0 200 200" fill="none" stroke="#0a6cff"><circle cx="100" cy="100" r="96" stroke-dasharray="2 6"/><circle cx="100" cy="100" r="76"/><circle cx="100" cy="100" r="56" stroke-dasharray="14 4"/><path d="M100 4v192M4 100h192" stroke-opacity=".3"/></svg>
+<p class="mono">DÉCRIS, FORGE, UTILISE</p><h1>Crée l'application<br>que tu imagines.</h1><p class="lead">Écris ce que l'application doit faire. L'IA fabrique le formulaire et la chaîne de génération (texte, image, vidéo), prête à servir tout de suite.</p>
+<div class="card"><textarea id="desc" placeholder="Ex : je choisis une photo de mon téléphone, l'app en fait une vidéo de kung-fu, de football ou de western…"></textarea><div class="chips" id="ex"></div><button class="btn" id="fg" onclick="doForge()">FORGER L'APPLICATION ▸</button></div></section>
+<p class="mono">APPLICATIONS PRÊTES</p><div class="g" id="pre"></div><p class="mono" id="lh" hidden>MA BIBLIOTHÈQUE</p><div class="g" id="lib"></div></main>
+<main id="app" hidden><div class="bar2"><button class="btn o" onclick="home()">◂ ACCUEIL</button><h2 id="an"></h2><span class="sp"></span><button class="btn o" onclick="save()">SAUVER</button><button class="btn o" onclick="share()">LIEN</button><button class="btn o" onclick="edit()">JSON</button></div>
+<div class="app"><div class="card"><div id="form"></div><div class="row"><button class="btn" id="go" onclick="launch()">LANCER ▸</button><button class="btn o" onclick="S.stop=true">STOP</button></div><label>MODIFIER CETTE APP AVEC L'IA</label><input id="rm" placeholder="Ajoute un choix de musique, passe en 16:9…"><div class="row"><button class="btn o" onclick="remix()">REMIXER</button></div></div>
+<div><div class="card"><div class="mono" id="stat" style="margin:0">PRÊT</div><div class="bar"><i id="pb"></i></div><div id="lg"></div></div><div id="res"></div></div></div></main>
+<dialog id="dk"><h2>Clés API</h2><label>CLÉ AGNÈS (apihub.agnes-ai.com)</label><input id="kag" type="password" placeholder="sk-…"><label>CLÉS MISTRAL, UNE PAR LIGNE (optionnel)</label><textarea id="kmi"></textarea><label>MOTEUR TEXTE</label><select id="ken"><option value="agnes">Agnès</option><option value="mistral">Mistral (si clés)</option></select><label>MODÈLE MISTRAL</label><select id="kmm"><option>mistral-small-2603</option><option>mistral-medium-2508</option><option>mistral-large-2512</option><option>ministral-8b-2512</option><option>labs-mistral-small-creative</option></select>
+<p class="mono">Les clés restent dans ce navigateur (localStorage).</p><div class="row"><button class="btn" onclick="saveKeys()">ENREGISTRER</button><button class="btn o" onclick="testKeys()">TESTER</button><button class="btn o" onclick="$('#dk').close()">FERMER</button></div></dialog>
+<dialog id="dj"><h2>Spécification JSON</h2><textarea id="js" style="min-height:300px;font:12px 'Space Mono'"></textarea><div class="row"><button class="btn" onclick="applyJson()">APPLIQUER</button><button class="btn o" onclick="$('#dj').close()">FERMER</button></div></dialog><div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LS=(k,v)=>{try{return v===undefined?JSON.parse(localStorage.getItem('af_'+k)):localStorage.setItem('af_'+k,JSON.stringify(v))}catch(e){return null}};
+const AG='https://apihub.agnes-ai.com/v1',POLL='https://apihub.agnes-ai.com/agnesapi',MI='https://api.mistral.ai/v1';
+const MOD={t:'agnes-2.5-flash',i:'agnes-image-2.5-flash',v:'agnes-video-2.5-flash'};
+const S={stop:false,run:false,app:null,imgs:{},mi:0,vids:[]},T={t:0,i:0,v:0};
+const CFG=Object.assign({ag:'',mi:[],eng:'agnes',mm:'mistral-small-2603'},LS('cfg')||{});
+const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t.h);t.h=setTimeout(()=>t.style.display='none',4500)};
+const log=(m,c='')=>{const l=$('#lg');l.insertAdjacentHTML('beforeend',`<div class="${c}">${esc(m)}</div>`);l.scrollTop=1e9};
+const pj=t=>{t=t.replace(/```json|```/g,'');const a=t.search(/[\[{]/),b=Math.max(t.lastIndexOf('}'),t.lastIndexOf(']'));return JSON.parse(t.slice(a,b+1))};
+const get=(c,p)=>p.split('.').reduce((o,k)=>o==null?o:o[Array.isArray(o)&&k=='i'?c.i:k],c);
+const fill=(t,c)=>String(t??'').replace(/\{\{\s*([\w.]+)\s*\}\}/g,(m,p)=>{const v=get(c,p);return v==null?'':typeof v=='string'?(v.startsWith('data:')?'(image jointe)':v):JSON.stringify(v)});
+const refs=(l,c)=>[].concat(...(l||[]).map(p=>get(c,p))).filter(v=>typeof v=='string'&&/^(data:|https?:)/.test(v));
+const H=()=>({Authorization:'Bearer '+CFG.ag,'Content-Type':'application/json'});
+async function wait(ms,l){for(let t=Math.ceil(ms/1000);t>0;t--){if(S.stop)throw Error('Arrêt demandé');$('#stat').textContent=l+' · '+t+'s';await sleep(1000)}}
+async function gate(k,g){const w=T[k]+g-Date.now();if(w>0)await wait(w,k=='v'?'QUOTA VIDÉO GRATUIT (1 CLIP/MIN)':'PAUSE');T[k]=Date.now()}
+async function http(u,o,l){for(let a=0;a<7;a++){if(S.stop)throw Error('Arrêt demandé');let r;
+ try{r=await fetch(u,o)}catch(e){if(a>3)throw e;await wait(4000*(a+1),l+' réseau');continue}
+ if(r.ok)return r;const t=await r.text();
+ if(r.status==429||r.status==503||(r.status>=500&&a<4)){log(l+' HTTP '+r.status+' · nouvelle tentative','w');await wait(Math.min(70,10*2**a)*1000,l+' '+r.status);continue}
+ const e=Error(l+' HTTP '+r.status+' — '+t.slice(0,200));e.http=r.status;throw e}throw Error(l+' : trop de tentatives')}
+async function mis(p,b){const ks=CFG.mi;for(let a=0;a<ks.length*2;a++){const k=ks[S.mi++%ks.length];const r=await fetch(MI+p,{method:'POST',headers:{Authorization:'Bearer '+k,'Content-Type':'application/json'},body:JSON.stringify(b)});if(r.ok)return r;if(r.status==429){await wait(3000,'MISTRAL 429, CLÉ SUIVANTE');continue}throw Error('Mistral HTTP '+r.status+' '+(await r.text()).slice(0,160))}throw Error('Mistral : quota épuisé')}
+async function txt(s,c,json){const F=s.raw?x=>x:x=>fill(x,c),m=[{role:'system',content:F(s.system||'')},{role:'user',content:F(s.prompt||'')}],b={messages:m,temperature:+(s.temp??.7),max_tokens:s.max||6000};if(json)b.response_format={type:'json_object'};
+ for(let a=0;a<2;a++){await gate('t',CFG.eng=='agnes'?2200:600);let r;
+  if(CFG.eng=='mistral'&&CFG.mi.length){b.model=CFG.mm;r=await mis('/chat/completions',b)}else{b.model=MOD.t;r=await http(AG+'/chat/completions',{method:'POST',headers:H(),body:JSON.stringify(b)},'Texte')}
+  const t=(await r.json()).choices?.[0]?.message?.content;if(!t)throw Error('Réponse texte vide');if(!json)return t;
+  try{return pj(t)}catch(e){m.push({role:'assistant',content:t},{role:'user',content:'JSON invalide. Renvoie uniquement le JSON corrigé.'})}}throw Error('JSON illisible')}
+async function pollV(id){for(let t=0;t<220;t++){if(S.stop)throw Error('Arrêt demandé');await sleep(t<6?5000:9000);let r;
+ try{r=await fetch(POLL+'?video_id='+encodeURIComponent(id)+'&model_name='+MOD.v,{headers:{Authorization:'Bearer '+CFG.ag}})}catch(e){continue}
+ if(r.status==401||r.status==403)throw Error('Clé Agnès refusée');if(r.status==429){await sleep(30000);continue}if(!r.ok)continue;
+ const j=await r.json().catch(()=>null);if(!j)continue;const st=String(j.status||j.metadata?.status||'').toLowerCase();/* statut normalisé : COMPLETED, Succeeded… */
+ if(['completed','succeeded','success','done'].includes(st)){const u=j.url||j.metadata?.url||j.data?.url;if(!u)throw Error('Vidéo sans URL');return u}
+ if(['failed','error','cancelled','canceled'].includes(st))throw Error(j.error?.message||j.message||'Échec vidéo')}throw Error('Délai vidéo dépassé')}
+/* ===== BLOCS : chaque bloc = fonction(step, contexte) ===== */
+const B={
+'text.gen':(s,c)=>txt(s,c,false),
+'text.json':(s,c)=>txt(s,c,true),
+'vision.describe':async(s,c)=>{const im=refs(s.images,c).slice(0,4);if(!CFG.mi.length)throw Error('vision.describe demande une clé Mistral (menu Clés API)');
+ const r=await mis('/chat/completions',{model:'pixtral-large-2411',messages:[{role:'user',content:[{type:'text',text:fill(s.prompt||'Describe precisely the people and scene (face, hair, clothes) in English, 80 words max.',c)},...im.map(u=>({type:'image_url',image_url:u}))]}],max_tokens:500});return(await r.json()).choices[0].message.content},
+'rss.fetch':async(s,c)=>{const u=fill(s.url,c),cl=t=>(t||'').replace(/<[^>]+>/g,'').slice(0,240);
+ try{const j=await(await fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(u))).json();if(j.items?.length)return j.items.slice(0,12).map(i=>({title:i.title,desc:cl(i.description)}))}catch(e){}
+ const x=new DOMParser().parseFromString(await(await fetch('https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(u))).text(),'text/xml');
+ return[...x.querySelectorAll('item')].slice(0,12).map(i=>({title:i.querySelector('title')?.textContent,desc:cl(i.querySelector('description')?.textContent)}))},
+'image.gen':async(s,c)=>{await gate('i',500);const rf=refs(s.refs,c).slice(0,3),ex={response_format:'url'};if(rf.length)ex.image=rf;
+ const r=await http(AG+'/images/generations',{method:'POST',headers:H(),body:JSON.stringify({model:MOD.i,prompt:fill(s.prompt,c),n:1,size:'1K',ratio:s.ratio||'9:16',extra_body:ex})},'Image');
+ const d=(await r.json()).data?.[0];if(!d)throw Error('Image vide');return d.url||'data:image/png;base64,'+d.b64_json},
+'video.gen':async(s,c)=>{await gate('v',62000);const im=refs(s.images,c).slice(0,5);
+ const mk=async ims=>{const r=await http(AG+'/videos',{method:'POST',headers:H(),body:JSON.stringify({model:MOD.v,prompt:fill(s.prompt,c),seconds:String(s.seconds||6),size:'720P',aspect_ratio:s.ratio||'9:16',n:1,mode:ims.length?'reference':'text',...(ims.length?{images:ims}:{})})},'Vidéo');
+  const j=await r.json(),id=j.video_id||j.id||j.task_id;if(!id)throw Error('Aucun video_id');return id};
+ let id;try{id=await mk(im)}catch(e){if(e.http==400&&im.length>1)id=await mk(im.slice(0,1));else throw e}return{later:pollV(id)}}};
+/* ===== Raccourci "film" : scénario → images → vidéos ===== */
+const PS='Tu es réalisateur et scénariste. Réponds UNIQUEMENT en JSON : {"title":"","scenes":[{"visual":"description d\'image en anglais, précise","motion":"action et mouvement de caméra en anglais","caption":"phrase courte en français"}]} avec EXACTEMENT {{scenes}} scènes. Mêmes personnages, décor et style d\'un plan à l\'autre ; chaque plan fait avancer l\'histoire.';
+function expand(o){if(!o.film)return o;const f=o.film,rf=f.refs||[],r=f.ratio||'9:16',st=[...(f.pre||[])];
+ st.push({id:'plan',block:'text.json',label:'Scénario',system:PS,prompt:f.plan});
+ st.push({id:'img',block:'image.gen',label:'Images',each:'plan.scenes',prompt:'{{item.visual}}. '+(f.look||''),refs:rf,ratio:r});
+ if(f.video!==false)st.push({id:'vid',block:'video.gen',label:'Vidéos',each:'plan.scenes',prompt:'{{item.motion}}. '+(f.fx||'')+' No text, no subtitles, no logos.',images:['img.i',...rf],seconds:f.seconds||6,ratio:r});
+ return{...o,steps:st}}
+function valid(o){if(!o||typeof o!='object')return'Spécification invalide';if(!o.name)return'Nom manquant';if(!Array.isArray(o.fields))o.fields=[];
+ const ids=new Set;o.fields.forEach(f=>{f.id=String(f.id||'champ').replace(/\W/g,'_');f.type=['text','textarea','select','chips','image','number','range','toggle'].includes(f.type)?f.type:'text';ids.add(f.id)});
+ if(o.film&&!ids.has('scenes'))o.fields.push({id:'scenes',label:'Nombre de plans',type:'range',min:1,max:6,default:3});
+ const a=expand(o);if(!Array.isArray(a.steps)||!a.steps.length)return'Aucune étape';for(const s of a.steps)if(!B[s.block])return'Bloc inconnu : '+s.block;return''}
+const FORGE=`Tu es le compilateur d'AppForge. Transforme la demande en une application JSON exécutable. Réponds UNIQUEMENT par un objet JSON.
+Schéma : {"name":"…","icon":"emoji","desc":"phrase FR","fields":[{"id":"snake_case","label":"FR","type":"text|textarea|select|chips|image|number|range|toggle","options":["…"],"default":"…","min":1,"max":6,"multi":false,"required":false,"placeholder":""}],"film":{…}}
+"film" = pipeline standard scénario→images→vidéos : {"plan":"consigne au scénariste ; injecte les champs avec {{id_champ}}","look":"style visuel EN ajouté à chaque image","fx":"style de mouvement EN ajouté à chaque vidéo","refs":["id_champ_image"],"ratio":"9:16|16:9|1:1","seconds":6,"video":true}
+Règles : toujours un champ range id "scenes" (min 1, max 6, default 3). Si l'utilisateur fournit une photo, ajoute un champ type image (required) et mets son id dans refs ; dans look écris "same person as the reference photo, faithful face". video:false pour des images seules. Pour une app texte seul, remplace "film" par "steps":[{"id":"x","block":"text.gen","label":"FR","system":"…","prompt":"… {{champ}}"}].
+Blocs : text.gen, text.json, vision.describe(images:[champ]), image.gen(each,prompt,refs,ratio), video.gen(each,prompt,images,seconds,ratio), rss.fetch(url,hide:true). Chemins : "plan.scenes", "img.i" (index courant), "item.visual". Prompts image/vidéo en anglais ; libellés en français. 4 à 8 champs utiles, 6 à 10 options riches par select/chips.`;
+async function forge(d,base){const o=await txt({raw:true,system:FORGE,prompt:(base?'Application actuelle : '+JSON.stringify(base)+'\nModification demandée : ':'Demande : ')+d,max:5000,temp:.4},{},true);const e=valid(o);if(e)throw Error(e);return o}
+/* ===== Catalogue ===== */
+const SC={id:'scenes',label:'Nombre de plans',type:'range',min:1,max:6,default:3};
+const PRE=[
+{name:'Photo → vidéo de style',icon:'📸',desc:'Ta photo devient la star d\'un film : kung-fu, foot, western…',fields:[{id:'photo',label:'Ta photo',type:'image',required:true},{id:'style',label:'Style',type:'chips',options:['Kung-fu Shaw Brothers','Football épique','Western spaghetti','Samouraï','Super-héros','Danse de rue','Cyberpunk','Aventurier','Astronaute','Roi médiéval'],default:'Kung-fu Shaw Brothers'},{id:'action',label:'Action précise (optionnel)',type:'text',placeholder:'Il esquive une pluie de flèches'},SC],
+ film:{plan:'Le personnage de la photo de référence est le héros. Style : {{style}}. Action voulue : {{action}}. Invente {{scenes}} plans spectaculaires enchaînés.',look:'same person as the reference photo, faithful face and hair, cinematic, highly detailed',fx:'dynamic camera, fluid believable motion, same face',refs:['photo']}},
+{name:'Chatons arts martiaux',icon:'🐱',desc:'Des animaux qui se battent comme dans un film des années 70.',fields:[{id:'hero',label:'Héros',type:'text',default:'trois chatons'},{id:'style',label:'Ambiance',type:'select',options:['Kung-fu Hong Kong 70s','Samouraï noir et blanc','Tournoi de sumo','Ninja de nuit','Western de chats'],default:'Kung-fu Hong Kong 70s'},SC],
+ film:{plan:'Héros : {{hero}}, naturels, sans vêtements. Ambiance : {{style}}. Combats chorégraphiés, de plus en plus intenses.',look:'natural animals, detailed fur, expressive eyes, vintage martial arts film grain',fx:'fast martial arts choreography, acrobatic, taiko drums feeling'}},
+{name:'Le JT sketch',icon:'📰',desc:'L\'actualité du jour en sketchs rétrofuturistes.',fields:[{id:'rss',label:'Source',type:'select',options:['France 24::https://www.france24.com/fr/rss','Le Monde::https://www.lemonde.fr/rss/une.xml','Google Actualités::https://news.google.com/rss?hl=fr&gl=FR&ceid=FR:fr'],default:'France 24'},{id:'ton',label:'Ton',type:'chips',options:['Satirique','Sérieux','Délirant'],default:'Satirique'},SC],
+ film:{pre:[{id:'news',block:'rss.fetch',label:'Actualités',url:'{{rss}}',hide:true}],plan:'Actualités : {{news}}. Ton : {{ton}}. Fais un JT de {{scenes}} sketchs : présentateur au plateau qui annonce, puis reporter sur le terrain qui lâche une phrase drôle liée à l\'actu.',look:'very colorful, retro-futuristic funny costumes, hallucinating TV set',fx:'broadcast camera moves, comedic timing'}},
+{name:'Film de mafieux',icon:'🎩',desc:'Toi et tes amis dans un film noir (jusqu\'à 3 photos).',fields:[{id:'cast',label:'Les visages (1 à 3 photos)',type:'image',multi:true,required:true},{id:'lieu',label:'Lieu',type:'select',options:['Restaurant italien','Casino','Port de nuit','Villa'],default:'Restaurant italien'},{id:'intrigue',label:'Intrigue',type:'text',default:'Une trahison pendant un dîner'},SC],
+ film:{plan:'Un film de mafia sérieux avec les personnages des photos. Lieu : {{lieu}}. Intrigue : {{intrigue}}.',look:'faithful faces from the references, dark gold low-key lighting, 1970s crime film',fx:'slow elegant camera, tense atmosphere',refs:['cast'],ratio:'16:9'}},
+{name:'Pack d\'avatars',icon:'🖼️',desc:'Ta photo en plusieurs styles d\'images, sans vidéo.',fields:[{id:'photo',label:'Ta photo',type:'image',required:true},{id:'styles',label:'Styles',type:'chips',multi:true,options:['Manga','Pixar 3D','Peinture à l\'huile','Cyberpunk','Pixel art','Affiche rétro','Comics','Aquarelle'],default:'Manga'},SC],
+ film:{video:false,plan:'Un portrait par plan, chacun dans un style différent choisi parmi : {{styles}}.',look:'same person as the reference photo, faithful face, centered portrait',refs:['photo'],ratio:'1:1'}},
+{name:'Scénariste express',icon:'✍️',desc:'Idée → scénario complet (texte seul, Agnès ou Mistral).',fields:[{id:'idea',label:'Idée',type:'textarea',required:true},{id:'genre',label:'Genre',type:'chips',options:['Comédie','Thriller','Science-fiction','Drame','Conte'],default:'Comédie'}],
+ steps:[{id:'script',block:'text.gen',label:'Scénario',system:'Tu es scénariste professionnel. Écris en français, avec dialogues.',prompt:'Idée : {{idea}}. Genre : {{genre}}. Écris un court-métrage : titre, personnages, 5 séquences dialoguées.'}]}];
+const EX=['Ma photo devient un film de kung-fu','Mon selfie en pub de parfum de luxe','Mon chien en héros de western','Roman-photo drôle avec mes amis','Clip de foot où je suis la star'];
+/* ===== Interface ===== */
+const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))),dec=s=>JSON.parse(decodeURIComponent(escape(atob(s))));
+const lib=()=>LS('lib')||[];
+function stat(){$('#st').textContent=CFG.ag?'● AGNÈS PRÊTE'+(CFG.mi.length?' + MISTRAL':''):'○ CLÉ MANQUANTE'}
+function home(){S.stop=true;$('#app').hidden=true;$('#home').hidden=false;
+ $('#pre').innerHTML=PRE.map((p,i)=>`<div class="card pc" onclick="openApp(JSON.parse(JSON.stringify(PRE[${i}])))"><div class="ic">${p.icon}</div><h2>${esc(p.name)}</h2><p>${esc(p.desc)}</p></div>`).join('');
+ const L=lib();$('#lh').hidden=!L.length;$('#lib').innerHTML=L.map((p,i)=>`<div class="card pc" onclick="openApp(lib()[${i}])"><div class="ic">${esc(p.icon||'⚙️')}</div><h2>${esc(p.name)}</h2><p>${esc(p.desc||'')}</p><p class="mono" onclick="event.stopPropagation();LS('lib',lib().filter((x,j)=>j!=${i}));home()">SUPPRIMER ×</p></div>`).join('')}
+function openApp(a){const e=valid(a);if(e)return toast(e);S.app=a;S.stop=S.run;/* une génération encore en cours sur l'app précédente est arrêtée (sinon elle continue en arrière-plan) */$('#home').hidden=true;$('#app').hidden=false;$('#an').textContent=(a.icon||'')+' '+a.name;$('#res').innerHTML='';$('#lg').innerHTML='';$('#pb').style.width=0;$('#stat').textContent='PRÊT';form()}
+const calib=f=>new Promise((ok,ko)=>{const r=new FileReader();r.onload=()=>{const i=new Image();i.onload=()=>{let w=i.width,h=i.height;if(Math.max(w,h)>1024){const k=1024/Math.max(w,h);w=Math.round(w*k);h=Math.round(h*k)}if(Math.min(w,h)<256){const k=256/Math.min(w,h);w=Math.round(w*k);h=Math.round(h*k)}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(i,0,0,w,h);ok(c.toDataURL('image/jpeg',.9))};i.onerror=ko;i.src=r.result};r.onerror=ko;r.readAsDataURL(f)});
+function form(){S.imgs={};$('#form').innerHTML=S.app.fields.map(f=>{const i='f_'+f.id,o=(f.options||[]).map(x=>String(x).split('::')),d=f.default??'';let h;
+ if(f.type=='textarea')h=`<textarea id="${i}" placeholder="${esc(f.placeholder)}">${esc(d)}</textarea>`;
+ else if(f.type=='select')h=`<select id="${i}">${o.map(x=>`<option value="${esc(x[1]||x[0])}" ${x[0]==d?'selected':''}>${esc(x[0])}</option>`).join('')}</select>`;
+ else if(f.type=='chips')h=`<div class="chips" id="${i}">${o.map(x=>`<button type="button" data-v="${esc(x[1]||x[0])}" class="${x[0]==d?'on':''}">${esc(x[0])}</button>`).join('')}</div>`;
+ else if(f.type=='image')h=`<input type="file" id="${i}" accept="image/*" ${f.multi?'multiple':''}><div class="th" id="t_${f.id}"></div>`;
+ else if(f.type=='toggle')h=`<input type="checkbox" id="${i}" ${d?'checked':''}>`;
+ else if(f.type=='range')h=`<input type="range" id="${i}" min="${f.min||1}" max="${f.max||6}" value="${d||f.min||1}" oninput="this.nextElementSibling.textContent=this.value"> <b>${d||f.min||1}</b>`;
+ else h=`<input id="${i}" type="${f.type=='number'?'number':'text'}" value="${esc(d)}" placeholder="${esc(f.placeholder)}">`;
+ return`<label>${esc(f.label)}${f.required?' *':''}</label>${h}`}).join('');
+ $$('#form .chips').forEach(b=>b.onclick=e=>{const t=e.target.closest('button');if(!t)return;const f=S.app.fields.find(x=>'f_'+x.id==b.id);if(!f.multi)b.querySelectorAll('.on').forEach(x=>x.classList.remove('on'));t.classList.toggle('on',f.multi?!t.classList.contains('on'):true)});
+ $$('#form input[type=file]').forEach(el=>el.onchange=async()=>{const id=el.id.slice(2);S.imgs[id]=[];try{for(const f of[...el.files].slice(0,3))S.imgs[id].push(await calib(f))}catch(e){toast('Image illisible')}$('#t_'+id).innerHTML=S.imgs[id].map(u=>`<img src="${u}">`).join('')})}
+function readVals(){const v={};for(const f of S.app.fields){const e=$('#f_'+f.id);v[f.id]=f.type=='image'?(f.multi?S.imgs[f.id]||[]:(S.imgs[f.id]||[])[0]):f.type=='chips'?$$('#f_'+f.id+' .on').map(x=>x.dataset.v).join(', '):f.type=='toggle'?e.checked:f.type=='range'||f.type=='number'?+e.value:e.value}return v}
+function cell(s,v,it){if(v==null)return'';const cp=it?.caption?`<p>${esc(it.caption)}</p>`:'';
+ if(s.block=='image.gen')return`<a href="${esc(v)}" target="_blank"><img src="${esc(v)}"></a>${cp}`;
+ if(s.block=='video.gen')return`<video src="${esc(v)}" controls loop playsinline></video>${cp}<a class="dl" href="${esc(v)}" target="_blank" download>⭳ TÉLÉCHARGER</a>`;
+ return`<pre>${esc(typeof v=='string'?v:JSON.stringify(v,null,1))}</pre>`}
+async function launch(){if(S.run)return;const a=expand(S.app);
+ /* clé Agnès seulement pour les images/vidéos, ou pour le texte si Mistral n'est pas configuré */
+ if(!CFG.ag&&a.steps.some(s=>/^(image|video)\./.test(s.block)||(/^text\./.test(s.block)&&!(CFG.eng=='mistral'&&CFG.mi.length)))){keys();return toast('Clé Agnès requise')}
+ const c=readVals();for(const f of S.app.fields)if(f.required&&(c[f.id]==null||c[f.id].length===0))return toast('Champ requis : '+f.label);
+ S.run=true;S.stop=false;$('#go').disabled=true;$('#res').innerHTML='';$('#lg').innerHTML='';S.vids=[];
+ try{for(let si=0;si<a.steps.length;si++){const s=a.steps[si],blk=B[s.block],key=s.out||s.id,arr=s.each?get(c,s.each):null;
+  if(s.each&&!Array.isArray(arr))throw Error('Étape « '+(s.label||s.id)+' » : liste introuvable ('+s.each+')');
+  const n=arr?arr.length:1,show=!(s.hide||/rss|vision/.test(s.block));
+  if(show)$('#res').insertAdjacentHTML('beforeend',`<section class="card sec ${/text/.test(s.block)?'t':''}" id="r${si}"><div class="mono" style="margin:0">${si+1}/${a.steps.length} — ${esc(s.label||s.id)}</div><div class="cells">${'<div class="cell"><div class="ph">···</div></div>'.repeat(n)}</div></section>`);
+  const put=(i,v,err)=>{const e=$(`#r${si} .cells`)?.children[i];if(e)e.innerHTML=err?`<div class="ph err">${esc(err)}</div>`:cell(s,v,arr?.[i])};
+  const st=i=>{$('#stat').textContent=(s.label||s.id).toUpperCase()+(arr?` · ${i}/${n}`:'');$('#pb').style.width=Math.round((si+(arr?i/n:0))/a.steps.length*100)+'%'};
+  const out=arr?[]:null,pend=[];
+  if(s.block=='video.gen'&&arr)log(`${n} clips × ${s.seconds||6}s = ${n*(s.seconds||6)}s de vidéo (quota gratuit : 500 s/jour, 1 clip/min)`,'w');
+  for(let i=0;i<n;i++){if(S.stop)throw Error('Arrêt demandé');c.i=i;c.i1=i+1;c.n=n;if(arr)c.item=arr[i];st(i);
+   try{const r=await blk(s,c);
+    if(r&&r.later)pend.push(r.later.then(u=>{if(arr)out[i]=u;else c[key]=u;put(i,u);log('✓ clip '+(i+1),'ok')}).catch(e=>{put(i,0,e.message);log('✗ clip '+(i+1)+' : '+e.message,'err')}));
+    else{if(arr)out[i]=r;else c[key]=r;put(i,r)}}
+   catch(e){if(!arr||s.block=='text.json'||e.message=='Arrêt demandé')throw e;put(i,0,e.message);log('✗ '+(s.label||s.id)+' '+(i+1)+' : '+e.message,'err')}}
+  await Promise.all(pend);if(arr)c[key]=out;if(s.block=='video.gen'&&out)S.vids=out.filter(Boolean);log('✓ '+(s.label||s.id),'ok')}
+  $('#pb').style.width='100%';$('#stat').textContent='TERMINÉ';
+  if(S.vids.length>1)$('#res').insertAdjacentHTML('beforeend','<section class="card sec"><div class="mono" style="margin:0">MONTAGE</div><video id="pl" controls playsinline style="max-width:340px;display:block;margin:8px 0"></video><button class="btn o" onclick="playAll()">▶ LECTURE ENCHAÎNÉE</button></section>');
+ }catch(e){log(e.message,'err');$('#stat').textContent='ARRÊTÉ';toast(e.message)}
+ S.run=false;$('#go').disabled=false}
+function playAll(){let k=0;const p=$('#pl'),nx=()=>{p.src=S.vids[k];p.play()};p.onended=()=>{if(++k<S.vids.length)nx()};nx()}
+async function doForge(){const d=$('#desc').value.trim();if(d.length<8)return toast('Décris ton application en une phrase.');if(!CFG.ag&&!(CFG.eng=='mistral'&&CFG.mi.length)){keys();return toast('Clé requise')}
+ const b=$('#fg');b.disabled=true;b.textContent='COMPILATION…';S.stop=false;try{openApp(await forge(d))}catch(e){toast(e.message)}b.disabled=false;b.textContent="FORGER L'APPLICATION ▸"}
+async function remix(){const d=$('#rm').value.trim();if(!d)return;toast('Remix en cours…');S.stop=false;try{openApp(await forge(d,S.app));$('#rm').value=''}catch(e){toast(e.message)}}
+function save(){const L=lib();L.push(S.app);LS('lib',L);toast('Application sauvegardée dans la bibliothèque')}
+function share(){const u=location.href.split('#')[0]+'#a='+enc(S.app);navigator.clipboard?.writeText(u).then(()=>toast('Lien copié : l\'app est dans l\'URL'),()=>prompt('Copie ce lien',u))}
+function edit(){$('#js').value=JSON.stringify(S.app,null,1);$('#dj').showModal()}
+function applyJson(){try{const o=JSON.parse($('#js').value);$('#dj').close();openApp(o)}catch(e){toast('JSON invalide : '+e.message)}}
+function keys(){$('#kag').value=CFG.ag;$('#kmi').value=CFG.mi.join('\n');$('#ken').value=CFG.eng;$('#kmm').value=CFG.mm;$('#dk').showModal()}
+function saveKeys(){Object.assign(CFG,{ag:$('#kag').value.trim(),mi:$('#kmi').value.split('\n').map(x=>x.trim()).filter(Boolean),eng:$('#ken').value,mm:$('#kmm').value});if(CFG.eng=='mistral'&&!CFG.mi.length)CFG.eng='agnes';LS('cfg',CFG);stat();$('#dk').close();toast('Clés enregistrées')}
+async function testKeys(){const k=$('#kag').value.trim();let m='';try{if(k){const r=await fetch(AG+'/models',{headers:{Authorization:'Bearer '+k}});m+='Agnès : '+(r.ok?'OK':'HTTP '+r.status)+'  '}
+ const mk=$('#kmi').value.split('\n')[0].trim();if(mk){const r=await fetch(MI+'/models',{headers:{Authorization:'Bearer '+mk}});m+='Mistral : '+(r.ok?'OK':'HTTP '+r.status)}}catch(e){m+='Réseau/CORS : '+e.message}toast(m||'Aucune clé saisie')}
+$('#ex').innerHTML=EX.map(x=>`<button type="button">${esc(x)}</button>`).join('');$('#ex').onclick=e=>{if(e.target.tagName=='BUTTON')$('#desc').value=e.target.textContent};
+stat();home();if(location.hash.startsWith('#a=')){try{openApp(dec(location.hash.slice(3)))}catch(e){toast('Lien invalide')}}
+</script></body></html>

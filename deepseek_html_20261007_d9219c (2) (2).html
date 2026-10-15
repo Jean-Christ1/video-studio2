@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cinéma Studio — News × Réalisateurs × Style</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+--bg:#0a0a12;--bg2:#12121c;--bg3:#1a1a28;
+--panel:#16161f;--border:#2a2a3a;
+--ink:#e8e6e0;--dim:#8a8896;--faint:#4a4858;
+--acc:#e5c15a;--acc2:#e87b35;
+--ok:#4a9d6a;--err:#c85a4a;--warn:#d4a017;
+--r:6px;--fs:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
+--fm:ui-monospace,'SF Mono',Menlo,monospace;
+}
+html,body{background:var(--bg)}
+body{font-family:var(--fs);background:var(--bg);color:var(--ink);min-height:100vh;padding:1.5rem 1rem 20rem;font-size:15px;line-height:1.55;max-width:1100px;margin:0 auto}
+header{margin-bottom:1.5rem;text-align:center;padding:1rem 0 1.5rem;position:relative}
+header::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:140px;height:1px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.5}
+h1{font-size:1.9rem;font-weight:300;margin-bottom:.4rem;background:linear-gradient(135deg,var(--acc2),var(--acc));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.subtitle{font-size:.85rem;color:var(--dim);font-style:italic}
+.toast{position:fixed;top:1.5rem;left:50%;transform:translateX(-50%) translateY(-120px);background:var(--bg3);color:var(--ink);border:1px solid var(--border);border-left:3px solid var(--acc);padding:.85rem 1.4rem;border-radius:var(--r);font-size:.85rem;box-shadow:0 8px 32px rgba(0,0,0,.6);z-index:1000;opacity:0;transition:transform .35s cubic-bezier(.2,.9,.3,1.2),opacity .35s;max-width:90vw;text-align:center;display:flex;align-items:center;gap:.6rem}
+.toast.visible{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.success{border-left-color:var(--ok)}.toast.error{border-left-color:var(--err)}.toast.warn{border-left-color:var(--warn)}
+.banner{background:var(--panel);border:1px solid var(--border);border-left:2px solid var(--acc);padding:1rem 1.15rem;border-radius:var(--r);font-size:.8rem;color:var(--dim);margin-bottom:1.2rem;line-height:1.6}
+.banner strong{color:var(--ink)}.banner .hl{color:var(--acc)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem 1.3rem;margin-bottom:1rem}
+.panel.ok{box-shadow:inset 3px 0 0 var(--ok)}
+input[type=password],input[type=text],textarea{width:100%;padding:.85rem 1rem;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-family:var(--fm);font-size:.82rem;margin-bottom:.6rem}
+textarea{font-family:var(--fs);font-size:.88rem;line-height:1.55;resize:vertical;min-height:80px}
+input:focus,textarea:focus{outline:none;border-color:var(--acc)}
+.btn{width:100%;padding:.85rem 1.2rem;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:.85rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-bottom:.7rem;transition:all .2s;font-family:inherit}
+.btn:hover:not(:disabled){background:var(--bg3);border-color:var(--acc)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-primary{border-color:var(--acc);background:linear-gradient(135deg,rgba(232,123,53,.2),rgba(229,193,90,.15));color:var(--acc);font-size:1rem;padding:1.2rem;letter-spacing:.2em}
+.btn-stop{border-color:var(--err);color:var(--err);background:transparent;display:none}
+.btn-stop.visible{display:block}
+.status{font-size:.75rem;padding:.6rem .9rem;border-radius:var(--r);margin-bottom:.5rem;display:flex;align-items:center;gap:.6rem;background:var(--bg2);color:var(--dim);border:1px solid var(--border)}
+.status.ok{background:rgba(74,157,106,.08);color:var(--ok);border-color:rgba(74,157,106,.3)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--faint);flex-shrink:0}
+.status.ok .dot{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.hint{font-size:.72rem;color:var(--dim);margin-top:.5rem}
+.hint a{color:var(--acc);text-decoration:none}
+.section{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1rem;overflow:hidden}
+.section-header{padding:1rem 1.2rem;cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center}
+.section-title{font-size:.85rem;text-transform:uppercase;letter-spacing:.2em;color:var(--ink);font-weight:500;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.badge{display:inline-block;padding:.15rem .55rem;background:transparent;color:var(--acc);border:1px solid var(--border);border-radius:2px;font-size:.6rem;letter-spacing:.15em;font-weight:600}
+.chevron{font-size:.7rem;color:var(--faint);transition:transform .3s}
+.section.open .chevron{transform:rotate(180deg);color:var(--acc)}
+.section-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.section.open .section-body{max-height:12000px}
+.section-content{padding:0 1.2rem 1.2rem}
+.row{margin-bottom:1rem}
+.label{display:block;font-size:.72rem;color:var(--dim);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600}
+select{width:100%;padding:.8rem .95rem;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);color:var(--ink);font-size:.88rem;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23e5c15a' d='M0 0l5 6 5-6z'/></svg>");background-repeat:no-repeat;background-position:right .95rem center;background-size:10px;font-family:inherit}
+select:focus{outline:none;border-color:var(--acc)}
+select option{background:var(--bg2);color:var(--ink)}
+.palette-row{display:flex;gap:.4rem;flex-wrap:wrap}
+.palette-btn{flex:1;min-width:90px;padding:.6rem .4rem;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);color:var(--dim);font-size:.65rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .2s;text-align:center;font-family:inherit}
+.palette-btn:hover{border-color:var(--faint);color:var(--ink)}
+.palette-btn.active{border-color:var(--acc);color:var(--acc);background:rgba(229,193,90,.06)}
+.news-list{max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2)}
+.news-item{padding:.7rem .9rem;border-bottom:1px solid var(--border);font-size:.8rem;display:flex;gap:.6rem;align-items:flex-start;cursor:pointer;transition:background .2s}
+.news-item:hover{background:rgba(229,193,90,.04)}
+.news-item.selected{background:rgba(229,193,90,.08);border-left:2px solid var(--acc)}
+.news-rank{font-family:var(--fm);font-size:.65rem;color:var(--acc);font-weight:700;flex-shrink:0;min-width:20px}
+.news-title{color:var(--ink);line-height:1.4}
+.news-source{font-size:.65rem;color:var(--faint);margin-top:.2rem}
+.ref-drop{border:2px dashed var(--border);border-radius:var(--r);padding:1.2rem 1rem;background:var(--bg2);text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.ref-drop:hover{border-color:var(--acc);background:rgba(229,193,90,.03)}
+.ref-drop.has-image{padding:0;border-style:solid;border-color:var(--acc)}
+.ref-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.ref-drop .ref-icon{font-size:2rem;color:var(--acc);opacity:.6;margin-bottom:.5rem}
+.ref-drop .ref-text{font-size:.82rem;color:var(--dim);line-height:1.5}
+.ref-drop .ref-text strong{color:var(--acc)}
+.ref-drop .ref-hint{font-size:.68rem;color:var(--faint);margin-top:.4rem;font-family:var(--fm)}
+.ref-preview{position:relative;display:block;width:100%;max-height:220px;overflow:hidden}
+.ref-preview img{width:100%;height:auto;display:block;max-height:220px;object-fit:contain;background:#000}
+.ref-preview .ref-remove{position:absolute;top:.5rem;right:.5rem;background:rgba(200,90,74,.85);color:#fff;border:none;width:28px;height:28px;border-radius:50%;font-size:.9rem;cursor:pointer}
+.ref-preview .ref-label{position:absolute;bottom:0;left:0;right:0;padding:.4rem .6rem;background:linear-gradient(transparent,rgba(10,10,18,.9));font-size:.65rem;font-family:var(--fm);color:var(--acc)}
+.images-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;margin-top:1rem}
+.image-card{border-radius:var(--r);overflow:hidden;border:1px solid var(--border);background:var(--bg2);position:relative;transition:border-color .3s}
+.image-card.selected{border-color:var(--ok);box-shadow:0 0 12px rgba(74,157,106,.3)}
+.image-card .img-wrapper{position:relative}
+.image-card img{width:100%;aspect-ratio:9/16;object-fit:cover;display:block}
+.image-card .img-label{position:absolute;bottom:0;left:0;right:0;padding:.3rem .5rem;background:linear-gradient(transparent,rgba(10,10,18,.9));font-size:.6rem;font-family:var(--fm);color:var(--acc)}
+.image-card .img-checkbox{position:absolute;top:.5rem;left:.5rem;width:24px;height:24px;border-radius:4px;border:2px solid rgba(255,255,255,.5);background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:transparent;transition:all .2s}
+.image-card.selected .img-checkbox{background:var(--ok);border-color:var(--ok);color:#fff}
+.image-card.loading{display:flex;align-items:center;justify-content:center;aspect-ratio:9/16;color:var(--faint);font-size:.65rem;font-family:var(--fm)}
+.image-card.loading::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(229,193,90,.08) 50%,transparent 70%);animation:shimmer 1.8s linear infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.scenes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-top:1rem}
+.scene-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .3s}
+.scene-card.generating{border-color:var(--acc)}
+.scene-card.done{border-color:var(--ok)}
+.scene-card.error{border-color:var(--err)}
+.scene-card-header{padding:.6rem .8rem;font-size:.7rem;font-family:var(--fm);color:var(--dim);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.scene-card-body{padding:.8rem}
+.scene-card-body video{width:100%;border-radius:2px;background:#000;display:block}
+.scene-card-body img{width:100%;border-radius:2px;background:#000;display:block}
+.scene-card-prompt{font-size:.68rem;color:var(--faint);margin-top:.5rem;line-height:1.4;max-height:80px;overflow:hidden}
+.scene-placeholder{width:100%;aspect-ratio:9/16;background:#0a0a12;border-radius:2px;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:.7rem;font-family:var(--fm);flex-direction:column;gap:.5rem}
+.spinner-mini{width:14px;height:14px;border:2px solid rgba(229,193,90,.2);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.player-overlay{position:fixed;inset:0;background:#000;z-index:2000;display:none;align-items:center;justify-content:center;cursor:pointer}
+.player-overlay.visible{display:flex}
+#player-canvas{display:block;max-width:100vw;max-height:100vh;background:#000}
+.player-hint{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.55);font-size:.75rem;font-family:var(--fm);letter-spacing:.15em;text-transform:uppercase;pointer-events:none;opacity:1;transition:opacity .5s;text-align:center;background:rgba(0,0,0,.4);padding:.35rem .8rem;border-radius:3px}
+.player-hint.hidden{opacity:0}
+.player-controls{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.2rem;margin-top:1rem}
+.player-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.6rem}
+.player-row .btn{margin-bottom:0;flex:1;min-width:140px}
+.status-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg3);border-top:1px solid var(--border);color:var(--ink);padding:.85rem 1.1rem;font-size:.78rem;display:flex;align-items:center;gap:.7rem;transform:translateY(100%);transition:transform .35s cubic-bezier(.2,.9,.3,1);z-index:100;font-family:var(--fm);box-shadow:0 -4px 20px rgba(0,0,0,.4)}
+.status-bar.visible{transform:translateY(0)}
+.spinner{width:12px;height:12px;border:2px solid rgba(229,193,90,.2);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+.debug-panel{position:fixed;bottom:0;left:0;right:0;height:220px;background:#05050a;border-top:2px solid var(--acc);z-index:200;display:flex;flex-direction:column;font-family:var(--fm);box-shadow:0 -8px 32px rgba(0,0,0,.7);transition:height .3s ease}
+.debug-panel.collapsed{height:36px}
+.debug-header{display:flex;justify-content:space-between;align-items:center;padding:.5rem .8rem;background:linear-gradient(90deg,#0f0f18,#1a1a28);border-bottom:1px solid var(--border);flex-shrink:0;cursor:pointer;user-select:none}
+.debug-title{font-size:.72rem;color:var(--acc);letter-spacing:.15em;text-transform:uppercase;font-weight:600;display:flex;align-items:center;gap:.5rem}
+.debug-badge{font-size:.6rem;padding:.1rem .4rem;background:var(--acc);color:var(--bg);border-radius:2px;font-weight:700}
+.debug-actions{display:flex;gap:.3rem}
+.debug-actions button{background:transparent;border:1px solid var(--border);color:var(--dim);font-size:.62rem;padding:.25rem .55rem;border-radius:2px;cursor:pointer}
+.debug-actions button:hover{color:var(--acc);border-color:var(--acc)}
+.debug-body{flex:1;overflow-y:auto;padding:.5rem .7rem 1rem;font-size:.72rem;line-height:1.45;color:#c8c8d0}
+.debug-entry{margin-bottom:.3rem;padding:.25rem .4rem;border-left:2px solid transparent;border-radius:2px;word-break:break-word}
+.debug-entry.info{border-left-color:var(--faint)}
+.debug-entry.success{border-left-color:var(--ok);background:rgba(74,157,106,.04)}
+.debug-entry.warn{border-left-color:var(--warn);background:rgba(212,160,23,.04)}
+.debug-entry.error{border-left-color:var(--err);background:rgba(200,90,74,.06);color:#f0a0a0}
+.debug-entry.api{border-left-color:var(--acc)}
+.debug-entry.response{border-left-color:var(--acc2)}
+.debug-time{color:var(--faint);margin-right:.5rem;font-size:.65rem}
+.debug-cat{color:var(--acc);font-weight:600;margin-right:.4rem;font-size:.65rem}
+.debug-msg{color:#d8d8e0}
+.debug-data{margin-top:.3rem;padding:.4rem .5rem;background:#0a0a12;border:1px solid var(--border);border-radius:2px;font-size:.68rem;color:#a8d8b0;max-height:160px;overflow:auto;white-space:pre-wrap;word-break:break-all;line-height:1.4}
+.hidden{display:none!important}
+.script-view{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;margin-top:.8rem;font-size:.8rem;line-height:1.6;color:var(--ink);max-height:300px;overflow-y:auto;white-space:pre-wrap}
+.combo-info{background:rgba(232,123,53,.06);border:1px solid var(--acc2);border-left:2px solid var(--acc2);border-radius:var(--r);padding:.8rem 1rem;font-size:.78rem;color:var(--ink);margin-top:.8rem;line-height:1.5}
+.combo-info strong{color:var(--acc2)}
+@media(max-width:480px){h1{font-size:1.6rem}.images-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}.scenes-grid{grid-template-columns:1fr}body{padding-bottom:18rem}.debug-panel{height:180px}}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Cinéma Studio</h1>
+<p class="subtitle">News × Réalisateurs × Style × Personnage × Palettes</p>
+</header>
+
+<div class="banner">
+<strong>Pipeline :</strong> Actualités RSS → Choix du sujet → Image de référence (style + personnage) → Choix du réalisateur → Palettes → Mode combinaison folle → Génération des images (avec validation) → Scénario → Vidéos → Player séquentiel.
+</div>
+
+<!-- ═══════════ API ═══════════ -->
+<div class="panel" id="api-panel">
+<input type="password" id="api-key-input" placeholder="Collez votre clé API Agnes ici (sk-...)" autocomplete="off" spellcheck="false">
+<button type="button" class="btn" id="api-save-btn">Enregistrer la clé</button>
+<div class="status" id="api-status-line"><span class="dot"></span><span id="api-status-text">Aucune clé API enregistrée</span></div>
+<div class="hint">Clé gratuite sur <a href="https://platform.agnes-ai.com" target="_blank">platform.agnes-ai.com</a> → Settings → API Keys</div>
+</div>
+
+<!-- ═══════════ ÉTAPE 1 : NEWS ═══════════ -->
+<div class="section open" id="section-news">
+<div class="section-header" data-toggle="section-news">
+<span class="section-title">📰 1 · Actualités <span class="badge">choisissez un sujet</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="row">
+<label class="label">Catégorie des news</label>
+<select id="news-category">
+<option value="WORLD">🌍 International</option>
+<option value="NATION" selected>🇫🇷 France</option>
+<option value="BUSINESS">💼 Économie</option>
+<option value="TECHNOLOGY">💻 Technologie</option>
+<option value="SCIENCE">🔬 Science</option>
+<option value="HEALTH">🏥 Santé</option>
+<option value="SPORTS">⚽ Sport</option>
+<option value="ENTERTAINMENT">🎬 Culture</option>
+</select>
+</div>
+<button type="button" class="btn" id="load-news-btn">📡 Charger les actualités</button>
+<div class="news-list" id="news-list">
+<div style="padding:1.2rem;text-align:center;color:var(--faint);font-size:.8rem;">Cliquez sur « Charger les actualités » pour commencer.</div>
+</div>
+</div></div>
+</div>
+
+<!-- ═══════════ ÉTAPE 2 : RÉFÉRENCE STYLE ═══════════ -->
+<div class="section open" id="section-ref-style">
+<div class="section-header" data-toggle="section-ref-style">
+<span class="section-title">🎨 2 · Image de référence pour le style <span class="badge">optionnel</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="ref-drop" id="ref-style-drop">
+<input type="file" accept="image/*" id="ref-style-input">
+<div class="ref-icon">🎨</div>
+<div class="ref-text"><strong>Cliquez pour choisir une image de style</strong><br>Tableau, artwork, photo stylisée…</div>
+<div class="ref-hint">L'IA analysera uniquement son style (couleurs, lumière, texture).</div>
+</div>
+</div></div>
+</div>
+
+<!-- ═══════════ ÉTAPE 3 : RÉFÉRENCE PERSONNAGE ═══════════ -->
+<div class="section open" id="section-ref-char">
+<div class="section-header" data-toggle="section-ref-char">
+<span class="section-title">👤 3 · Image de référence pour le personnage <span class="badge">optionnel</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="ref-drop" id="ref-char-drop">
+<input type="file" accept="image/*" id="ref-char-input">
+<div class="ref-icon">👤</div>
+<div class="ref-text"><strong>Cliquez pour choisir une image de personnage</strong><br>Portrait, selfie, personnage existant…</div>
+<div class="ref-hint">L'IA préservera l'identité de ce personnage dans toutes les scènes.</div>
+</div>
+</div></div>
+</div>
+
+<!-- ═══════════ ÉTAPE 4 : RÉALISATEUR & STYLE ═══════════ -->
+<div class="section open" id="section-director">
+<div class="section-header" data-toggle="section-director">
+<span class="section-title">🎬 4 · Réalisateur & Style <span class="badge">obligatoire</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="row">
+<label class="label">Réalisateur / Style visuel</label>
+<select id="director-select"></select>
+</div>
+<div class="row">
+<label class="label">Mode combinaison folle</label>
+<div style="display:flex;align-items:center;gap:.8rem;">
+<input type="checkbox" id="combo-mode" style="width:auto;margin:0;accent-color:var(--acc);">
+<label for="combo-mode" style="font-size:.8rem;color:var(--dim);cursor:pointer;">Active la fusion aléatoire de deux styles</label>
+</div>
+<div class="combo-info hidden" id="combo-info"></div>
+</div>
+</div></div>
+</div>
+
+<!-- ═══════════ ÉTAPE 5 : PALETTE ═══════════ -->
+<div class="section open" id="section-palette">
+<div class="section-header" data-toggle="section-palette">
+<span class="section-title">🎨 5 · Palette de couleurs <span class="badge">choisissez-en une</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="palette-row" id="palette-row"></div>
+</div></div>
+</div>
+
+<!-- ═══════════ ÉTAPE 6 : PARAMÈTRES ═══════════ -->
+<div class="section" id="section-settings">
+<div class="section-header" data-toggle="section-settings">
+<span class="section-title">⚙️ 6 · Paramètres techniques</span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="row">
+<label class="label">Nombre de scènes</label>
+<select id="scene-count-select">
+<option value="3">3 scènes</option>
+<option value="5" selected>5 scènes</option>
+<option value="8">8 scènes</option>
+<option value="10">10 scènes</option>
+</select>
+</div>
+<div class="row">
+<label class="label">Durée de chaque vidéo</label>
+<select id="duration-select">
+<option value="121">5 secondes</option>
+<option value="145" selected>6 secondes</option>
+<option value="169">7 secondes</option>
+<option value="241">10 secondes</option>
+</select>
+</div>
+<div class="row">
+<label class="label">Intensité du mouvement</label>
+<select id="intensity-select">
+<option value="subtle">Subtile — contemplatif</option>
+<option value="moderate" selected>Modérée — élégante</option>
+<option value="strong">Forte — cinématographique</option>
+</select>
+</div>
+</div></div>
+</div>
+
+<!-- ═══════════ BOUTON GÉNÉRATION IMAGES ═══════════ -->
+<button type="button" class="btn btn-primary" id="generate-images-btn" disabled>
+🎨 Générer les images
+<span style="display:block;font-size:.65rem;letter-spacing:.15em;color:var(--dim);margin-top:.4rem;font-weight:400;text-transform:none;">Les images s'afficheront au fur et à mesure — cochez celles à garder</span>
+</button>
+<button type="button" class="btn btn-stop" id="stop-btn">⏹ Arrêter la génération</button>
+
+<!-- ═══════════ IMAGES GÉNÉRÉES ═══════════ -->
+<div class="section hidden" id="section-images">
+<div class="section-header" data-toggle="section-images">
+<span class="section-title">🖼️ Images générées <span class="badge" id="images-count">0</span> <span class="badge" id="images-selected-count">0 sélectionnée(s)</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="images-grid" id="images-grid"></div>
+<div style="display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap;">
+<button type="button" class="btn" id="select-all-btn" style="flex:1;min-width:120px;">Tout sélectionner</button>
+<button type="button" class="btn" id="deselect-all-btn" style="flex:1;min-width:120px;">Tout désélectionner</button>
+</div>
+</div></div>
+</div>
+
+<!-- ═══════════ BOUTON SCÉNARIO ═══════════ -->
+<button type="button" class="btn btn-primary hidden" id="generate-scenario-btn" disabled>
+📜 Générer le scénario
+<span style="display:block;font-size:.65rem;letter-spacing:.15em;color:var(--dim);margin-top:.4rem;font-weight:400;text-transform:none;">Basé sur les images sélectionnées</span>
+</button>
+
+<!-- ═══════════ SCÉNARIO ═══════════ -->
+<div class="section hidden" id="section-script">
+<div class="section-header" data-toggle="section-script">
+<span class="section-title">📜 Scénario <span class="badge" id="script-badge">—</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="script-view" id="script-view">Le scénario apparaîtra ici…</div>
+</div></div>
+</div>
+
+<!-- ═══════════ BOUTON VIDÉOS ═══════════ -->
+<button type="button" class="btn btn-primary hidden" id="generate-videos-btn" disabled>
+🎬 Générer les vidéos
+<span style="display:block;font-size:.65rem;letter-spacing:.15em;color:var(--dim);margin-top:.4rem;font-weight:400;text-transform:none;">À partir des images sélectionnées et du scénario</span>
+</button>
+
+<!-- ═══════════ VIDÉOS GÉNÉRÉES ═══════════ -->
+<div class="section hidden" id="section-videos">
+<div class="section-header" data-toggle="section-videos">
+<span class="section-title">🎞️ Vidéos générées <span class="badge" id="videos-count">0</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="scenes-grid" id="videos-grid"></div>
+</div></div>
+</div>
+
+<!-- ═══════════ PLAYER ═══════════ -->
+<div class="section hidden" id="section-player">
+<div class="section-header" data-toggle="section-player">
+<span class="section-title">▶ Player séquentiel <span class="badge" id="player-badge">0</span></span>
+<span class="chevron">▼</span>
+</div>
+<div class="section-body"><div class="section-content">
+<div class="player-controls">
+<div class="player-row">
+<button type="button" class="btn" id="play-film-btn" disabled>▶ Lire le film</button>
+</div>
+</div>
+<div class="hint">Lecture séquentielle des vidéos dans le navigateur, même si elles ne sont pas toutes prêtes.</div>
+</div></div>
+</div>
+
+<div class="status-bar" id="status-bar"><div class="spinner"></div><span id="status-text">Préparation…</span></div>
+<div class="toast" id="toast"><span id="toast-icon">✓</span><span id="toast-text">Message</span></div>
+
+<div class="debug-panel" id="debug-panel">
+<div class="debug-header" id="debug-header">
+<div class="debug-title">🖥️ Console <span class="debug-badge" id="debug-count">0</span></div>
+<div class="debug-actions">
+<button type="button" id="debug-copy-btn">Copier</button>
+<button type="button" id="debug-clear-btn">Effacer</button>
+<button type="button" id="debug-collapse-btn">−</button>
+</div>
+</div>
+<div class="debug-body" id="debug-body"></div>
+</div>
+
+<div class="player-overlay" id="player-overlay">
+<canvas id="player-canvas"></canvas>
+<div class="player-hint" id="player-hint-overlay">Échap ou clic pour quitter</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// CONFIGURATION
+// ══════════════════════════════════════════════════════════════════
+const API_BASE = 'https://apihub.agnes-ai.com/v1';
+const POLL_BASE = 'https://apihub.agnes-ai.com/agnesapi';
+const MODEL_TEXT = 'agnes-2.5-flash';
+const MODEL_IMAGE = 'agnes-image-2.1-flash';
+const MODEL_VIDEO = 'agnes-video-v2.0';
+const FRAME_RATE = 24;
+
+const GOOGLE_NEWS_RSS = {
+    WORLD: 'https://news.google.com/rss/headlines/section/topic/WORLD?hl=fr&gl=FR&ceid=FR:fr',
+    NATION: 'https://news.google.com/rss/headlines/section/topic/NATION?hl=fr&gl=FR&ceid=FR:fr',
+    BUSINESS: 'https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=fr&gl=FR&ceid=FR:fr',
+    TECHNOLOGY: 'https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=fr&gl=FR&ceid=FR:fr',
+    SCIENCE: 'https://news.google.com/rss/headlines/section/topic/SCIENCE?hl=fr&gl=FR&ceid=FR:fr',
+    HEALTH: 'https://news.google.com/rss/headlines/section/topic/HEALTH?hl=fr&gl=FR&ceid=FR:fr',
+    SPORTS: 'https://news.google.com/rss/headlines/section/topic/SPORTS?hl=fr&gl=FR&ceid=FR:fr',
+    ENTERTAINMENT: 'https://news.google.com/rss/headlines/section/topic/ENTERTAINMENT?hl=fr&gl=FR&ceid=FR:fr'
+};
+
+const IMAGE_PARALLEL = 3;
+const IMAGE_INTERVAL_MS = 3400;
+const VIDEO_INTERVAL_MIN = 62000;
+const VIDEO_INTERVAL_MAX = 90000;
+const VIDEO_INTERVAL_SAFE = 75000;
+const VIDEO_FIRST_POLL_DELAY_SEC = 80;
+const VIDEO_POLL_INTERVALS = [8, 8, 12, 12, 20, 20, 25];
+const VIDEO_MAX_POLL_ATTEMPTS = 100;
+
+const API_KEY_STORAGE = 'cinema_studio_api_key_v2';
+const DEBUG_MAX = 600;
+const REF_MAX_SIDE = 1280;
+
+// ══════════════════════════════════════════════════════════════════
+// CATALOGUE RÉALISATEURS / STYLES
+// ══════════════════════════════════════════════════════════════════
+const DIRECTORS_CATALOG = [
+{ id: 'wes-anderson', name: 'Wes Anderson', signature: 'perfect bilateral symmetry, centered frontal framing, deadpan tableaux, pastel palette, meticulous set dressing' },
+{ id: 'moebius', name: 'Moebius / Jean Giraud', signature: 'clean flowing line art, minimalist futuristic garments, unisex tunics, endless desert landscapes, serene sci-fi' },
+{ id: 'enki-bilal', name: 'Enki Bilal', signature: 'angular expressive faces, dramatic chiaroscuro, dystopian grandeur, striking bone structure, melancholic gaze' },
+{ id: 'klimt', name: 'Gustav Klimt', signature: 'ornamental gold leaf patterns, decorative mosaics, sensual portraits, geometric ornamentation, rich jewel tones' },
+{ id: 'egon-schiele', name: 'Egon Schiele', signature: 'angular contorted figures, stark line work, raw emotional intensity, muted earth tones with vivid accents' },
+{ id: 'akira', name: 'Akira (Katsuhiro Otomo)', signature: 'dense cyberpunk cityscapes, extreme perspective, detailed mechanical design, neon and chrome, apocalyptic energy' },
+{ id: 'ghibli', name: 'Studio Ghibli (Miyazaki)', signature: 'lush nature, warm hand-drawn aesthetic, quiet wonder, wind as character, gentle heroism' },
+{ id: 'villeneuve', name: 'Denis Villeneuve', signature: 'monumental architecture, muted color palette, oppressive atmosphere, slow grand cinematography' },
+{ id: 'wong-kar-wai', name: 'Wong Kar-wai', signature: 'saturated jewel tones, romantic longing, smoky interiors, neon reflections, slow-motion yearning' },
+{ id: 'kubrick', name: 'Stanley Kubrick', signature: 'one-point perspective, cold symmetry, unsettling perfection, wide-angle unease, deliberate pace' },
+{ id: 'almodovar', name: 'Pedro Almodóvar', signature: 'vibrant saturated palettes, emotional melodrama, striking interiors, deeply human close-ups' },
+{ id: 'kurosawa', name: 'Akira Kurosawa', signature: 'dynamic weather as emotion, samurai stillness, dramatic staging, elemental landscapes' },
+{ id: 'fellini', name: 'Federico Fellini', signature: 'surreal carnival imagery, dreamlike procession, theatrical absurdity, ornate costumes' },
+{ id: 'burton', name: 'Tim Burton', signature: 'gothic whimsy, striped palettes, crooked architecture, melancholic fairy-tale world' },
+{ id: 'sofia-coppola', name: 'Sofia Coppola', signature: 'soft pastel melancholy, quiet luxury, intimate disconnect, atmospheric silence' },
+{ id: 'jodorowsky', name: 'Alejandro Jodorowsky', signature: 'psychedelic mysticism, symbolic ritual, vivid surrealism, spiritual grotesque' },
+{ id: 'lynch', name: 'David Lynch', signature: 'suburban uncanny, red curtains, dark ambient, dream logic, unsettling warmth' },
+{ id: 'bergman', name: 'Ingmar Bergman', signature: 'stark black-and-white, existential close-ups, quiet anguish, northern light' },
+{ id: 'tarkovsky', name: 'Andrei Tarkovsky', signature: 'long slow takes, water and earth elements, spiritual decay, haunting stillness' },
+{ id: 'leone', name: 'Sergio Leone', signature: 'extreme close-ups, wide dusty vistas, operatic tension, silence before violence' },
+{ id: 'tati', name: 'Jacques Tati', signature: 'choreographed modern life, precise comedic timing, geometric compositions, playful sound design' },
+{ id: 'bong', name: 'Bong Joon-ho', signature: 'satirical class tension, genre-mixing elegance, precise framing, dark humor' },
+{ id: 'del-toro', name: 'Guillermo del Toro', signature: 'ornate gothic fantasy, empathetic monsters, warm amber tones, lush creature design' },
+{ id: 'ridley-scott', name: 'Ridley Scott (Alien / Blade Runner)', signature: 'rain-slick noir, industrial haze, monumental scale, atmospheric dread' },
+{ id: 'jeunet', name: 'Jean-Pierre Jeunet', signature: 'warm amber Paris, quirky detailed characters, vibrant imagination, romantic oddity' },
+{ id: 'gondry', name: 'Michel Gondry', signature: 'practical handmade effects, playful DIY, dreamlike transitions, tactile whimsy' },
+{ id: 'gilliam', name: 'Terry Gilliam', signature: 'bureaucratic dystopia, fisheye distortion, crumbling architecture, paranoid imagination' },
+{ id: 'luc-besson', name: 'Luc Besson (Fifth Element)', signature: 'saturated retro-futurism, pop operatic energy, sprawling multicultural cityscapes' },
+{ id: 'fritz-lang', name: 'Fritz Lang', signature: 'art-deco monumental architecture, expressionist shadows, moral grandeur, towering verticality' },
+{ id: 'vadim', name: 'Roger Vadim (Barbarella)', signature: 'psychedelic space-age pop, saturated vinyl sets, playful erotica, mod aesthetic' },
+{ id: 'kubrick-2001', name: 'Kubrick (2001 l\'Odyssée)', signature: 'pristine whiteness, geometric rigor, silent cosmic scale, elegant technology' },
+{ id: 'carpenter', name: 'John Carpenter', signature: 'widescreen anamorphic dread, synth ambience, lean storytelling, mythic simplicity' },
+{ id: 'refn', name: 'Nicolas Winding Refn', signature: 'neon-soaked silence, geometric staging, minimalist brutality, hypnotic pacing' },
+{ id: 'shaw-brothers', name: 'Shaw Brothers (Kung Fu classique)', signature: 'classic kung fu staging, wide symmetrical compositions, saturated technicolor, operatic combat, elaborate period costumes, misty bamboo forests' },
+{ id: 'king-hu', name: 'King Hu (Wuxia)', signature: 'poetic wuxia, weightless swordplay, misty mountains, inns and bamboo groves, ethereal choreography, ink-painting atmosphere' },
+{ id: 'herge', name: 'Hergé (ligne claire)', signature: 'clear line art, flat colors, precise details, adventurous compositions, belgian bande dessinée' },
+{ id: 'franquin', name: 'Franquin (Gaston / Spirou)', signature: 'expressive cartooning, dynamic energy, warm humor, detailed backgrounds, franco-belgian comic style' },
+{ id: 'uderzo', name: 'Uderzo (Astérix)', signature: 'stylized historical caricature, clean lines, vivid colors, exaggerated expressions, french comic grandeur' },
+{ id: 'bill-viola', name: 'Bill Viola (vidéo art)', signature: 'slow motion water and fire, spiritual contemplation, extreme slow motion, renaissance lighting, elemental symbolism' },
+{ id: 'nam-june-paik', name: 'Nam June Paik (vidéo art)', signature: 'tv sculpture, electronic collage, global groove, neon and cathode-ray aesthetics, media archaeology' },
+{ id: 'chris-marker', name: 'Chris Marker (documentaire)', signature: 'essay documentary, still images with voiceover, time and memory, science-fiction documentary, poetic narration' },
+{ id: 'agnes-varda', name: 'Agnès Varda (documentaire)', signature: 'intimate documentary, found objects, feminist gaze, playful composition, mediterranean light' },
+{ id: 'jean-rouch', name: 'Jean Rouch (docu-fiction)', signature: 'shared anthropology, docu-fiction, african subjects, handheld camera, participatory cinema' },
+{ id: 'peter-watkins', name: 'Peter Watkins (docu-fiction)', signature: 'fake documentary, pseudo-newsreel, political reconstruction, direct address, historical reenactment' }
+];
+
+const WILD_COMBOS = [
+{ a: 'wes-anderson', b: 'enki-bilal', name: 'Symétrie dystopique' },
+{ a: 'klimt', b: 'akira', name: 'Or et néon' },
+{ a: 'moebius', b: 'villeneuve', name: 'Désert monumental' },
+{ a: 'ghibli', b: 'lynch', name: 'Émerveillement inquiétant' },
+{ a: 'kubrick', b: 'ghibli', name: 'Géométrie naturelle' },
+{ a: 'wong-kar-wai', b: 'burton', name: 'Néon gothique' },
+{ a: 'tarkovsky', b: 'jodorowsky', name: 'Spiritualité psychédélique' },
+{ a: 'shaw-brothers', b: 'refn', name: 'Kung fu néon' },
+{ a: 'egon-schiele', b: 'del-toro', name: 'Angoisse fantastique' },
+{ a: 'fellini', b: 'akira', name: 'Carnaval cyberpunk' },
+{ a: 'jeunet', b: 'carpenter', name: 'Paris horrifique' },
+{ a: 'kurosawa', b: 'leone', name: 'Samouraï western' }
+];
+
+const PALETTES = [
+{ id: 'electric_coral_cyan', label: 'Corail & Cyan', colors: '#FF4F79,#00F5FF,#FFFFFF' },
+{ id: 'acid_lime_purple', label: 'Lime & Violet', colors: '#B6FF00,#7A00FF,#FF00A8' },
+{ id: 'turquoise_orange', label: 'Turquoise & Orange', colors: '#00D9C0,#FF6A00,#FFFFFF' },
+{ id: 'fuchsia_yellow', label: 'Fuchsia & Jaune', colors: '#FF00A8,#FFF200,#1746FF' },
+{ id: 'cobalt_tangerine', label: 'Cobalt & Mandarine', colors: '#1746FF,#FF7A00,#FFFFFF' },
+{ id: 'emerald_pink', label: 'Émeraude & Rose', colors: '#00D978,#FF2DAA,#FFFFFF' },
+{ id: 'violet_lime', label: 'Violet & Lime', colors: '#6A00FF,#A8FF00,#00FFD5' },
+{ id: 'red_cyan', label: 'Rouge & Cyan', colors: '#FF1838,#00E5FF,#FFFFF0' },
+{ id: 'gold_azure', label: 'Or & Azur', colors: '#FFD400,#007BFF,#FF00A8' },
+{ id: 'magenta_teal', label: 'Magenta & Turquoise', colors: '#FF1493,#00B8A9,#FFF200' },
+{ id: 'orange_purple', label: 'Orange & Prune', colors: '#FF7800,#7B1FA2,#00E5FF' },
+{ id: 'lime_pink', label: 'Citron & Rose', colors: '#C6FF00,#FF4FB3,#87CEEB' },
+{ id: 'ultraviolet_aqua', label: 'Ultraviolet & Aqua', colors: '#7000FF,#00FFD5,#FFF200' },
+{ id: 'scarlet_turquoise', label: 'Écarlate & Turquoise', colors: '#FF2400,#00D4C7,#FFF44F' },
+{ id: 'royal_blue_lime', label: 'Bleu royal & Lime', colors: '#245BFF,#B8FF00,#FF2DAA' },
+{ id: 'copper_electric_blue', label: 'Cuivre & Bleu électrique', colors: '#D66A3A,#005BFF,#FFF5E0' }
+];
+
+// ══════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════
+const state = {
+  apiKey: '',
+  newsItems: [],
+  selectedNews: null,
+  refStyle: null,
+  refChar: null,
+  selectedDirector: 'wes-anderson',
+  comboMode: false,
+  selectedPalette: 'electric_coral_cyan',
+  sceneCount: 5,
+  durationFrames: 145,
+  intensity: 'moderate',
+  images: [],
+  selectedImages: new Set(),
+  script: null,
+  videos: [],
+  isGeneratingImages: false,
+  isGeneratingScript: false,
+  isGeneratingVideos: false,
+  stopRequested: false,
+  isPlayingFilm: false,
+  playRAF: null,
+  directorName: 'Wes Anderson'
+};
+
+// ══════════════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════════════
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function setStatus(text){const b=document.getElementById('status-bar');const t=document.getElementById('status-text');if(!b||!t)return;if(text){b.classList.add('visible');t.textContent=text}else b.classList.remove('visible')}
+
+let toastTimeout=null;
+function showToast(message,type='success',duration=2500){const t=document.getElementById('toast');const i=document.getElementById('toast-icon');const x=document.getElementById('toast-text');if(!t||!i||!x)return;t.classList.remove('visible','success','error','warn');void t.offsetWidth;const icons={success:'✓',error:'✕',warn:'⚠'};i.textContent=icons[type]||'✓';x.textContent=message;t.classList.add(type);requestAnimationFrame(()=>t.classList.add('visible'));if(toastTimeout)clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>t.classList.remove('visible'),duration)}
+
+// ══════════════════════════════════════════════════════════════════
+// DEBUG
+// ══════════════════════════════════════════════════════════════════
+let debugCount=0,debugEntries=[],debugCollapsed=false;
+function debugLog(level,category,message,data){const body=document.getElementById('debug-body');if(!body)return;const time=new Date().toLocaleTimeString('fr-FR',{hour12:false});const entry=document.createElement('div');entry.className='debug-entry '+level;let html='<span class="debug-time">'+time+'</span><span class="debug-cat">['+esc(category)+']</span><span class="debug-msg">'+esc(message)+'</span>';if(data!==undefined&&data!==null){let ds;if(typeof data==='string')ds=data;else{try{ds=JSON.stringify(data,null,2)}catch(e){ds=String(data)}}if(ds.length>3000)ds=ds.slice(0,3000)+'\n…[tronqué]';html+='<pre class="debug-data">'+esc(ds)+'</pre>'}entry.innerHTML=html;body.appendChild(entry);debugEntries.push({time,level,category,message});if(debugEntries.length>DEBUG_MAX)debugEntries.shift();while(body.children.length>DEBUG_MAX)body.removeChild(body.firstChild);body.scrollTop=body.scrollHeight;debugCount++;const c=document.getElementById('debug-count');if(c)c.textContent=debugCount}
+function clearDebug(){const b=document.getElementById('debug-body');if(b)b.innerHTML='';debugEntries=[];debugCount=0;const c=document.getElementById('debug-count');if(c)c.textContent='0'}
+function copyDebug(){const lines=debugEntries.map(e=>e.time+' ['+e.category+'] '+e.message).join('\n');const finish=(ok)=>showToast(ok?'Console copiée':'Copie impossible',ok?'success':'error');try{if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(lines).then(()=>finish(true)).catch(()=>legacyCopy(lines,finish));return}}catch(e){}legacyCopy(lines,finish)}
+function legacyCopy(text,cb){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);cb(ok)}
+function toggleDebugCollapse(){const p=document.getElementById('debug-panel');const b=document.getElementById('debug-collapse-btn');if(!p||!b)return;debugCollapsed=!debugCollapsed;p.classList.toggle('collapsed',debugCollapsed);b.textContent=debugCollapsed?'+':'−'}
+
+// ══════════════════════════════════════════════════════════════════
+// API KEY
+// ══════════════════════════════════════════════════════════════════
+function getApiKey(){try{return(localStorage.getItem(API_KEY_STORAGE)||'').trim()}catch(e){return''}}
+function saveApiKey(){const input=document.getElementById('api-key-input');if(!input)return;const key=input.value.trim();if(!key){try{localStorage.removeItem(API_KEY_STORAGE)}catch(e){}updateApiPanel();showToast('Clé supprimée','warn');return}if(!key.startsWith('sk-')){if(!confirm('La clé ne commence pas par "sk-". Sauvegarder ?'))return}try{localStorage.setItem(API_KEY_STORAGE,key);updateApiPanel();showToast('Clé enregistrée ✓','success');debugLog('success','API','Clé : '+key.slice(0,8)+'…'+key.slice(-4));input.blur()}catch(e){showToast('Erreur sauvegarde','error')}}
+function updateApiPanel(){const panel=document.getElementById('api-panel');const input=document.getElementById('api-key-input');const line=document.getElementById('api-status-line');const text=document.getElementById('api-status-text');const key=getApiKey();if(!panel||!input||!line||!text)return;state.apiKey=key;if(key){panel.classList.add('ok');line.classList.add('ok');text.textContent='Clé active · '+key.slice(0,8)+'…'+key.slice(-4);input.value=key;input.placeholder=''}else{panel.classList.remove('ok');line.classList.remove('ok');text.textContent='Aucune clé API enregistrée';input.value='';input.placeholder='Collez votre clé API Agnes ici (sk-...)'}updateButtons()}
+
+// ══════════════════════════════════════════════════════════════════
+// API FETCH — signature corrigée : (url, options, label, kind, maxAttempts)
+// ══════════════════════════════════════════════════════════════════
+async function apiFetch(url, options, label, kind, maxAttempts) {
+  options = options || {};
+  label = label || 'API';
+  kind = kind || 'default';
+  maxAttempts = (typeof maxAttempts === 'number' && maxAttempts > 0) ? maxAttempts : 8;
+
+  let lastErr = null;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (state.stopRequested) throw new Error('Arrêt demandé');
+
+    const method = options.method || 'GET';
+    let bodyPreview = null;
+    if (options.body) {
+      try {
+        const p = JSON.parse(options.body);
+        const c = JSON.parse(JSON.stringify(p));
+        const redact = (o) => {
+          if (Array.isArray(o)) { o.forEach(redact); return; }
+          if (o && typeof o === 'object') {
+            for (const k in o) {
+              if (typeof o[k] === 'string' && o[k].length > 120) o[k] = o[k].slice(0, 80) + '…[len ' + o[k].length + ']';
+              else if (typeof o[k] === 'object') redact(o[k]);
+            }
+          }
+        };
+        redact(c);
+        bodyPreview = c;
+      } catch (e) {
+        bodyPreview = String(options.body).slice(0, 400);
+      }
+    }
+
+    debugLog('api', 'REQ ' + label, method + ' ' + url + ' (essai ' + (attempt + 1) + '/' + maxAttempts + ')', bodyPreview);
+
+    try {
+      const t0 = Date.now();
+      const res = await fetch(url, options);
+      const dt = Date.now() - t0;
+      let retryAfter = 0;
+      try { retryAfter = parseInt(res.headers.get('Retry-After') || '0', 10) || 0; } catch (e) {}
+
+      let errorText = '';
+      if (!res.ok) {
+        try { errorText = (await res.clone().text()).slice(0, 1200); } catch (e) {}
+      }
+
+      debugLog('response', 'RÉP ' + label, 'HTTP ' + res.status + ' en ' + dt + 'ms', errorText || undefined);
+
+      if (res.ok) return res;
+
+      // Erreurs définitives : ne pas retry
+      if ([400, 401, 403, 404].includes(res.status)) {
+        throw new Error('HTTP ' + res.status + ' — ' + errorText.slice(0, 400));
+      }
+
+      // Rate limit
+      if (res.status === 429) {
+        const wait = retryAfter > 0 ? retryAfter : Math.min(120, 15 + attempt * 15);
+        debugLog('warn', 'RATELIMIT', '429 — attente ' + wait + 's');
+        setStatus('Limite API — nouvelle tentative dans ' + wait + 's');
+        await sleep(wait * 1000);
+        continue;
+      }
+
+      // Erreurs serveur temporaires
+      if ([500, 502, 503, 504, 520, 522, 524].includes(res.status)) {
+        const wait = Math.min(60, 8 + attempt * 6);
+        debugLog('warn', 'SERVICE', 'HTTP ' + res.status + ' — attente ' + wait + 's');
+        setStatus('Service occupé — reprise dans ' + wait + 's');
+        await sleep(wait * 1000);
+        continue;
+      }
+
+      // Autres erreurs : retry aussi
+      const wait = Math.min(60, 6 + attempt * 5);
+      debugLog('warn', 'HTTP', 'HTTP ' + res.status + ' — retry dans ' + wait + 's');
+      await sleep(wait * 1000);
+    } catch (e) {
+      if (e.message === 'Arrêt demandé') throw e;
+      // Erreurs HTTP définitives : ne pas retry
+      if (/^HTTP (4\d\d)/.test(e.message)) throw e;
+      lastErr = e;
+      const wait = Math.min(45, 4 + attempt * 4);
+      debugLog('warn', 'NETWORK', e.message + ' — retry dans ' + wait + 's');
+      setStatus('Connexion instable — reprise dans ' + wait + 's');
+      await sleep(wait * 1000);
+    }
+  }
+  throw lastErr || new Error('Tentatives épuisées pour ' + label);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// JSON PARSER — 5 stratégies
+// ══════════════════════════════════════════════════════════════════
+function escapeControlCharsInStrings(text){let result='';let inString=false;let escape=false;for(let i=0;i<text.length;i++){const ch=text[i];if(escape){result+=ch;escape=false;continue}if(ch==='\\'){result+=ch;escape=true;continue}if(ch==='"'){inString=!inString;result+=ch;continue}if(inString){if(ch==='\n'){result+='\\n';continue}if(ch==='\r'){result+='\\r';continue}if(ch==='\t'){result+='\\t';continue}const code=ch.charCodeAt(0);if(code<32){result+='\\u'+code.toString(16).padStart(4,'0');continue}}result+=ch}return result}
+function balanceJson(text){let openBraces=0,openBrackets=0,inString=false,escape=false;for(let i=0;i<text.length;i++){const ch=text[i];if(escape){escape=false;continue}if(ch==='\\'){escape=true;continue}if(ch==='"'){inString=!inString;continue}if(inString)continue;if(ch==='{')openBraces++;else if(ch==='}')openBraces--;else if(ch==='[')openBrackets++;else if(ch===']')openBrackets--}let result=text;if(inString)result+='"';while(openBrackets>0){result+=']';openBrackets--}while(openBraces>0){result+='}';openBraces--}return result}
+function extractJson(text){if(!text)return null;let c=text.trim();const fm=c.match(/```(?:json)?\s*([\s\S]*?)```/);if(fm)c=fm[1].trim();const fb=c.indexOf('{');if(fb<0)return null;c=c.slice(fb);try{return JSON.parse(c)}catch(e1){}try{return JSON.parse(escapeControlCharsInStrings(c))}catch(e2){}try{const lb=c.lastIndexOf('}');if(lb>0)return JSON.parse(escapeControlCharsInStrings(c.slice(0,lb+1)))}catch(e3){}try{return JSON.parse(balanceJson(escapeControlCharsInStrings(c)))}catch(e4){}return null}
+
+// ══════════════════════════════════════════════════════════════════
+// NEWS RSS
+// ══════════════════════════════════════════════════════════════════
+async function fetchViaRss2Json(rssUrl){const apiKey=localStorage.getItem('rss2json_api_key')||'';const keyParam=apiKey?'&api_key='+encodeURIComponent(apiKey):'';const url='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rssUrl)+keyParam;const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();if(data.status!=='ok')throw new Error('rss2json status: '+data.status);return(data.items||[]).map((item,i)=>({title:item.title||'',link:item.link||'',pubDate:item.pubDate||'',source:item.author||'Google News',rank:i+1}))}
+async function fetchViaAllOrigins(rssUrl){const url='https://api.allorigins.win/raw?url='+encodeURIComponent(rssUrl);const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);return parseRssXml(await res.text())}
+async function fetchViaCodeTabs(rssUrl){const url='https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(rssUrl);const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);return parseRssXml(await res.text())}
+async function fetchViaThingProxy(rssUrl){const url='https://thingproxy.freeboard.io/fetch/'+rssUrl;const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);return parseRssXml(await res.text())}
+function parseRssXml(text){const parser=new DOMParser();const xmlDoc=parser.parseFromString(text,'text/xml');const items=xmlDoc.querySelectorAll('item');const newsItems=[];items.forEach((item,i)=>{if(i>=25)return;const title=item.querySelector('title')?.textContent||'';const link=item.querySelector('link')?.textContent||'';const pubDate=item.querySelector('pubDate')?.textContent||'';const source=item.querySelector('source')?.textContent||'';if(title)newsItems.push({title,link,pubDate,source,rank:i+1})});return newsItems}
+async function fetchGoogleNewsRSSWithFallback(category){const rssUrl=GOOGLE_NEWS_RSS[category]||GOOGLE_NEWS_RSS.WORLD;const methods=[{name:'rss2json',fn:()=>fetchViaRss2Json(rssUrl)},{name:'allorigins',fn:()=>fetchViaAllOrigins(rssUrl)},{name:'codetabs',fn:()=>fetchViaCodeTabs(rssUrl)},{name:'thingproxy',fn:()=>fetchViaThingProxy(rssUrl)}];for(const method of methods){try{debugLog('info','RSS','Tentative avec '+method.name+'…');const items=await method.fn();if(items&&items.length>0){debugLog('success','RSS',method.name+' → '+items.length+' actualités');return{items,method:method.name}}}catch(e){debugLog('warn','RSS',method.name+' échoué : '+e.message)}}debugLog('warn','RSS','Tous les proxys ont échoué — mode démo');return{items:getDemoNews(category),method:'demo'}}
+function getDemoNews(category){const demoData={WORLD:['Un sommet international se tient à Genève pour discuter du climat','Les Nations Unies appellent à un cessez-le-feu','Un nouveau traité commercial signé entre 12 pays','La crise humanitaire s\'aggrave dans la Corne de l\'Afrique','Un séisme de magnitude 7,2 frappe la côte pacifique'],NATION:['Le gouvernement annonce une réforme des retraites','Une grève nationale paralyse les transports','Le président inaugure un nouveau musée à Paris','Les élections municipales se préparent','Un scandale politique éclate au gouvernement'],BUSINESS:['La bourse de Paris atteint un niveau record','Une grande entreprise annonce 5 000 licenciements','L\'inflation ralentit pour le troisième mois','Une fusion majeure bouleverse le secteur bancaire','Le prix du pétrole chute de 8%'],TECHNOLOGY:['Une nouvelle IA bat tous les records','Un géant du numérique condamné','La 6G entre en phase de test','Une cyberattaque paralyse des hôpitaux','Un nouveau smartphone pliable révolutionne le marché'],SCIENCE:['Une découverte majeure sur l\'origine de l\'univers','Un vaccin contre le cancer entre en phase 3','La NASA annonce une mission vers Mars','Un nouveau dinosaure découvert en Patagonie','Un matériau supraconducteur à température ambiante'],HEALTH:['Une épidémie de grippe aviaire inquiète l\'OMS','Un traitement contre Alzheimer approuvé','La pollution réduit l\'espérance de vie','Un nouveau variant du Covid détecté','La téléconsultation explose'],SPORTS:['La France remporte la Coupe du monde de rugby','Un marathonien bat le record du monde','Les JO de 2036 attribués','Un scandale de dopage secoue le cyclisme','Le PSG signe un contrat record'],ENTERTAINMENT:['Un film français remporte la Palme d\'Or','Une série phénomène bat des records','Un festival attire 500 000 personnes','Un acteur légendaire annonce sa retraite','Un album surprise bat tous les records']};const titles=demoData[category]||demoData.WORLD;return titles.map((title,i)=>({title,link:'#',pubDate:new Date().toISOString(),source:'Mode démo',rank:i+1}))}
+
+// ══════════════════════════════════════════════════════════════════
+// IMAGE — format corrigé (1K + ratio)
+// ══════════════════════════════════════════════════════════════════
+async function generateImage(prompt) {
+  // Format éprouvé dans vos autres codes : size '1K' + ratio '9:16'
+  const body = {
+    model: MODEL_IMAGE,
+    prompt: prompt,
+    n: 1,
+    size: '1K',
+    ratio: '9:16'
+  };
+  // Images de référence (personnage puis style) : avant, elles n'étaient jamais envoyées à l'API
+  const refs = [state.refChar, state.refStyle].filter(Boolean);
+  if (refs.length) body.extra_body = { response_format: 'url', image: refs };
+  debugLog('ai', 'PROMPT IMAGE', 'Envoyé (prompt ' + prompt.length + ' chars)', prompt.slice(0, 400) + '…');
+
+  const res = await apiFetch(
+    API_BASE + '/images/generations',
+    {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + state.apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    },
+    'Image',
+    'image',
+    5
+  );
+
+  if (!res.ok) {
+    const err = await res.text();
+    debugLog('error', 'IMAGE', 'HTTP ' + res.status, err.slice(0, 800));
+    throw new Error('HTTP ' + res.status + ' — ' + err.slice(0, 200));
+  }
+
+  const data = await res.json();
+  debugLog('response', 'IMAGE JSON', 'Réponse parsée', { keys: Object.keys(data), dataCount: data.data ? data.data.length : 0 });
+
+  const item = data.data && data.data[0];
+  if (!item) throw new Error('Pas de donnée image');
+  if (item.url) return item.url;
+  if (item.b64_json) return 'data:image/png;base64,' + item.b64_json;
+  throw new Error('Format inconnu');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// VIDÉO
+// ══════════════════════════════════════════════════════════════════
+async function createVideoTask(prompt, imageUrl, duration) {
+  const body = {
+    model: MODEL_VIDEO,
+    prompt: prompt,
+    image: imageUrl,
+    num_frames: duration,
+    frame_rate: FRAME_RATE
+  };
+  debugLog('ai', 'PROMPT VIDÉO', 'Envoyé', prompt.slice(0, 400) + '…');
+
+  const res = await apiFetch(
+    API_BASE + '/videos',
+    {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + state.apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    },
+    'Video Task',
+    'video',
+    5
+  );
+
+  if (!res.ok) {
+    const err = await res.text();
+    debugLog('error', 'VIDÉO', 'HTTP ' + res.status, err.slice(0, 800));
+    throw new Error('HTTP ' + res.status);
+  }
+
+  const data = await res.json();
+  const videoId = data.video_id || data.id || data.task_id;
+  if (!videoId) throw new Error('Pas de video_id');
+  return videoId;
+}
+
+async function pollVideo(videoId, onProgress) {
+  const estimatedMs = 30000 + state.durationFrames * 500;
+  const minWait = Math.min(VIDEO_FIRST_POLL_DELAY_SEC, Math.max(60, Math.floor(estimatedMs / 1000 * 0.75)));
+  let remaining = minWait;
+  while (remaining > 0) {
+    if (state.stopRequested) throw new Error('Arrêt demandé');
+    onProgress('Préparation — ' + remaining + 's');
+    await sleep(1000);
+    remaining--;
+  }
+  for (let attempt = 0; attempt < VIDEO_MAX_POLL_ATTEMPTS; attempt++) {
+    if (state.stopRequested) throw new Error('Arrêt demandé');
+    if (attempt > 0) {
+      const idx = Math.min(attempt - 1, VIDEO_POLL_INTERVALS.length - 1);
+      let r = VIDEO_POLL_INTERVALS[idx];
+      while (r > 0) {
+        if (state.stopRequested) throw new Error('Arrêt demandé');
+        onProgress('Création — ' + r + 's');
+        await sleep(1000);
+        r--;
+      }
+    }
+    const url = POLL_BASE + '?video_id=' + encodeURIComponent(videoId) + '&model_name=' + encodeURIComponent(MODEL_VIDEO);
+    const res = await apiFetch(url, { method: 'GET', headers: { 'Authorization': 'Bearer ' + state.apiKey } }, 'Polling', 'video', 3);
+    const d = await res.json();
+    const status = d.status || 'unknown';
+    const progress = d.progress || 0;
+    onProgress('Création — ' + progress + '%');
+    if (status === 'completed' || status === 'succeeded' || status === 'done') {
+      const videoUrl = (d.metadata && d.metadata.url) || d.url || (d.output && d.output.url);
+      if (!videoUrl) throw new Error('Terminé mais pas d\'URL');
+      return videoUrl;
+    }
+    if (status === 'failed' || status === 'error' || status === 'cancelled') throw new Error('Échec (' + status + ')');
+  }
+  throw new Error('Délai maximal dépassé');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDU UI
+// ══════════════════════════════════════════════════════════════════
+function updateButtons(){
+  const genImgBtn=document.getElementById('generate-images-btn');
+  const genScriptBtn=document.getElementById('generate-scenario-btn');
+  const genVidBtn=document.getElementById('generate-videos-btn');
+  const playFilmBtn=document.getElementById('play-film-btn');
+  const hasKey=!!state.apiKey;
+  const hasNews=!!state.selectedNews;
+  const hasImages=state.images.length>0;
+  const hasSelectedImages=state.selectedImages.size>0;
+  const hasScript=!!state.script;
+  const hasVideos=state.videos.filter(v=>v.status==='done').length>0;
+
+  if(genImgBtn){
+    genImgBtn.disabled=!hasKey||!hasNews||state.isGeneratingImages||state.isGeneratingScript||state.isGeneratingVideos;
+    if(state.isGeneratingImages)genImgBtn.innerHTML='⏳ Génération des images…';
+    else if(!hasKey)genImgBtn.innerHTML='🔑 Ajoutez votre clé API';
+    else if(!hasNews)genImgBtn.innerHTML='📰 Choisissez un sujet dans les actualités';
+    else genImgBtn.innerHTML='🎨 Générer les images<span style="display:block;font-size:.65rem;letter-spacing:.15em;color:var(--dim);margin-top:.4rem;font-weight:400;text-transform:none;">'+state.sceneCount+' scènes · '+state.directorName+'</span>';
+  }
+  if(genScriptBtn){
+    genScriptBtn.classList.toggle('hidden',!hasImages);
+    genScriptBtn.disabled=!hasSelectedImages||state.isGeneratingScript||state.isGeneratingImages||state.isGeneratingVideos;
+    if(state.isGeneratingScript)genScriptBtn.innerHTML='⏳ Génération du scénario…';
+    else if(!hasSelectedImages)genScriptBtn.innerHTML='📜 Cochez au moins une image';
+    else genScriptBtn.innerHTML='📜 Générer le scénario<span style="display:block;font-size:.65rem;letter-spacing:.15em;color:var(--dim);margin-top:.4rem;font-weight:400;text-transform:none;">'+state.selectedImages.size+' image(s) sélectionnée(s)</span>';
+  }
+  if(genVidBtn){
+    genVidBtn.classList.toggle('hidden',!hasScript);
+    genVidBtn.disabled=!hasSelectedImages||!hasScript||state.isGeneratingVideos||state.isGeneratingImages||state.isGeneratingScript;
+    if(state.isGeneratingVideos)genVidBtn.innerHTML='⏳ Génération des vidéos…';
+    else if(!hasSelectedImages)genVidBtn.innerHTML='🎬 Cochez au moins une image';
+    else genVidBtn.innerHTML='🎬 Générer les vidéos<span style="display:block;font-size:.65rem;letter-spacing:.15em;color:var(--dim);margin-top:.4rem;font-weight:400;text-transform:none;">'+state.selectedImages.size+' vidéo(s) à créer</span>';
+  }
+  if(playFilmBtn)playFilmBtn.disabled=!hasVideos||state.isGeneratingVideos||state.isPlayingFilm;
+}
+
+function renderNewsList(){
+  const list=document.getElementById('news-list');if(!list)return;
+  if(state.newsItems.length===0){list.innerHTML='<div style="padding:1.2rem;text-align:center;color:var(--faint);font-size:.8rem;">Aucune actualité chargée.</div>';return}
+  list.innerHTML=state.newsItems.slice(0,15).map((item,i)=>'<div class="news-item'+(state.selectedNews&&state.selectedNews.rank===item.rank?' selected':'')+'" data-news-rank="'+item.rank+'"><span class="news-rank">'+item.rank+'.</span><div><div class="news-title">'+esc(item.title)+'</div><div class="news-source">'+esc(item.source||'')+'</div></div></div>').join('');
+  list.querySelectorAll('.news-item').forEach(el=>{el.addEventListener('click',()=>{const rank=parseInt(el.dataset.newsRank,10);state.selectedNews=state.newsItems.find(n=>n.rank===rank);renderNewsList();updateButtons();debugLog('info','NEWS','Sujet sélectionné : '+state.selectedNews.title.slice(0,60))})});
+}
+
+function renderImagesGrid(){
+  const grid=document.getElementById('images-grid');if(!grid)return;
+  if(state.images.length===0){grid.innerHTML='';return}
+  grid.innerHTML=state.images.map((img,i)=>{
+    const selected=state.selectedImages.has(i);
+    if(img.status==='loading')return'<div class="image-card loading">Génération…</div>';
+    if(img.status==='error')return'<div class="image-card loading" style="color:var(--err);">Erreur</div>';
+    if(img.status==='stopped')return'<div class="image-card" style="display:flex;align-items:center;justify-content:center;aspect-ratio:9/16;color:var(--warn);font-size:.65rem;font-family:var(--fm);">Arrêté</div>';
+    return'<div class="image-card'+(selected?' selected':'')+'" data-img-index="'+i+'"><div class="img-wrapper"><img src="'+img.url+'" alt="" loading="lazy"><div class="img-label">Scène '+(i+1)+'</div><div class="img-checkbox">'+(selected?'✓':'')+'</div></div></div>';
+  }).join('');
+  grid.querySelectorAll('.image-card[data-img-index]').forEach(el=>{el.addEventListener('click',()=>{const idx=parseInt(el.dataset.imgIndex,10);if(state.selectedImages.has(idx))state.selectedImages.delete(idx);else state.selectedImages.add(idx);renderImagesGrid();updateButtons()})});
+  document.getElementById('images-count').textContent=state.images.filter(i=>i.status==='done').length;
+  document.getElementById('images-selected-count').textContent=state.selectedImages.size+' sélectionnée(s)';
+}
+
+function renderVideosGrid(){
+  const grid=document.getElementById('videos-grid');if(!grid)return;
+  if(state.videos.length===0){grid.innerHTML='';return}
+  grid.innerHTML=state.videos.map((v,i)=>{
+    if(v.status==='loading')return'<div class="scene-card generating"><div class="scene-card-header"><span>🎬 Scène '+(i+1)+'</span><span class="spinner-mini"></span></div><div class="scene-card-body"><div class="scene-placeholder"><div class="spinner-mini"></div><span>Génération…</span></div></div></div>';
+    if(v.status==='error')return'<div class="scene-card error"><div class="scene-card-header"><span>🎬 Scène '+(i+1)+'</span><span style="color:var(--err);">✕</span></div><div class="scene-card-body"><div class="scene-placeholder" style="color:var(--err);">Erreur</div></div></div>';
+    if(v.status==='stopped')return'<div class="scene-card"><div class="scene-card-header"><span>🎬 Scène '+(i+1)+'</span><span style="color:var(--warn);">⏹</span></div><div class="scene-card-body"><div class="scene-placeholder" style="color:var(--warn);">Arrêté</div></div></div>';
+    return'<div class="scene-card done"><div class="scene-card-header"><span>🎬 Scène '+(i+1)+'</span><span style="color:var(--ok);">✓</span></div><div class="scene-card-body"><video src="'+v.url+'" controls preload="metadata"></video><div class="scene-card-prompt">'+esc(v.prompt||'')+'</div></div></div>';
+  }).join('');
+  document.getElementById('videos-count').textContent=state.videos.filter(v=>v.status==='done').length;
+  document.getElementById('player-badge').textContent=state.videos.filter(v=>v.status==='done').length;
+}
+
+function renderPalettes(){
+  const row=document.getElementById('palette-row');if(!row)return;
+  row.innerHTML=PALETTES.map(p=>'<button type="button" class="palette-btn'+(state.selectedPalette===p.id?' active':'')+'" data-palette="'+p.id+'"><span style="display:block;height:12px;border-radius:2px;background:linear-gradient(90deg,'+p.colors+');margin-bottom:.3rem;"></span>'+p.label+'</button>').join('');
+  row.querySelectorAll('.palette-btn').forEach(btn=>{btn.addEventListener('click',()=>{state.selectedPalette=btn.dataset.palette;renderPalettes();debugLog('info','PALETTE','Palette : '+PALETTES.find(p=>p.id===state.selectedPalette).label)})});
+}
+
+function renderDirectorSelect(){
+  const sel=document.getElementById('director-select');if(!sel)return;
+  sel.innerHTML=DIRECTORS_CATALOG.map(d=>'<option value="'+d.id+'"'+(state.selectedDirector===d.id?' selected':'')+'>'+d.name+' — '+d.signature.slice(0,70)+'…</option>').join('');
+  sel.addEventListener('change',()=>{state.selectedDirector=sel.value;state.directorName=DIRECTORS_CATALOG.find(d=>d.id===state.selectedDirector)?.name||state.selectedDirector;updateButtons();debugLog('info','DIRECTOR','Réalisateur : '+state.directorName)});
+  state.directorName=DIRECTORS_CATALOG.find(d=>d.id===state.selectedDirector)?.name||state.selectedDirector;
+}
+
+function renderRefPreview(dropId,dataUri,label){
+  const drop=document.getElementById(dropId);if(!drop)return;
+  if(dataUri){drop.classList.add('has-image');drop.innerHTML='<div class="ref-preview"><img src="'+dataUri+'" alt="'+label+'"><div class="ref-label">'+label+'</div><button type="button" class="ref-remove" data-remove-ref="'+dropId+'">✕</button></div>';drop.querySelector('[data-remove-ref]')?.addEventListener('click',(e)=>{e.stopPropagation();if(dropId==='ref-style-drop')state.refStyle=null;else state.refChar=null;renderRefPreview(dropId,null,label);updateButtons()})}
+  else{drop.classList.remove('has-image');drop.innerHTML='<input type="file" accept="image/*" id="'+(dropId==='ref-style-drop'?'ref-style-input':'ref-char-input')+'"><div class="ref-icon">'+(dropId==='ref-style-drop'?'🎨':'👤')+'</div><div class="ref-text"><strong>Cliquez pour choisir une image</strong><br>'+(dropId==='ref-style-drop'?'Tableau, artwork, photo stylisée…':'Portrait, selfie, personnage existant…')+'</div><div class="ref-hint">'+(dropId==='ref-style-drop'?'L\'IA analysera uniquement son style.':'L\'IA préservera l\'identité du personnage.')+'</div>';bindRefInput(dropId)}
+}
+
+function bindRefInput(dropId){
+  const input=document.getElementById(dropId==='ref-style-drop'?'ref-style-input':'ref-char-input');
+  if(!input)return;
+  input.addEventListener('change',async(e)=>{const file=e.target.files&&e.target.files[0];if(!file)return;setStatus('Chargement de la référence…');try{const raw=await fileToDataUri(file);const compressed=await compressImage(raw,REF_MAX_SIDE);if(dropId==='ref-style-drop')state.refStyle=compressed;else state.refChar=compressed;renderRefPreview(dropId,compressed,dropId==='ref-style-drop'?'Style de référence':'Personnage de référence');setStatus(null);showToast('Référence chargée','success')}catch(err){setStatus(null);showToast('Erreur chargement','error')}});
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PROMPT BUILDERS — prompts raccourcis
+// ══════════════════════════════════════════════════════════════════
+function buildStyleBlock(){
+  const d=DIRECTORS_CATALOG.find(x=>x.id===state.selectedDirector)||DIRECTORS_CATALOG[0];
+  const p=PALETTES.find(x=>x.id===state.selectedPalette)||PALETTES[0];
+  const lines=[];
+  if(state.comboMode){
+    const combo=WILD_COMBOS[Math.floor(Math.random()*WILD_COMBOS.length)];
+    const a=DIRECTORS_CATALOG.find(x=>x.id===combo.a);
+    const b=DIRECTORS_CATALOG.find(x=>x.id===combo.b);
+    lines.push('HYBRID STYLE — '+a.name+' × '+b.name+' : '+combo.name);
+    lines.push(a.signature+'. '+b.signature+'.');
+    document.getElementById('combo-info').classList.remove('hidden');
+    document.getElementById('combo-info').innerHTML='<strong>Combinaison folle :</strong> '+combo.name+'<br>'+a.name+' × '+b.name;
+  } else {
+    lines.push('STYLE: '+d.name+' — '+d.signature);
+  }
+  lines.push('COLOR PALETTE — '+p.label+': '+p.colors+'. Rich saturated color.');
+  return lines.join('\n');
+}
+
+function buildImagePrompt(sceneDescription, sceneIndex, totalScenes){
+  const styleBlock = buildStyleBlock();
+  const refCharBlock = state.refChar ? 'CHARACTER REFERENCE' + (state.refStyle ? ' (first reference image)' : '') + ': preserve identity of the character from the reference image (same face, same features).\n' : '';
+  const refStyleBlock = state.refStyle ? 'STYLE REFERENCE' + (state.refChar ? ' (second reference image)' : '') + ': use the reference image ONLY for its visual style (colors, lighting, texture), not for its subject or composition.\n' : '';
+  return [
+    'KEYFRAME FOR A CINEMATIC SHORT FILM.',
+    'SCENE ' + (sceneIndex + 1) + ' OF ' + totalScenes + ': ' + sceneDescription,
+    refCharBlock,
+    refStyleBlock,
+    styleBlock,
+    'Vertical portrait 9:16, rich saturated color, cinematic visual impact.',
+    'No text, no subtitles, no watermarks.'
+  ].filter(Boolean).join('\n');
+}
+
+function buildScriptPrompt(selectedIndices){
+  const d=DIRECTORS_CATALOG.find(x=>x.id===state.selectedDirector)||DIRECTORS_CATALOG[0];
+  const p=PALETTES.find(x=>x.id===state.selectedPalette)||PALETTES[0];
+  const newsTitle=state.selectedNews?state.selectedNews.title:'';
+  return[
+    'You are a screenwriter and visual director creating a short film based on TODAY\'S NEWS.',
+    '',
+    'NEWS SUBJECT: '+newsTitle,
+    '',
+    'VISUAL STYLE: '+(state.comboMode?'HYBRID: ':'')+d.signature,
+    'COLOR PALETTE: '+p.label,
+    'Number of scenes: '+selectedIndices.length,
+    'Each scene lasts '+Math.round(state.durationFrames/24)+' seconds.',
+    '',
+    'CRITICAL JSON RULES:',
+    '- All string values MUST be on a SINGLE LINE.',
+    '- Escape any double quote as \\". No trailing commas. No markdown.',
+    '',
+    'OUTPUT FORMAT (return ONLY this JSON):',
+    '{',
+    '  "title": "short poetic title",',
+    '  "logline": "one sentence summary",',
+    '  "scenes": [',
+    '    {',
+    '      "scene_number": 1,',
+    '      "image_index": 0,',
+    '      "description": "visual description of the scene",',
+    '      "video_prompt": "detailed prompt for the video generation describing continuous movement from the starting image, no cuts",',
+    '      "emotion": "one word",',
+    '      "speaker": "name of the character speaking (if any)"',
+    '    }',
+    '    ... exactly '+selectedIndices.length+' scenes ...',
+    '  ]',
+    '}'
+  ].join('\n');
+}
+
+function buildVideoPrompt(scene){
+  const d=DIRECTORS_CATALOG.find(x=>x.id===state.selectedDirector)||DIRECTORS_CATALOG[0];
+  const intensityMap={subtle:'very subtle and slow movement, meditative',moderate:'slow and elegant movement, flowing like water',strong:'dynamic yet controlled movement, energetic and theatrical'};
+  return[
+    'CINEMATIC SHORT FILM — '+Math.round(state.durationFrames/24)+'-SECOND SCENE.',
+    d.name.toUpperCase()+'.',
+    'SCENE: '+(scene.description||''),
+    'VIDEO DIRECTION: '+(scene.video_prompt||'continuous subtle movement'),
+    'Movement intensity: '+(intensityMap[state.intensity]||intensityMap.moderate)+'.',
+    'CAMERA: One continuous shot, no cuts. Slow dolly-in OR static locked-off frame.',
+    'STYLE: '+d.signature,
+    'AUDIO: No music. Only diegetic foley, environmental ambience and birds.',
+    'No text, no subtitles, no watermarks.'
+  ].filter(Boolean).join('\n');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FILE UTILS
+// ══════════════════════════════════════════════════════════════════
+function fileToDataUri(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=e=>resolve(e.target.result);reader.onerror=()=>reject(new Error('Erreur lecture'));reader.readAsDataURL(file)})}
+async function compressImage(dataUrl,maxSide){return new Promise((resolve)=>{const img=new Image();img.onload=()=>{let{width,height}=img;const scale=Math.min(1,maxSide/Math.max(width,height));width=Math.round(width*scale);height=Math.round(height*scale);const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,width,height);resolve(canvas.toDataURL('image/jpeg',0.88))};img.onerror=()=>resolve(dataUrl);img.src=dataUrl})}
+
+// ══════════════════════════════════════════════════════════════════
+// RATE LIMITED QUEUE
+// ══════════════════════════════════════════════════════════════════
+function createRateLimitedQueue(maxConcurrent,minIntervalMs){
+  let running=0;let lastStart=0;const queue=[];let resolveIdle=null;
+  function tryNext(){
+    if(running>=maxConcurrent)return;
+    if(queue.length===0){if(running===0&&resolveIdle){resolveIdle();resolveIdle=null}return}
+    const now=Date.now();
+    const wait=Math.max(0,lastStart+minIntervalMs-now);
+    if(wait>0){setTimeout(tryNext,wait);return}
+    const task=queue.shift();
+    running++;lastStart=Date.now();
+    task().finally(()=>{running--;setTimeout(tryNext,0)});
+  }
+  return{add(fn){return new Promise((resolve,reject)=>{queue.push(()=>fn().then(resolve,reject));setTimeout(tryNext,0)})},idle(){return new Promise(r=>{if(running===0&&queue.length===0)return r();resolveIdle=r})}}
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PIPELINE
+// ══════════════════════════════════════════════════════════════════
+async function loadNews(){
+  setStatus('Chargement des actualités…');
+  debugLog('info','NEWS','Chargement des actualités…');
+  const category=document.getElementById('news-category').value;
+  const result=await fetchGoogleNewsRSSWithFallback(category);
+  state.newsItems=result.items;
+  state.selectedNews=null;
+  renderNewsList();
+  setStatus(null);
+  showToast(result.items.length+' actualités chargées ('+(result.method==='demo'?'mode démo':'via '+result.method)+')','success');
+  debugLog('success','NEWS',result.items.length+' items via '+result.method);
+}
+
+async function generateImages(){
+  if(state.isGeneratingImages)return;
+  if(!state.apiKey){showToast('Ajoutez votre clé API','error');return}
+  if(!state.selectedNews){showToast('Choisissez un sujet dans les actualités','error');return}
+  state.isGeneratingImages=true;
+  state.stopRequested=false;
+  state.images=[];
+  state.selectedImages=new Set();
+  document.getElementById('stop-btn').classList.add('visible');
+  updateButtons();
+  document.getElementById('section-images').classList.remove('hidden');
+  document.getElementById('section-images').classList.add('open');
+  renderImagesGrid();
+
+  const total=state.sceneCount;
+  const newsTitle=state.selectedNews.title;
+  debugLog('state','IMAGES','Début génération de '+total+' images — '+state.directorName);
+
+  const queue=createRateLimitedQueue(IMAGE_PARALLEL,IMAGE_INTERVAL_MS);
+  const tasks=[];
+  for(let i=0;i<total;i++){
+    const idx=i;
+    state.images.push({status:'loading',url:null,prompt:null});
+    renderImagesGrid();
+    tasks.push(queue.add(async()=>{
+      if(state.stopRequested)return;
+      const sceneDesc='Scene '+(idx+1)+' based on news: "'+newsTitle+'". Visual: scene '+(idx+1)+' of a short cinematic adaptation.';
+      const prompt=buildImagePrompt(sceneDesc,idx,total);
+      try{
+        const url=await generateImage(prompt);
+        state.images[idx]={status:'done',url:url,prompt:sceneDesc};
+        state.selectedImages.add(idx);
+        renderImagesGrid();
+        debugLog('success','IMAGE '+(idx+1),'OK');
+      }catch(e){
+        if(e.message==='Arrêt demandé')return;
+        state.images[idx]={status:'error',url:null,prompt:sceneDesc};
+        renderImagesGrid();
+        debugLog('error','IMAGE '+(idx+1),e.message);
+      }
+    }));
+  }
+  await Promise.allSettled(tasks);
+  await queue.idle();
+  // Images jamais lancées ou interrompues par « Arrêter » : plus de « Génération… » sans fin
+  state.images.forEach(img=>{if(img.status==='loading')img.status='stopped'});
+  renderImagesGrid();
+  state.isGeneratingImages=false;
+  document.getElementById('stop-btn').classList.remove('visible');
+  updateButtons();
+  const done=state.images.filter(i=>i.status==='done').length;
+  showToast(done+'/'+total+' images générées',done>0?'success':'warn');
+  debugLog('success','IMAGES',done+'/'+total+' images OK');
+}
+
+async function generateScript(){
+  if(state.isGeneratingScript)return;
+  if(!state.apiKey){showToast('Ajoutez votre clé API','error');return}
+  if(state.selectedImages.size===0){showToast('Cochez au moins une image','error');return}
+  state.isGeneratingScript=true;
+  state.stopRequested=false;
+  updateButtons();
+  setStatus('Génération du scénario…');
+  const selectedIndices=Array.from(state.selectedImages).sort((a,b)=>a-b);
+  const prompt=buildScriptPrompt(selectedIndices);
+  debugLog('ai','PROMPT SCÉNARIO','Envoyé',prompt.slice(0,1500));
+  try{
+    const body={
+      model:MODEL_TEXT,
+      messages:[
+        {role:'system',content:'You are a screenwriter and visual director. You ALWAYS return valid JSON exactly matching the requested schema. All string values are on single lines. No markdown, no commentary.'},
+        {role:'user',content:prompt}
+      ],
+      temperature:0.8,
+      max_tokens:4000,
+      response_format:{type:'json_object'}
+    };
+    const res=await apiFetch(
+      API_BASE+'/chat/completions',
+      {method:'POST',headers:{'Authorization':'Bearer '+state.apiKey,'Content-Type':'application/json'},body:JSON.stringify(body)},
+      'Scénario',
+      'text',
+      4
+    );
+    if(!res.ok){const err=await res.text();throw new Error('HTTP '+res.status+' — '+err.slice(0,300))}
+    const data=await res.json();
+    const content=data.choices?.[0]?.message?.content;
+    if(!content)throw new Error('Pas de contenu');
+    const script=extractJson(content);
+    if(!script||!script.scenes)throw new Error('JSON invalide');
+    // L'IA ne connaît pas les numéros des images cochées (elle renvoie 0,1,2… ou 0 partout) : on impose la correspondance scène i → i-ème image cochée
+    script.scenes.forEach((s,i)=>{s.image_index=selectedIndices[i]});
+    state.script=script;
+    document.getElementById('script-view').textContent=
+      '📖 '+(script.title||'Sans titre')+'\n\n'+(script.logline||'')+'\n\n'+'─'.repeat(40)+'\n\n'+
+      script.scenes.map((s,i)=>'🎬 Scène '+(i+1)+'\n'+(s.description||'')+'\n💬 '+(s.speaker||'—')+' · '+(s.emotion||'')).join('\n\n');
+    document.getElementById('script-badge').textContent=script.scenes.length+' scènes';
+    document.getElementById('section-script').classList.remove('hidden');
+    document.getElementById('section-script').classList.add('open');
+    debugLog('success','SCÉNARIO',script.scenes.length+' scènes');
+    showToast('Scénario généré ✓','success');
+  }catch(e){
+    debugLog('error','SCÉNARIO',e.message);
+    showToast('Erreur scénario : '+e.message.slice(0,60),'error');
+  }
+  state.isGeneratingScript=false;
+  setStatus(null);
+  updateButtons();
+}
+
+async function generateVideos(){
+  if(state.isGeneratingVideos)return;
+  if(!state.apiKey){showToast('Ajoutez votre clé API','error');return}
+  if(!state.script){showToast('Générez d\'abord le scénario','error');return}
+  const selectedIndices=Array.from(state.selectedImages).sort((a,b)=>a-b);
+  if(selectedIndices.length===0){showToast('Cochez au moins une image','error');return}
+  state.isGeneratingVideos=true;
+  state.stopRequested=false;
+  state.videos=[];
+  document.getElementById('stop-btn').classList.add('visible');
+  updateButtons();
+  document.getElementById('section-videos').classList.remove('hidden');
+  document.getElementById('section-videos').classList.add('open');
+  renderVideosGrid();
+
+  const scenes=state.script.scenes||[];
+  const total=Math.min(selectedIndices.length,scenes.length);
+  debugLog('state','VIDÉOS','Début génération de '+total+' vidéos');
+
+  for(let i=0;i<total;i++){
+    if(state.stopRequested)break;
+    const scene=scenes[i];
+    const imgIdx=(scene.image_index!==undefined&&scene.image_index!==null)?scene.image_index:selectedIndices[i];
+    const img=state.images[imgIdx];
+    if(!img||img.status!=='done'){
+      state.videos.push({status:'error',url:null,prompt:scene.video_prompt||''});
+      renderVideosGrid();
+      continue;
+    }
+    state.videos.push({status:'loading',url:null,prompt:scene.video_prompt||''});
+    renderVideosGrid();
+    setStatus('Vidéo '+(i+1)+'/'+total+'…');
+    try{
+      const videoPrompt=buildVideoPrompt(scene);
+      const videoId=await createVideoTask(videoPrompt,img.url,state.durationFrames);
+      const videoUrl=await pollVideo(videoId,(prog)=>{setStatus('Vidéo '+(i+1)+'/'+total+' — '+prog)});
+      state.videos[i]={status:'done',url:videoUrl,prompt:scene.video_prompt||''};
+      renderVideosGrid();
+      debugLog('success','VIDÉO '+(i+1),'Terminée');
+    }catch(e){
+      if(e.message==='Arrêt demandé'){state.videos[i]={status:'stopped',url:null,prompt:scene.video_prompt||''};renderVideosGrid();break}
+      state.videos[i]={status:'error',url:null,prompt:scene.video_prompt||''};
+      renderVideosGrid();
+      debugLog('error','VIDÉO '+(i+1),e.message);
+    }
+    if(i<total-1&&!state.stopRequested){
+      const secs=62;
+      for(let r=secs;r>0;r--){
+        if(state.stopRequested)break;
+        setStatus('Pause '+r+'s avant vidéo '+(i+2));
+        await sleep(1000);
+      }
+    }
+  }
+  state.isGeneratingVideos=false;
+  document.getElementById('stop-btn').classList.remove('visible');
+  updateButtons();
+  const done=state.videos.filter(v=>v.status==='done').length;
+  setStatus(done+'/'+total+' vidéos prêtes ✦');
+  await sleep(3000);
+  setStatus(null);
+  showToast(done+'/'+total+' vidéos générées',done>0?'success':'warn');
+  debugLog('success','VIDÉOS',done+'/'+total);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PLAYER SÉQUENTIEL
+// ══════════════════════════════════════════════════════════════════
+async function playFilm(){
+  const readyVideos=state.videos.filter(v=>v.status==='done'&&v.url);
+  if(readyVideos.length===0){showToast('Aucune vidéo à lire','error');return}
+  state.isPlayingFilm=true;
+  updateButtons();
+  const overlay=document.getElementById('player-overlay');
+  const canvas=document.getElementById('player-canvas');
+  const hint=document.getElementById('player-hint-overlay');
+  if(!overlay||!canvas)return;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const cssW=window.innerWidth;
+  const cssH=window.innerHeight;
+  canvas.width=Math.round(cssW*dpr);
+  canvas.height=Math.round(cssH*dpr);
+  canvas.style.width=cssW+'px';
+  canvas.style.height=cssH+'px';
+  const ctx=canvas.getContext('2d');
+  overlay.classList.add('visible');
+  hint.classList.remove('hidden');
+  setTimeout(()=>hint.classList.add('hidden'),3000);
+  for(let i=0;i<readyVideos.length;i++){
+    if(!state.isPlayingFilm)break;
+    await playVideoOnCanvas(readyVideos[i].url,ctx,canvas);
+  }
+  stopFilmPlayback();
+}
+
+function playVideoOnCanvas(videoUrl,ctx,canvas){
+  return new Promise((resolve)=>{
+    const video=document.createElement('video');
+    video.src=videoUrl;
+    video.muted=false;
+    video.playsInline=true;
+    video.onloadedmetadata=()=>{
+      const drawFrame=()=>{
+        ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);
+        const ar=video.videoWidth/video.videoHeight;
+        const car=canvas.width/canvas.height;
+        let dw,dh,dx,dy;
+        if(ar>car){dw=canvas.width;dh=canvas.width/ar;dx=0;dy=(canvas.height-dh)/2}
+        else{dh=canvas.height;dw=canvas.height*ar;dx=(canvas.width-dw)/2;dy=0}
+        ctx.drawImage(video,dx,dy,dw,dh);
+      };
+      const loop=()=>{if(!state.isPlayingFilm||video.paused||video.ended){resolve();return}drawFrame();state.playRAF=requestAnimationFrame(loop)};
+      video.play().then(()=>{loop()}).catch(()=>resolve());
+    };
+    video.onended=()=>resolve();
+    video.onerror=()=>resolve();
+    video.load();
+  });
+}
+
+function stopFilmPlayback(){
+  state.isPlayingFilm=false;
+  if(state.playRAF)cancelAnimationFrame(state.playRAF);
+  state.playRAF=null;
+  const overlay=document.getElementById('player-overlay');
+  if(overlay)overlay.classList.remove('visible');
+  updateButtons();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════
+(function init(){
+  document.getElementById('api-save-btn').addEventListener('click',saveApiKey);
+  document.getElementById('api-key-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();saveApiKey()}});
+  document.querySelectorAll('[data-toggle]').forEach(h=>{h.addEventListener('click',()=>{const el=document.getElementById(h.dataset.toggle);if(el)el.classList.toggle('open')})});
+  document.getElementById('load-news-btn').addEventListener('click',loadNews);
+  bindRefInput('ref-style-drop');
+  bindRefInput('ref-char-drop');
+  renderDirectorSelect();
+  document.getElementById('combo-mode').addEventListener('change',e=>{state.comboMode=e.target.checked;if(!state.comboMode)document.getElementById('combo-info').classList.add('hidden');debugLog('info','COMBO','Mode combinaison folle : '+(state.comboMode?'ON':'OFF'))});
+  renderPalettes();
+  document.getElementById('scene-count-select').addEventListener('change',e=>{state.sceneCount=parseInt(e.target.value,10);updateButtons()});
+  document.getElementById('duration-select').addEventListener('change',e=>{state.durationFrames=parseInt(e.target.value,10);updateButtons()});
+  document.getElementById('intensity-select').addEventListener('change',e=>{state.intensity=e.target.value;updateButtons()});
+  document.getElementById('generate-images-btn').addEventListener('click',generateImages);
+  document.getElementById('generate-scenario-btn').addEventListener('click',generateScript);
+  document.getElementById('generate-videos-btn').addEventListener('click',generateVideos);
+  document.getElementById('select-all-btn').addEventListener('click',()=>{state.images.forEach((_,i)=>{if(state.images[i].status==='done')state.selectedImages.add(i)});renderImagesGrid();updateButtons()});
+  document.getElementById('deselect-all-btn').addEventListener('click',()=>{state.selectedImages.clear();renderImagesGrid();updateButtons()});
+  document.getElementById('play-film-btn').addEventListener('click',playFilm);
+  document.getElementById('stop-btn').addEventListener('click',()=>{state.stopRequested=true;debugLog('warn','STOP','Arrêt demandé');setStatus('Arrêt en cours…')});
+  document.getElementById('player-overlay').addEventListener('click',stopFilmPlayback);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.isPlayingFilm)stopFilmPlayback()});
+  document.getElementById('debug-header').addEventListener('click',e=>{if(e.target.tagName==='BUTTON')return;toggleDebugCollapse()});
+  document.getElementById('debug-collapse-btn').addEventListener('click',e=>{e.stopPropagation();toggleDebugCollapse()});
+  document.getElementById('debug-clear-btn').addEventListener('click',e=>{e.stopPropagation();clearDebug()});
+  document.getElementById('debug-copy-btn').addEventListener('click',e=>{e.stopPropagation();copyDebug()});
+  const saved=getApiKey();
+  if(saved)document.getElementById('api-key-input').value=saved;
+  updateApiPanel();
+  updateButtons();
+  renderImagesGrid();
+  renderVideosGrid();
+  debugLog('success','INIT','Cinéma Studio prêt (v2 corrigée)');
+  debugLog('info','INIT','Pipeline : NEWS → RÉFÉRENCES → RÉALISATEUR → PALETTE → IMAGES → SCÉNARIO → VIDÉOS → PLAYER');
+  debugLog('info','INIT','Modèles : '+MODEL_TEXT+' / '+MODEL_IMAGE+' / '+MODEL_VIDEO);
+  debugLog('info','INIT',DIRECTORS_CATALOG.length+' réalisateurs/styles · '+PALETTES.length+' palettes · '+WILD_COMBOS.length+' combinaisons');
+  debugLog('info','INIT','Image format : size=1K, ratio=9:16');
+})();
+</script>
+</body>
+</html>

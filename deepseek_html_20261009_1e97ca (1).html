@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ciné Studio</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:#fff;color:#111}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;min-height:100vh;padding:1.5rem 1.25rem 320px;font-size:15px;line-height:1.55;max-width:1600px;margin:0 auto;letter-spacing:-0.005em;-webkit-font-smoothing:antialiased}
+header{padding-bottom:1rem;border-bottom:1px solid #111;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap}
+header h1{font-size:1.5rem;font-weight:600;letter-spacing:-.02em;margin-bottom:.15rem}
+header p{font-size:.72rem;color:#666;text-transform:uppercase;letter-spacing:.15em;font-weight:500}
+.head-status{display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;padding-top:.35rem}
+.head-pill{font-size:.66rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:.28rem .55rem;border:1px solid #ccc;border-radius:100px;background:#fff;color:#999;display:inline-flex;align-items:center;gap:.3rem}
+.head-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:#ccc;display:inline-block}
+.head-pill.on{border-color:#111;color:#111}.head-pill.on::before{background:#111}
+.head-pill.gold{border-color:#d4a017;color:#b8860b}.head-pill.gold.on::before{background:#d4a017}
+.head-pill.red{border-color:#c00;color:#c00}.head-pill.red.on{background:#fff5f5}
+.session-bar{background:#fafafa;border:1px solid #ddd;border-radius:8px;padding:.6rem .9rem;margin-bottom:1rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.session-bar .sb-label{font-size:.68rem;color:#111;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.session-bar select{flex:1;min-width:180px;padding:.5rem .75rem;border:1px solid #111;border-radius:6px;background:#fff;color:#111;font-family:inherit;font-size:.8rem;cursor:pointer}
+.session-bar button{padding:.5rem .8rem;border:1px solid #111;background:#fff;color:#111;border-radius:6px;font-family:inherit;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;transition:all .15s}
+.session-bar button:hover{background:#111;color:#fff}
+.session-bar button.danger{border-color:#c00;color:#c00}.session-bar button.danger:hover{background:#c00;color:#fff}
+.section{background:#fff;border:1px solid #ddd;border-radius:8px;margin-bottom:.85rem;overflow:hidden}
+.section.locked{opacity:.72;pointer-events:none;background:#fafafa}
+.section.locked .section-header{background:#f5f5f5}
+.section-header{padding:.85rem 1.15rem;cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+.section-header:active{background:#fafafa}
+.section-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.18em;font-weight:700;color:#111;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.section-title .num{display:inline-flex;width:20px;height:20px;align-items:center;justify-content:center;background:#111;color:#fff;border-radius:50%;font-size:.6rem;font-weight:700}
+.section-title .badge{font-size:.58rem;padding:.1rem .4rem;border:1px solid #111;border-radius:100px;letter-spacing:.05em;font-weight:600;text-transform:uppercase}
+.section-title .badge.gray{border-color:#ccc;color:#888}
+.section-title .badge.gold{border-color:#d4a017;color:#b8860b;background:#fffbe6}
+.section-title .badge.red{border-color:#c00;color:#c00;background:#fff5f5}
+.section-title .badge.blue{border-color:#0045b5;color:#0045b5;background:#f0f6ff}
+.section-title .badge.green{border-color:#0a7a3e;color:#0a7a3e;background:#f0f9f3}
+.chevron{font-size:.85rem;color:#666;transition:transform .25s;line-height:1}
+.section.open .chevron{transform:rotate(180deg);color:#111}
+.section-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.section.open .section-body{max-height:400000px}
+.section-content{padding:0 1.15rem 1.1rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.8rem 1.1rem;border:1px solid #111;border-radius:6px;background:#111;color:#fff;font-size:.78rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:opacity .15s,transform .1s;width:100%;margin-bottom:.5rem;line-height:1}
+.btn:hover:not(:disabled){opacity:.85}.btn:active:not(:disabled){transform:scale(.985)}.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.secondary{background:#fff;color:#111}
+.btn.ghost{background:#fff;color:#666;border-color:#ddd}.btn.ghost:hover:not(:disabled){color:#111;border-color:#111}
+.btn.gold{background:#fff;color:#b8860b;border-color:#d4a017}.btn.gold:hover:not(:disabled){background:#fffbe6}
+.btn.blue{background:#fff;color:#0045b5;border-color:#0045b5}.btn.blue:hover:not(:disabled){background:#f0f6ff}
+.btn.green{background:#fff;color:#0a7a3e;border-color:#0a7a3e}.btn.green:hover:not(:disabled){background:#f0f9f3}
+.btn.danger{background:#fff;color:#c00;border-color:#c00}.btn.danger:hover:not(:disabled){background:#c00;color:#fff}
+.btn.large{padding:1rem 1.4rem;font-size:.9rem}
+.btn.small{padding:.5rem .8rem;font-size:.68rem;width:auto}
+.status{display:flex;align-items:center;gap:.5rem;font-size:.72rem;padding:.55rem .8rem;border:1px solid #ddd;border-radius:6px;background:#fafafa;color:#666;margin-bottom:.5rem}
+.status .dot{width:7px;height:7px;border-radius:50%;background:#ccc;flex-shrink:0}
+.status.ok{border-color:#111;color:#111;background:#f5f5f5}.status.ok .dot{background:#111}
+.status.err{border-color:#c00;color:#c00;background:#fff5f5}.status.err .dot{background:#c00}
+.status.blue{border-color:#0045b5;color:#0045b5;background:#f0f6ff}.status.blue .dot{background:#0045b5}
+.status.green{border-color:#0a7a3e;color:#0a7a3e;background:#f0f9f3}.status.green .dot{background:#0a7a3e}
+.ref-drop{border:2px dashed #ccc;border-radius:8px;padding:1.4rem 1rem;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa;position:relative;display:block;margin-bottom:.5rem}
+.ref-drop:hover{border-color:#111;background:#fff}
+.ref-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:5}
+.ref-drop .ref-icon{font-size:1.6rem;color:#111;opacity:.35;margin-bottom:.35rem}
+.ref-drop .ref-text{font-size:.8rem;color:#666;line-height:1.5}
+.ref-drop .ref-text strong{color:#111;font-weight:600;display:block;margin-bottom:.15rem}
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.5rem;margin-bottom:.55rem}
+.ref-thumb{position:relative;aspect-ratio:1/1;border-radius:6px;overflow:hidden;border:2px solid #111;background:#fafafa}
+.ref-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.ref-thumb .rm{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#111;color:#fff;border:none;font-size:.7rem;cursor:pointer;padding:0;z-index:10}
+.q-block{margin-top:1rem;padding:.75rem .85rem;border:1px solid #e5e5e5;border-radius:8px;background:#fafafa}
+.q-block .q-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#111;margin-bottom:.55rem;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.q-block .q-label .q-num{display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;background:#111;color:#fff;border-radius:50%;font-size:.58rem;font-weight:700}
+.q-block .q-hint{font-size:.68rem;color:#888;font-weight:400;text-transform:none;letter-spacing:0;margin-left:auto}
+.q-chips{display:flex;gap:.35rem;flex-wrap:wrap}
+.q-chip{padding:.55rem .9rem;border:1.5px solid #ddd;border-radius:100px;background:#fff;color:#111;font-family:inherit;font-size:.76rem;cursor:pointer;transition:all .15s;text-align:left;line-height:1.25;display:inline-flex;flex-direction:column;align-items:flex-start}
+.q-chip:hover{border-color:#111}
+.q-chip.on{border-color:#111;background:#111;color:#fff}
+.q-chip small{display:block;font-size:.62rem;opacity:.65;margin-top:.1rem}
+.film-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.4rem;margin-top:.5rem}
+.film-chip{padding:.6rem .7rem;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#111;font-family:inherit;cursor:pointer;transition:all .15s;text-align:left;line-height:1.25}
+.film-chip:hover{border-color:#111}
+.film-chip.on{border-color:#0045b5;background:#f0f6ff;border-width:2px}
+.film-chip .fc-t{font-size:.72rem;font-weight:700;display:block}
+.film-chip .fc-m{font-size:.6rem;color:#888;display:block;margin-top:.1rem}
+.film-chip.on .fc-t{color:#0045b5}
+.scene-card2{border:1px solid #0045b5;border-radius:8px;overflow:hidden;background:#fff;display:flex;flex-direction:column;position:relative}
+.scene-card2 .thumb{position:relative;aspect-ratio:9/16;overflow:hidden;background:#f5f5f5}
+.scene-card2 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.scene-card2 .thumb .placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#999;font-size:.7rem;font-family:ui-monospace,monospace;padding:.6rem;text-align:center;line-height:1.4}
+.scene-card2 .thumb .sc-num{position:absolute;top:.35rem;left:.35rem;background:#0045b5;color:#fff;font-size:.6rem;padding:.15rem .45rem;border-radius:4px;font-weight:700;z-index:3}
+.scene-card2 .thumb .sc-state{position:absolute;top:.35rem;right:.35rem;font-size:.55rem;padding:.15rem .4rem;border-radius:100px;font-weight:700;z-index:3;background:#fff;border:1px solid #ddd;color:#888}
+.scene-card2 .thumb .sc-state.validated{background:#0a7a3e;color:#fff;border-color:#0a7a3e}
+.scene-card2 .thumb .sc-state.video{background:#111;color:#fff;border-color:#111}
+.scene-card2 .sc-body{padding:.6rem .7rem;font-size:.7rem}
+.scene-card2 .sc-desc{color:#111;line-height:1.45;margin-bottom:.3rem}
+.scene-card2 .sc-dialogue{color:#0045b5;font-style:italic;font-size:.68rem;border-left:2px solid #0045b5;padding-left:.4rem;margin-bottom:.35rem}
+.scene-card2 .sc-meta{font-size:.6rem;color:#999;font-family:ui-monospace,monospace}
+.scene-card2 .sc-acts{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #eee;background:#fafafa}
+.scene-card2 .sc-acts button{padding:.45rem .3rem;background:transparent;border:none;color:#666;cursor:pointer;font-family:inherit;font-size:.58rem;font-weight:600;text-transform:uppercase;transition:all .15s}
+.scene-card2 .sc-acts button:not(:last-child){border-right:1px solid #eee}
+.scene-card2 .sc-acts button:hover:not(:disabled){background:#111;color:#fff}
+.scene-card2 .sc-acts button.ok-btn.on{color:#0a7a3e;font-weight:700}
+.scene-card2 .sc-acts button:disabled{opacity:.3;cursor:not-allowed}
+.scene-card2 .sc-tools{padding:.5rem .7rem;border-top:1px solid #eee;display:none;flex-direction:column;gap:.4rem;background:#fff}
+.scene-card2 .sc-tools.open{display:flex}
+.scene-card2 .sc-tools input{padding:.5rem .65rem;border:1px solid #ddd;border-radius:6px;font-family:inherit;font-size:.74rem;outline:none}
+.scene-card2 .sc-tools input:focus{border-color:#111}
+.scene-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.85rem;margin-top:.75rem}
+@media(max-width:700px){.scene-grid{grid-template-columns:1fr 1fr;gap:.5rem}}
+.loading-block{background:#f0f6ff;border:1px solid #0045b5;border-radius:8px;padding:1rem 1.15rem;margin:.75rem 0;display:flex;align-items:center;gap:.9rem}
+.loading-block .lb-spin{width:28px;height:28px;border:3px solid rgba(0,69,181,.2);border-top-color:#0045b5;border-radius:50%;animation:spin .9s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-block .lb-txt{flex:1}
+.loading-block .lb-title{font-size:.8rem;font-weight:700;color:#0045b5;margin-bottom:.2rem}
+.loading-block .lb-msg{font-size:.72rem;color:#111;line-height:1.5;min-height:1.1em;font-style:italic}
+.story-panel{background:#f0f6ff;border:1px solid #0045b5;border-radius:8px;padding:.85rem;margin-bottom:.85rem}
+.story-panel .sp-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#0045b5;margin-bottom:.5rem}
+.story-panel .sp-story{font-size:.78rem;line-height:1.5;color:#111;background:#fff;padding:.6rem .7rem;border-radius:6px;border:1px solid #d5e3fa;margin-bottom:.5rem}
+.story-panel .sp-note{font-size:.68rem;color:#0045b5;font-style:italic}
+.film-video-item{border:1px solid #111;border-radius:8px;overflow:hidden;background:#fafafa;margin-bottom:.6rem}
+.film-video-item .fv-head{padding:.45rem .75rem;border-bottom:1px solid #eee;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap}
+.film-video-item .fv-head .fv-status{font-weight:400;color:#666;text-transform:none;letter-spacing:0;font-size:.66rem}
+.film-video-item .fv-head .fv-status.done{color:#0a7a3e;font-weight:700}
+.film-video-item .fv-head .fv-status.err{color:#c00;font-weight:700}
+.film-video-item .fv-video{aspect-ratio:9/16;background:#000;max-height:340px;display:flex;align-items:center;justify-content:center}
+.film-video-item .fv-video video{width:100%;height:100%;object-fit:contain;display:block}
+.film-video-item .fv-video .fv-load{color:#fff;font-family:ui-monospace,monospace;font-size:.66rem;text-align:center;padding:.9rem;line-height:1.5;max-width:100%}
+.film-video-item .fv-text{padding:.55rem .75rem;font-size:.75rem;line-height:1.5}
+.film-video-item .fv-dialogue{font-style:italic;color:#0045b5}
+.video-lib-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.65rem}
+.video-lib-card{border:1px solid #ddd;border-radius:8px;overflow:hidden;background:#fafafa}
+.video-lib-card video{width:100%;display:block;background:#000;aspect-ratio:9/16;object-fit:contain}
+.video-lib-card .vlb-cap{padding:.45rem .65rem;font-size:.68rem;border-top:1px solid #eee}
+.video-lib-card .vlb-cap .vlb-t{font-weight:700;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.video-lib-card .vlb-cap .vlb-s{font-size:.6rem;color:#666;margin-top:.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+@media(max-width:800px){.admin-grid{grid-template-columns:1fr}}
+.admin-card{border:1px solid #ddd;border-radius:8px;padding:.85rem;background:#fafafa}
+.admin-card h3{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.6rem}
+.admin-stat{display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #eee;font-size:.75rem}
+.admin-stat:last-child{border-bottom:none}
+.admin-table{width:100%;font-size:.7rem;border-collapse:collapse}
+.admin-table th{text-align:left;padding:.35rem .4rem;font-size:.6rem;text-transform:uppercase;letter-spacing:.05em;color:#666;border-bottom:1px solid #ddd;font-weight:700}
+.admin-table td{padding:.35rem .4rem;border-bottom:1px solid #f3f3f3;font-family:ui-monospace,monospace;font-size:.68rem}
+.admin-scroll{max-height:280px;overflow-y:auto;border:1px solid #eee;border-radius:6px;background:#fff}
+.input-row{width:100%;padding:.8rem .95rem;border:1px solid #ddd;border-radius:6px;background:#fff;color:#111;font-family:inherit;font-size:.88rem;outline:none;margin-bottom:.5rem}
+.input-row:focus{border-color:#111}
+textarea.input-row{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.74rem;min-height:120px;resize:vertical}
+.input-hint{font-size:.7rem;color:#666;line-height:1.5;margin-top:.35rem}
+.input-hint code{background:#f3f3f3;padding:.08rem .35rem;border-radius:3px;font-family:ui-monospace,monospace;font-size:.66rem}
+.bottom-dock{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #111;z-index:900}
+.progress-strip{height:5px;background:#eee;position:relative;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#111,#0045b5);width:0%;transition:width .3s ease}
+.progress-meta{display:none;justify-content:space-between;align-items:center;gap:.5rem;padding:.35rem .9rem;font-size:.68rem;font-family:ui-monospace,monospace;color:#111;background:#f0f6ff;border-bottom:1px solid #d5e3fa}
+.progress-meta.visible{display:flex}
+.progress-meta #progress-label{font-weight:600}
+.console-dock{border-top:1px solid #eee;display:flex;flex-direction:column;height:200px;transition:height .3s ease}
+.console-dock.collapsed{height:38px}
+.console-header{display:flex;align-items:center;gap:.5rem;padding:.5rem .85rem;background:#fafafa;border-bottom:1px solid #eee;cursor:pointer;min-height:38px}
+.console-title{font-size:.62rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase}
+.console-badge{font-size:.58rem;padding:.08rem .35rem;background:#111;color:#fff;border-radius:100px;font-weight:700}
+.console-actions{margin-left:auto;display:flex;gap:.25rem}
+.console-actions button{background:#fff;border:1px solid #ddd;color:#666;font-size:.58rem;padding:.22rem .5rem;border-radius:3px;cursor:pointer;font-family:inherit}
+.console-actions button:hover{border-color:#111;color:#111}
+.console-toggle{background:transparent;border:none;cursor:pointer;font-size:.75rem;padding:.2rem .4rem;font-family:inherit}
+.console-body{flex:1;overflow-y:auto;padding:.45rem .85rem .8rem;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:.68rem;line-height:1.5;color:#333}
+.log-entry{padding:.15rem 0;border-bottom:1px solid #f3f3f3;word-break:break-word;display:flex;gap:.45rem}
+.log-time{color:#999;font-size:.6rem;flex-shrink:0;min-width:56px}
+.log-cat{color:#111;font-weight:700;font-size:.6rem;flex-shrink:0;min-width:56px}
+.log-msg{flex:1}
+.log-entry.success .log-msg{color:#0a7a3e}
+.log-entry.warn .log-msg{color:#b8860b}
+.log-entry.error .log-msg{color:#c00}
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%) translateY(-140px);background:#111;color:#fff;padding:.7rem 1.15rem;border-radius:6px;font-size:.8rem;z-index:1100;opacity:0;transition:all .3s;max-width:90vw;text-align:center}
+.toast.visible{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.error{background:#c00}
+.toast.success{background:#0a7a3e}
+.empty{padding:1.4rem 1rem;text-align:center;color:#999;font-size:.78rem;border:1px dashed #ddd;border-radius:6px;font-family:ui-monospace,monospace}
+.empty .big{font-size:1.5rem;opacity:.35;display:block;margin-bottom:.35rem}
+.main-tabs{display:flex;gap:.3rem;margin-bottom:1rem;flex-wrap:wrap;border-bottom:1px solid #ddd}
+.main-tab{padding:.7rem 1.1rem;background:transparent;border:none;border-bottom:2px solid transparent;color:#666;font-family:inherit;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;cursor:pointer;margin-bottom:-1px}
+.main-tab.active{color:#111;border-bottom-color:#111}
+.tab-panel{display:none}.tab-panel.active{display:block}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.loading-card{background:linear-gradient(90deg,#f5f5f5 0%,#eee 50%,#f5f5f5 100%);background-size:200% 100%;animation:shimmer 1.8s infinite;aspect-ratio:9/16;border-radius:8px}
+@media(max-width:600px){body{padding:1rem .6rem 280px}.scene-grid{grid-template-columns:1fr}.console-dock{height:160px}.film-list{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Ciné Studio</h1>
+    <p>Photo → Analyse → Choix → Scénario → Images → Film</p>
+  </div>
+  <div class="head-status">
+    <span class="head-pill" id="pill-keys">0 clé</span>
+    <span class="head-pill" id="pill-step">Étape 1</span>
+    <span class="head-pill gold" id="pill-scenes">0/0 plans</span>
+    <span class="head-pill" id="pill-videos">Vidéos 0</span>
+    <span class="head-pill red" id="pill-pending">En cours 0</span>
+  </div>
+</header>
+
+<div class="main-tabs">
+  <button type="button" class="main-tab active" data-tab="studio">🎬 Studio</button>
+  <button type="button" class="main-tab" data-tab="videos">📼 Film &amp; vidéothèque</button>
+  <button type="button" class="main-tab" data-tab="admin">⚙️ Admin</button>
+</div>
+
+<div class="tab-panel active" id="tab-studio">
+  <div class="session-bar">
+    <span class="sb-label">Session :</span>
+    <select id="session-select"></select>
+    <button type="button" id="new-session-btn">+ Nouvelle</button>
+    <button type="button" id="rename-session-btn">Renommer</button>
+    <button type="button" class="danger" id="delete-session-btn">Supprimer</button>
+  </div>
+
+  <div class="section open" id="sec-photo">
+    <div class="section-header"><span class="section-title"><span class="num">1</span> Votre photo <span class="badge gray" id="photo-badge">Vide</span></span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content">
+      <div class="ref-grid" id="ref-grid"></div>
+      <div class="ref-drop" id="ref-drop">
+        <input type="file" accept="image/*" id="ref-input">
+        <div class="ref-icon">◯</div>
+        <div class="ref-text"><strong>Déposez votre photo</strong>Portrait, paysage, objet, ambiance… Tout le film sera généré dans son style.</div>
+      </div>
+      <button type="button" class="btn large blue" id="analyze-btn" disabled>✅ Valider — l'IA analyse la photo</button>
+      <div class="status blue" id="analyze-status"><span class="dot"></span><span id="analyze-status-text">En attente d'une photo.</span></div>
+    </div></div>
+  </div>
+
+  <div class="section" id="sec-options">
+    <div class="section-header"><span class="section-title"><span class="num">2</span> Votre vision créative <span class="badge blue" id="options-badge">À compléter</span></span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content" id="options-content">
+      <div class="empty"><span class="big">🤖</span>Après l'analyse de la photo, un questionnaire guidé apparaîtra ici.</div>
+    </div></div>
+  </div>
+
+  <div class="section" id="sec-script">
+    <div class="section-header"><span class="section-title"><span class="num">3</span> Scénario &amp; découpage <span class="badge blue" id="script-badge">Story-first</span></span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content" id="script-content">
+      <div class="empty"><span class="big">📖</span>Le scénario complet apparaîtra ici.</div>
+    </div></div>
+  </div>
+
+  <div class="section" id="sec-images">
+    <div class="section-header"><span class="section-title"><span class="num">4</span> Images des plans <span class="badge gray" id="images-badge">0/0 validées</span></span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content" id="images-content">
+      <div class="empty"><span class="big">◯</span>Une image par plan, validées par défaut. Ajustez ou demandez une variante si besoin.</div>
+      <div class="scene-grid" id="scene-grid"></div>
+      <button type="button" class="btn large green" id="make-film-btn" style="margin-top:.8rem" disabled>🎬 Générer le film</button>
+      <div class="status" id="images-status"><span class="dot"></span><span id="images-status-text">En attente du scénario.</span></div>
+    </div></div>
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-videos">
+  <div class="section open">
+    <div class="section-header"><span class="section-title">🎞 Film assemblé <span class="badge gray" id="film-count">0 séquence</span></span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content">
+      <div class="empty" id="film-empty"><span class="big">🎬</span>Les séquences vidéo apparaîtront ici.</div>
+      <div id="film-list"></div>
+      <button type="button" class="btn ghost small" id="export-film-btn" style="display:none">📥 Télécharger toutes les vidéos</button>
+    </div></div>
+  </div>
+  <div class="section open">
+    <div class="section-header"><span class="section-title">📼 Vidéothèque <span class="badge gray" id="videolib-count">0</span></span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content">
+      <div class="empty" id="videolib-empty"><span class="big">📼</span>Aucune vidéo.</div>
+      <div class="video-lib-list" id="videolib-list"></div>
+    </div></div>
+  </div>
+</div>
+
+<div class="tab-panel" id="tab-admin">
+  <div class="section open">
+    <div class="section-header"><span class="section-title">🔑 Clés API</span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content">
+      <textarea class="input-row" id="keys-input" placeholder="sk-xxxx = 20/1&#10;sk-yyyy = 30/2&#10;... (autant de clés que vous voulez)" spellcheck="false"></textarea>
+      <button type="button" class="btn secondary" id="save-keys-btn">Enregistrer les clés</button>
+      <div class="status" id="keys-status"><span class="dot"></span><span id="keys-status-text">Aucune clé</span></div>
+      <div class="input-hint">Format : <code>sk-xxxx = 20/1</code> (RPM image / RPM vidéo par clé).</div>
+      <div class="admin-scroll" style="margin-top:.5rem">
+        <table class="admin-table" id="keys-table"><thead><tr><th>#</th><th>Clé</th><th>Img</th><th>Vid</th><th>Util.</th><th>État</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div></div>
+  </div>
+  <div class="section open">
+    <div class="section-header"><span class="section-title">🎥 Préréglage vidéo</span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:.6rem">
+        <button type="button" class="btn secondary vpreset-btn" data-preset="fast">⚡ Court<small style="display:block;font-size:.6rem;font-weight:400;opacity:.7">121 fr · ~5s</small></button>
+        <button type="button" class="btn secondary vpreset-btn" data-preset="medium">⚖️ Moyen<small style="display:block;font-size:.6rem;font-weight:400;opacity:.7">169 fr · ~7s</small></button>
+        <button type="button" class="btn secondary vpreset-btn" data-preset="slow">🎬 Long<small style="display:block;font-size:.6rem;font-weight:400;opacity:.7">241 fr · ~10s</small></button>
+      </div>
+      <div class="status" id="vpreset-status"><span class="dot"></span><span id="vpreset-status-text">agnes-video-v2.0 · 169 frames · 24fps</span></div>
+      <div class="input-hint">Le modèle <code>agnes-video-v2.0</code> prononce les dialogues directement. Pas de musique : dialogues + bruitages uniquement.</div>
+    </div></div>
+  </div>
+  <div class="section open">
+    <div class="section-header"><span class="section-title">📊 Stats &amp; données</span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content">
+      <div class="admin-grid">
+        <div class="admin-card"><h3>Contenus</h3><div id="stats-content"></div></div>
+        <div class="admin-card"><h3>Clés</h3><div id="stats-keys"></div></div>
+      </div>
+      <div style="display:flex;gap:.5rem;margin-top:.7rem;flex-wrap:wrap">
+        <button type="button" class="btn secondary small" id="export-db-btn">📥 Export JSON</button>
+        <button type="button" class="btn secondary small" id="import-db-btn">📤 Import</button>
+        <button type="button" class="btn danger small" id="reset-db-btn">🗑 Reset</button>
+      </div>
+      <input type="file" id="import-file" accept=".json" style="display:none">
+    </div></div>
+  </div>
+</div>
+
+<div class="bottom-dock">
+  <div class="progress-strip"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="progress-meta" id="progress-meta"><span id="progress-label">—</span><span id="progress-eta">—</span></div>
+  <div class="console-dock collapsed" id="console-dock">
+    <div class="console-header" id="console-header">
+      <span class="console-title">Console</span><span class="console-badge" id="console-badge">0</span>
+      <div class="console-actions">
+        <button type="button" id="console-copy">Copier</button>
+        <button type="button" id="console-clear">Effacer</button>
+      </div>
+      <button type="button" class="console-toggle" id="console-toggle">▴</button>
+    </div>
+    <div class="console-body" id="console-body"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+// ============================================================
+// CONFIG
+// ============================================================
+const API_BASE='https://apihub.agnes-ai.com/v1';
+const POLL_BASE='https://apihub.agnes-ai.com/agnesapi';
+const MODEL_IMAGE='agnes-image-2.5-flash';
+const MODEL_TEXT='agnes-2.5-flash';
+const MODEL_VIDEO='agnes-video-v2.0';
+const FRAME_RATE=24;
+
+const VIDEO_PRESETS={
+  fast:{num_frames:121},
+  medium:{num_frames:169},
+  slow:{num_frames:241}
+};
+// Réponse « Durée souhaitée par plan » (q_duree) → préréglage vidéo (num_frames envoyé à /videos)
+const DUREE_TO_PRESET={d1:'fast',d2:'medium',d3:'slow'};
+
+const VIDEO_FIRST_POLL_DELAY=45;
+const VIDEO_POLL_INTERVALS=[8,8,12,12,20,20,25];
+const VIDEO_MAX_POLL=100;
+const DB_NAME='cine_studio_db_v3';
+
+// Nombre de vidéos lancées en parallèle au max
+const MAX_PARALLEL_VIDEOS=3;
+
+// ============================================================
+// 20 FILMS DE RÉFÉRENCE (en français)
+// ============================================================
+const FILM_CATALOG=[
+  {id:'f01',t:'2001 L\'Odyssée de l\'espace',m:'Kubrick · SF philosophique',style:'cold symmetric sci-fi, cosmic minimalism, silence and scale'},
+  {id:'f02',t:'Blade Runner',m:'Ridley Scott · SF noir',style:'rain-slick neon noir, dystopian megacity, atmospheric haze'},
+  {id:'f03',t:'Amélie Poulain',m:'Jeunet · comédie romantique',style:'warm amber Paris, whimsical quirky details, saturated yellow-green'},
+  {id:'f04',t:'Pulp Fiction',m:'Tarantino · polar',style:'cool americana, punchy dialogue, chaptered pop-culture cool'},
+  {id:'f05',t:'Inception',m:'Nolan · thriller onirique',style:'nested dream logic, geometric architecture, cool steel-blue palette'},
+  {id:'f06',t:'Le Voyage de Chihiro',m:'Miyazaki · animation',style:'Ghibli lush hand-painted, warm spirit world, quiet wonder'},
+  {id:'f07',t:'Paris, Texas',m:'Wenders · drame',style:'lonely americana, neon on asphalt, muted warm-brown palette'},
+  {id:'f08',t:'The Grand Budapest Hotel',m:'Wes Anderson · comédie',style:'perfect bilateral symmetry, pastel palette, deadpan whimsy'},
+  {id:'f09',t:'Mad Max Fury Road',m:'Miller · action',style:'orange-teal desert chaos, kinetic fury, practical effects'},
+  {id:'f10',t:'Mulholland Drive',m:'Lynch · thriller psychologique',style:'sunny then nightmarish LA, dream logic, red curtains'},
+  {id:'f11',t:'La Cité de la Peur',m:'Les Nuls · comédie française',style:'absurd French comedy, silly gags, parodic references'},
+  {id:'f12',t:'Portrait de la jeune fille en feu',m:'Sciamma · drame romantique',style:'Brittany coast, candlelit interiors, muted blue-green palette'},
+  {id:'f13',t:'Barry Lyndon',m:'Kubrick · drame historique',style:'painterly 18th c., natural candlelight, stately slow rhythm'},
+  {id:'f14',t:'Old Boy',m:'Park Chan-wook · thriller coréen',style:'violent elegance, one-take corridor, raw vengeance'},
+  {id:'f15',t:'Le Samouraï',m:'Melville · polar français',style:'cool minimalist Paris, trench coat, silent existential'},
+  {id:'f16',t:'Un Prophète',m:'Audiard · drame carcéral',style:'prison grit, natural light, slow rise and fall'},
+  {id:'f17',t:'Roma',m:'Cuarón · drame',style:'black and white, wide symmetrical shots, intimate domestic'},
+  {id:'f18',t:'The Lobster',m:'Lanthimos · comédie absurde',style:'deadpan absurdism, cold dystopia, grey-blue palette'},
+  {id:'f19',t:'Perfect Blue',m:'Satoshi Kon · thriller anime',style:'psychological anime, mirror identity, saturated 90s'},
+  {id:'f20',t:'Her',m:'Spike Jonze · romance SF',style:'soft pastel near-future, warm melancholy, natural light'}
+];
+
+// 8 questions structurées (en français)
+const Q_STRUCT=[
+  {id:'q_genre',label:'Vous êtes plutôt…',hint:'Votre terrain de jeu',
+   choices:[
+    {id:'g1',l:'Cinéma d\'auteur contemplatif'},
+    {id:'g2',l:'Blockbuster spectaculaire'},
+    {id:'g3',l:'Comédie absurde ou burlesque'},
+    {id:'g4',l:'Drame intime et sensible'},
+    {id:'g5',l:'Thriller / polar noir'},
+    {id:'g6',l:'Science-fiction ou fantastique'},
+    {id:'g7',l:'Animation poétique'},
+    {id:'g8',l:'Documentaire-poésie'}
+   ]},
+  {id:'q_effet',label:'Effet dominant du film',hint:'L\'effet principal',
+   choices:[
+    {id:'e1',l:'Réaliste et naturaliste'},
+    {id:'e2',l:'Onirique et flottant'},
+    {id:'e3',l:'Fantastique et mythologique'},
+    {id:'e4',l:'Comique et décalé'},
+    {id:'e5',l:'Sombre et inquiétant'},
+    {id:'e6',l:'Rétro et nostalgique'},
+    {id:'e7',l:'Futuriste et clinique'},
+    {id:'e8',l:'Mélancolique et pluvieux'}
+   ]},
+  {id:'q_rythme',label:'Rythme du film',hint:'Comment ça bouge',
+   choices:[
+    {id:'r1',l:'Lent contemplatif'},
+    {id:'r2',l:'Fluide et continu'},
+    {id:'r3',l:'Rythmé et cadencé'},
+    {id:'r4',l:'Éclaté et nerveux'},
+    {id:'r5',l:'Lent puis explosion finale'}
+   ]},
+  {id:'q_fin',label:'Comment doit finir le film ?',hint:'Type de fin',
+   choices:[
+    {id:'t1',l:'Clôture nette et claire'},
+    {id:'t2',l:'Fin ouverte / ambiguë'},
+    {id:'t3',l:'Twist final'},
+    {id:'t4',l:'Chute comique'},
+    {id:'t5',l:'Cyclique (retour au début)'}
+   ]},
+  {id:'q_voix',label:'Voix et dialogue',hint:'Comment on entend le film',
+   choices:[
+    {id:'v1',l:'Aucune voix · silence sonore'},
+    {id:'v2',l:'Narrateur omniscient'},
+    {id:'v3',l:'Pensées du personnage (voix off)'},
+    {id:'v4',l:'Dialogues entre personnages'},
+    {id:'v5',l:'Chuchotements poétiques'}
+   ]},
+  {id:'q_palette',label:'Palette de couleurs',hint:'Ambiance chromatique',
+   choices:[
+    {id:'c1',l:'Chaude · ambre · orangée'},
+    {id:'c2',l:'Froide · bleutée · lunaire'},
+    {id:'c3',l:'Monochrome · noir et blanc'},
+    {id:'c4',l:'Vive · saturée · pop'},
+    {id:'c5',l:'Pastel · douce'},
+    {id:'c6',l:'Sépia · ancienne'}
+   ]},
+  {id:'q_epoque',label:'Époque du film',hint:'Quand ça se passe',
+   choices:[
+    {id:'p1',l:'Contemporaine'},
+    {id:'p2',l:'Passé (XXe siècle)'},
+    {id:'p3',l:'Futur proche'},
+    {id:'p4',l:'Futur lointain'},
+    {id:'p5',l:'Intemporelle / imaginaire'}
+   ]},
+  {id:'q_duree',label:'Durée souhaitée par plan',hint:'Rythme de montage',
+   choices:[
+    {id:'d1',l:'Court · ~5 secondes'},
+    {id:'d2',l:'Moyen · ~7 secondes'},
+    {id:'d3',l:'Long · ~10 secondes'}
+   ]}
+];
+
+// ============================================================
+// PROMPTS — RÈGLES DE LANGUE STRICTES
+// ============================================================
+const PROMPT_ANALYSIS=`Tu es directeur artistique. Analyse cette photo pour préparer un court-métrage.
+
+RÈGLE DE LANGUE ABSOLUE :
+Tous les champs textuels que tu produis DOIVENT être écrits en FRANÇAIS. Jamais d'anglais, jamais d'espagnol, jamais d'italien. Uniquement du français.
+
+Réponds en JSON strict sur UNE SEULE LIGNE, sans markdown, sans commentaire.
+
+Retourne EXACTEMENT ce schéma :
+{
+ "subject": "description précise du sujet principal, EN FRANÇAIS",
+ "style_detected": "style visuel détecté en une phrase, EN FRANÇAIS",
+ "palette": "couleurs dominantes, EN FRANÇAIS",
+ "lighting": "description de la lumière, EN FRANÇAIS",
+ "mood": "ambiance générale, EN FRANÇAIS",
+ "suggestions": [
+   {"id":"s1","t":"titre court de l'idée 1 (EN FRANÇAIS)","d":"pitch en 1 phrase (EN FRANÇAIS)"},
+   {"id":"s2","t":"titre court de l'idée 2 (EN FRANÇAIS)","d":"pitch en 1 phrase (EN FRANÇAIS)"},
+   {"id":"s3","t":"titre court de l'idée 3 (EN FRANÇAIS)","d":"pitch en 1 phrase (EN FRANÇAIS)"}
+ ]
+}
+
+Rappel : TOUT est écrit en FRANÇAIS.`;
+
+const PROMPT_SCRIPT=`Tu es scénariste-réalisateur senior. Écris un MICRO-FILM cohérent (portrait 9:16, environ 7s par plan) pensé POUR LE MONTAGE. Le résultat doit être un vrai film, pas une suite d'images.
+
+═══════════════════════════════════════════════════════════════════
+RÈGLE DE LANGUE ABSOLUE — À RESPECTER À LA LETTRE
+═══════════════════════════════════════════════════════════════════
+Deux types de champs, deux langues différentes :
+
+▸ CHAMPS NARRATIFS (destinés au spectateur français) : TOUS EN FRANÇAIS
+  - "title", "logline", "story", "tone", "montage_notes", "sound_design"
+  - "scenes[].desc", "scenes[].dialogue_fr", "scenes[].camera", "scenes[].sfx", "scenes[].transition"
+
+▸ CHAMPS TECHNIQUES (destinés à l'API image/vidéo) : TOUS EN ANGLAIS
+  - "style_lock" : description du style visuel en ANGLAIS
+  - "scenes[].image_prompt" : prompt image-to-video en ANGLAIS
+
+Aucun mot d'espagnol, d'italien ou d'allemand, nulle part.
+Si tu n'es pas sûr d'un mot, utilise un mot simple en français.
+
+═══════════════════════════════════════════════════════════════════
+CONTRAINTES NARRATIVES
+═══════════════════════════════════════════════════════════════════
+- Logique : situation → complication → résolution/chute.
+- Chaque plan a une fonction narrative claire (pas de plan décoratif sans but).
+- Continuité visuelle stricte (même personnage, même lumière, même style).
+- Dialogues FRANÇAIS, MAX 12 MOTS par phrase.
+- Son : dialogues + bruitages réalistes. AUCUNE MUSIQUE.
+
+═══════════════════════════════════════════════════════════════════
+FORMAT DE SORTIE (JSON strict, une seule ligne, sans markdown)
+═══════════════════════════════════════════════════════════════════
+{
+ "title":"titre en français",
+ "logline":"phrase unique en français",
+ "story":"synopsis de 3 à 5 phrases en français",
+ "tone":"ton dominant en français",
+ "style_lock":"locking description of the visual style in ENGLISH for the image API",
+ "montage_notes":"comment les plans s'enchaînent (en français)",
+ "sound_design":"identité sonore, pas de musique (en français)",
+ "scenes":[
+  {
+    "num":1,
+    "desc":"description de la scène en français",
+    "dialogue_fr":"réplique française ou chaîne vide",
+    "camera":"mouvement de caméra en français",
+    "sfx":"bruitages attendus en français",
+    "image_prompt":"detailed English prompt for image generation",
+    "use_ref":true,
+    "transition":"enchaînement vers la scène suivante (en français)"
+  }
+  ... exactement 6 plans
+ ]
+}`;
+
+const PROMPT_TWEAK=`Tu es directeur artistique. Modifie le prompt d'image d'une scène selon la demande de l'utilisateur, en conservant ABSOLUMENT l'identité du personnage et le style_lock fourni.
+
+RÈGLE DE LANGUE :
+- "image_prompt" : EN ANGLAIS (envoyé à l'API image)
+- "note" : EN FRANÇAIS (affiché à l'utilisateur)
+
+Réponds en JSON strict sur une ligne :
+{"image_prompt":"new full prompt in ENGLISH","note":"résumé en français du changement"}`;
+
+// ============================================================
+// DB IndexedDB
+// ============================================================
+let db=null;
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,1);r.onerror=()=>rej(r.error);r.onsuccess=()=>res(r.result);r.onupgradeneeded=e=>{const d=e.target.result;['keys','sessions','videos','config'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,{keyPath:s==='config'?'key':'id'})})}})}
+function tx(s,m){return db.transaction(s,m).objectStore(s)}
+function dbGet(s,k){return new Promise((res,rej)=>{const r=tx(s,'readonly').get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function dbPut(s,v){return new Promise((res,rej)=>{const r=tx(s,'readwrite').put(v);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function dbDel(s,k){return new Promise((res,rej)=>{const r=tx(s,'readwrite').delete(k);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function dbAll(s){return new Promise((res,rej)=>{const r=tx(s,'readonly').getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
+function dbClear(s){return new Promise((res,rej)=>{const r=tx(s,'readwrite').clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+
+// ============================================================
+// STATE
+// ============================================================
+const state={
+  keys:[],sessionsIndex:[],currentSessionId:null,
+  references:[],analysis:null,
+  choices:{},
+  script:null,
+  scenes:[],
+  memory:[],
+  videoPreset:'medium',
+  stopRequested:false, isRunning:false, wakeLock:null,
+  lockedSections:{},
+  // Détection 503 global (service Agnes indisponible)
+  global503Count:0,
+  global503LastAt:0,
+  global503PauseUntil:0,
+  global503Warned:false
+};
+let logCount=0;
+
+// ============================================================
+// UTILS
+// ============================================================
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const nowTime=()=>new Date().toLocaleTimeString('fr-FR',{hour12:false});
+function log(lvl,cat,msg){const b=$('console-body');if(!b)return;const e=document.createElement('div');e.className='log-entry '+(lvl||'');e.innerHTML='<span class="log-time">'+esc(nowTime())+'</span><span class="log-cat">'+esc(cat)+'</span><span class="log-msg">'+esc(msg)+'</span>';b.appendChild(e);while(b.children.length>800)b.removeChild(b.firstChild);b.scrollTop=b.scrollHeight;logCount++;$('console-badge').textContent=logCount}
+let toastTO=null;
+function toast(msg,type){const t=$('toast');t.className='toast '+(type||'');t.textContent=msg;void t.offsetWidth;t.classList.add('visible');if(toastTO)clearTimeout(toastTO);toastTO=setTimeout(()=>t.classList.remove('visible'),3200)}
+function showProgress(l){$('progress-meta').classList.add('visible');if(l!==undefined)$('progress-label').textContent=l;$('progress-eta').textContent=nowTime()}
+function setProgress(p){$('progress-fill').style.width=Math.max(0,Math.min(100,p))+'%'}
+function hideProgress(){$('progress-meta').classList.remove('visible');$('progress-fill').style.width='0%'}
+// NB : cette fonction globale remplace window.scrollTo → on défile avec window.scroll (sinon appel récursif sans effet)
+function scrollTo(id){const el=$(id);if(!el)return;setTimeout(()=>{const y=el.getBoundingClientRect().top+window.scrollY-80;window.scroll({top:y,behavior:'smooth'})},120)}
+function fileToDataUri(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=()=>rej(new Error('Lecture échouée'));r.readAsDataURL(f)})}
+function compressDataUri(uri,maxSide){return new Promise(resolve=>{const img=new Image();img.onload=()=>{try{let w=img.width,h=img.height;const s=Math.min(1,maxSide/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);resolve(c.toDataURL('image/jpeg',.9))}catch(e){resolve(uri)}};img.onerror=()=>resolve(uri);img.src=uri})}
+function downloadUrl(url,name){const a=document.createElement('a');a.href=url;a.download=name;a.target='_blank';document.body.appendChild(a);a.click();document.body.removeChild(a)}
+// Détection de langue basique
+function containsEnglishOrSpanish(text){
+  if(!text)return false;
+  const t=String(text).toLowerCase();
+  // Mots anglais fréquents
+  const en=/\b(the|and|with|from|into|their|they|this|that|are|is|was|were|has|have|had|will|would|should|could|must|about|between|through|toward|because|while|when|where|which|whose|being|been|doing|does|did)\b/i;
+  // Mots espagnols fréquents
+  const es=/\b(el|la|los|las|un|una|pero|después|cuando|mientras|porque|hacia|hasta|desde|sobre|bajo|entre|buscando|atrapado|descubre|primer|fantasma|resucitar|muertos|hechicero|máquina|engañar|sueño)\b/i;
+  return en.test(t)||es.test(t);
+}
+
+// ============================================================
+// JSON robuste
+// ============================================================
+function parseJson(text){if(!text)return null;let c=String(text).trim();const fm=c.match(/```(?:json)?\s*([\s\S]*?)```/);if(fm)c=fm[1].trim();const fb=c.indexOf('{');if(fb<0)return null;c=c.slice(fb);const lb=c.lastIndexOf('}');if(lb>0)c=c.slice(0,lb+1);try{return JSON.parse(c)}catch(e){}
+let out='',inS=false,escp=false;for(let i=0;i<c.length;i++){const ch=c[i];if(escp){out+=ch;escp=false;continue}if(ch==='\\'){out+=ch;escp=true;continue}if(ch==='"'){inS=!inS;out+=ch;continue}if(inS){if(ch==='\n'){out+='\\n';continue}if(ch==='\r'){out+='\\r';continue}if(ch==='\t'){out+='\\t';continue}const code=ch.charCodeAt(0);if(code<32){out+='\\u'+code.toString(16).padStart(4,'0');continue}}out+=ch}
+out=out.replace(/,\s*([}\]])/g,'$1');try{return JSON.parse(out)}catch(e){return null}}
+
+// ============================================================
+// CLÉS
+// ============================================================
+function parseKeys(raw){const out=[],seen={};for(const line of String(raw||'').split(/\r?\n/)){const l=line.trim();if(!l||l.startsWith('#'))continue;let key=l,imgRpm=20,videoRpm=1;const m=l.match(/^([^=|]+?)\s*[=|]\s*(\d+)(?:\s*\/\s*(\d+))?\s*$/);if(m){key=m[1].trim();const ir=parseInt(m[2],10);if(!isNaN(ir)&&ir>0)imgRpm=ir;if(m[3]){const vr=parseInt(m[3],10);if(!isNaN(vr)&&vr>0)videoRpm=vr}}key=key.trim();if(!key.startsWith('sk-')||seen[key])continue;seen[key]=1;out.push({key,imgRpm,videoRpm})}
+return out.map((k,i)=>({id:'key_'+i,key:k.key,imgRpm:k.imgRpm,videoRpm:k.videoRpm,active:true,cooldownUntil:0,imgTimes:[],videoTimes:[],textTimes:[],imgUsage:0,videoUsage:0,textUsage:0,errorCount:0}))}
+
+// 3 compteurs par clé : 'image', 'video' et 'text' (texte + vision). Le format de clé n'a pas de RPM texte :
+// le compteur texte est séparé mais plafonné au RPM image (il ne consomme plus le quota vidéo).
+function kTimes(k,kind){return kind==='video'?k.videoTimes:kind==='text'?k.textTimes:k.imgTimes}
+function kUsage(k,kind){return (kind==='video'?k.videoUsage:kind==='text'?k.textUsage:k.imgUsage)||0}
+function getAvailableKey(kind){const now=Date.now(),cut=now-60000,cands=[];for(const k of state.keys){if(!k.active||k.cooldownUntil>now)continue;k.imgTimes=(k.imgTimes||[]).filter(t=>t>cut);k.videoTimes=(k.videoTimes||[]).filter(t=>t>cut);k.textTimes=(k.textTimes||[]).filter(t=>t>cut);const t=kTimes(k,kind);const rpm=kind==='video'?k.videoRpm:k.imgRpm;if(t.length>=rpm)continue;cands.push(k)}
+if(!cands.length)return null;cands.sort((a,b)=>{const ta=kTimes(a,kind).length,tb=kTimes(b,kind).length;if(ta!==tb)return ta-tb;return kUsage(a,kind)-kUsage(b,kind)});return cands[0]}
+function getSoonestMs(kind){const now=Date.now(),cut=now-60000;let soon=Infinity,any=false;for(const k of state.keys){if(!k.active)continue;any=true;if(k.cooldownUntil>now){soon=Math.min(soon,k.cooldownUntil-now);continue}k.imgTimes=(k.imgTimes||[]).filter(t=>t>cut);k.videoTimes=(k.videoTimes||[]).filter(t=>t>cut);k.textTimes=(k.textTimes||[]).filter(t=>t>cut);const t=kTimes(k,kind);const rpm=kind==='video'?k.videoRpm:k.imgRpm;if(t.length>=rpm)soon=Math.min(soon,Math.min(...t)+60000-now);else return 0}
+if(!any)return 30000;return soon===Infinity?500:Math.max(150,soon)}
+async function acquireKey(kind){while(true){if(state.stopRequested)throw new Error('Arrêt demandé');if(!state.keys.some(k=>k.active))throw new Error('Aucune clé API active — ajoutez vos clés dans l\'onglet Admin');const k=getAvailableKey(kind);if(k)return k;const w=getSoonestMs(kind);log('warn','CLÉS','Attente '+Math.ceil(w/1000)+'s ('+kind+')');showProgress('Attente quota clé · '+Math.ceil(w/1000)+'s');await sleep(w+80)}}
+async function registerRequest(k,kind){if(kind==='video'){k.videoTimes.push(Date.now());k.videoUsage++}else if(kind==='text'){(k.textTimes=k.textTimes||[]).push(Date.now());k.textUsage=(k.textUsage||0)+1}else{k.imgTimes.push(Date.now());k.imgUsage++}k.lastUsed=Date.now();try{const s=await dbGet('keys',k.id);if(s){s.imgUsage=k.imgUsage;s.videoUsage=k.videoUsage;s.textUsage=k.textUsage||0;s.lastUsed=k.lastUsed;await dbPut('keys',s)}}catch(e){}renderKeysTable()}
+
+// ============================================================
+// GESTION 503 GLOBAL — si plusieurs clés renvoient 503 en même temps,
+// c'est le service Agnes qui est indisponible, pas la clé. On fait
+// une pause GLOBALE au lieu de quarantiner individuellement.
+// ============================================================
+function register503Global(){
+  const now=Date.now();
+  if(now-state.global503LastAt>30000){
+    // Reset du compteur si >30s depuis le dernier 503
+    state.global503Count=0;
+    state.global503Warned=false;
+  }
+  state.global503LastAt=now;
+  state.global503Count++;
+  
+  if(state.global503Count>=3){
+    // C'est global — pause longue
+    state.global503PauseUntil=now+60000;
+    state.global503Count=0;
+    if(!state.global503Warned){
+      state.global503Warned=true;
+      log('error','SERVICE','⚠ Service Agnes temporairement indisponible — pause globale de 60s');
+      toast('Service Agnes momentanément indisponible. Reprise automatique dans 60s…','error');
+    }
+    return true;
+  }
+  return false;
+}
+
+async function waitForServiceAvailability(){
+  while(Date.now()<state.global503PauseUntil){
+    if(state.stopRequested)throw new Error('Arrêt demandé');
+    const remaining=Math.ceil((state.global503PauseUntil-Date.now())/1000);
+    showProgress('Service Agnes indisponible — reprise dans '+remaining+'s');
+    await sleep(2000);
+  }
+}
+
+// ============================================================
+// API IMAGE / TEXT / VISION
+// ============================================================
+async function callImage(prompt,refUri,keyObj){const body={model:MODEL_IMAGE,prompt,n:1,size:'1K',ratio:'9:16',extra_body:{response_format:'url'}};if(refUri)body.extra_body.image=Array.isArray(refUri)?refUri:[refUri];await registerRequest(keyObj,'image');log('api','IMAGE','POST · clé ···'+keyObj.key.slice(-4)+(refUri?' +ref':''));
+const res=await fetch(API_BASE+'/images/generations',{method:'POST',headers:{'Authorization':'Bearer '+keyObj.key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+if(res.status===429){keyObj.cooldownUntil=Date.now()+30000;const e=new Error('HTTP 429');e.status=429;throw e}
+if(res.status===401||res.status===403){keyObj.errorCount++;if(keyObj.errorCount>=3)keyObj.active=false;const e=new Error('HTTP '+res.status);e.status=res.status;throw e}
+if(!res.ok){const t=await res.text().catch(()=>'');const e=new Error('HTTP '+res.status+' — '+t.slice(0,150));e.status=res.status;throw e}
+const d=await res.json();const it=d.data&&d.data[0];if(!it)throw new Error('Pas d\'image');if(it.url)return it.url;if(it.b64_json)return 'data:image/png;base64,'+it.b64_json;throw new Error('Format inconnu')}
+
+async function callText(sys,user,keyObj,maxTok,temp){const body={model:MODEL_TEXT,messages:[{role:'system',content:sys},{role:'user',content:user}],temperature:temp!==undefined?temp:.7,max_tokens:maxTok||4000,response_format:{type:'json_object'}};await registerRequest(keyObj,'text');log('api','TEXT','POST · clé ···'+keyObj.key.slice(-4));
+const res=await fetch(API_BASE+'/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+keyObj.key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+if(res.status===429){keyObj.cooldownUntil=Date.now()+30000;const e=new Error('HTTP 429');e.status=429;throw e}
+if(res.status===401||res.status===403){keyObj.errorCount++;if(keyObj.errorCount>=3)keyObj.active=false;const e=new Error('HTTP '+res.status);e.status=res.status;throw e}
+if(!res.ok){const t=await res.text().catch(()=>'');const e=new Error('HTTP '+res.status+' — '+t.slice(0,150));e.status=res.status;throw e}
+const d=await res.json();const ch=d.choices&&d.choices[0];let c=ch&&ch.message&&ch.message.content;if(!c&&ch&&ch.message)c=ch.message.reasoning_content;if(!c)throw new Error('Pas de contenu');return c}
+
+async function callVision(sys,user,imgUris,keyObj,maxTok){const arr=Array.isArray(imgUris)?imgUris:[imgUris];const uc=[{type:'text',text:user}];for(const u of arr)uc.push({type:'image_url',image_url:{url:u}});const body={model:MODEL_TEXT,messages:[{role:'system',content:sys},{role:'user',content:uc}],temperature:.5,max_tokens:maxTok||4000,response_format:{type:'json_object'}};await registerRequest(keyObj,'text');log('api','VISION','POST · clé ···'+keyObj.key.slice(-4)+' · '+arr.length+' img');
+const res=await fetch(API_BASE+'/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+keyObj.key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+if(res.status===429){keyObj.cooldownUntil=Date.now()+30000;const e=new Error('HTTP 429');e.status=429;throw e}
+if(res.status===401||res.status===403){keyObj.errorCount++;if(keyObj.errorCount>=3)keyObj.active=false;const e=new Error('HTTP '+res.status);e.status=res.status;throw e}
+if(!res.ok){const t=await res.text().catch(()=>'');const e=new Error('HTTP '+res.status+' — '+t.slice(0,150));e.status=res.status;throw e}
+const d=await res.json();const ch=d.choices&&d.choices[0];let c=ch&&ch.message&&ch.message.content;if(!c&&ch&&ch.message)c=ch.message.reasoning_content;if(!c)throw new Error('Pas de contenu');return c}
+
+// ============================================================
+// API VIDÉO
+// ============================================================
+function decodeCompositeId(c){if(!c||typeof c!=='string'||!c.startsWith('video_'))return null;let b=c.slice(6);while(b.length%4)b+='=';try{const d=atob(b);const m=d.match(/video_id:([^;]+)/);if(m&&m[1])return m[1].trim()}catch(e){}return null}
+
+async function createVideoTask(prompt,firstFrameUri,keyObj){
+  const p=VIDEO_PRESETS[state.videoPreset]||VIDEO_PRESETS.medium;
+  const body={model:MODEL_VIDEO,prompt,num_frames:p.num_frames,frame_rate:FRAME_RATE};
+  if(firstFrameUri)body.image=firstFrameUri;
+
+  await registerRequest(keyObj,'video');
+  log('api','VIDEO','POST création · clé ···'+keyObj.key.slice(-4)+' · '+p.num_frames+'fr @ '+FRAME_RATE+'fps'+(firstFrameUri?' +img':''));
+
+  const res=await fetch(API_BASE+'/videos',{
+    method:'POST',
+    headers:{'Authorization':'Bearer '+keyObj.key,'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  });
+
+  if(res.status===429){keyObj.cooldownUntil=Date.now()+30000;const e=new Error('HTTP 429 quota');e.status=429;e.retryable=true;throw e}
+  if(res.status===401||res.status===403){keyObj.errorCount++;if(keyObj.errorCount>=3)keyObj.active=false;const e=new Error('HTTP '+res.status+' auth');e.status=res.status;e.retryable=true;throw e}
+
+  if(res.status===503||res.status===500||res.status===502){
+    const t=await res.text().catch(()=>'');
+    if(/model_not_found|no available channel/i.test(t)){
+      // NE PAS quarantiner la clé : c'est le service qui est down, pas la clé
+      const e=new Error('503 modèle indisponible');
+      e.status=503;e.serviceDown=true;e.retryable=true;
+      throw e;
+    }
+    const e=new Error('HTTP '+res.status);e.status=res.status;e.retryable=true;throw e;
+  }
+
+  if(!res.ok){const t=await res.text().catch(()=>'');const e=new Error('HTTP '+res.status+' — '+t.slice(0,180));e.status=res.status;throw e}
+
+  const d=await res.json();
+  const cid=d.video_id||d.id||d.task_id||(d.data&&(d.data.video_id||d.data.id));
+  if(!cid)throw new Error('Pas de video_id retourné');
+  return {compositeId:cid,innerId:decodeCompositeId(cid)};
+}
+
+async function pollVideoTask(task,keyObj,onProgress){
+  const compositeId=task.compositeId,innerId=task.innerId;
+  if(!compositeId)throw new Error('Pas d\'id');
+
+  let rem=VIDEO_FIRST_POLL_DELAY;
+  while(rem>0){if(state.stopRequested)throw new Error('Arrêt demandé');onProgress('Préparation — '+rem+'s');await sleep(1000);rem--}
+
+  const idsToTry=innerId?[compositeId,innerId]:[compositeId];
+  let lastErr=null,netErr=0,currentId=0;
+
+  for(let att=0;att<VIDEO_MAX_POLL;att++){
+    if(state.stopRequested)throw new Error('Arrêt demandé');
+    if(att>0){const idx=Math.min(att-1,VIDEO_POLL_INTERVALS.length-1);let r=VIDEO_POLL_INTERVALS[idx];while(r>0){if(state.stopRequested)throw new Error('Arrêt demandé');onProgress('Rendu — '+r+'s');await sleep(1000);r--}}
+
+    const id=idsToTry[currentId%idsToTry.length];
+    const url=POLL_BASE+'?video_id='+encodeURIComponent(id)+'&model_name='+encodeURIComponent(MODEL_VIDEO);
+
+    try{
+      const res=await fetch(url,{headers:{'Authorization':'Bearer '+keyObj.key}});
+      if(res.status===429){await sleep(15000);continue}
+      if(res.status===404){if(idsToTry.length>1)currentId++;lastErr='HTTP 404';await sleep(4000);continue}
+      if(!res.ok){lastErr='HTTP '+res.status;await sleep(3000);continue}
+
+      const d=await res.json();netErr=0;
+      const st=String(d.status||d.state||d.task_status||'unknown').toLowerCase();
+      const pg=d.progress||d.percent||d.percentage||0;
+      onProgress(pg?('Rendu — '+pg+'%'):('Rendu — '+st));
+
+      if(['completed','succeeded','done','success','finished','ready'].includes(st)){
+        const vu=(d.metadata&&(d.metadata.url||d.metadata.video_url))||(d.output&&(d.output.url||d.output.video_url))||(d.data&&(d.data.url||d.data.video_url))||d.url||d.video_url;
+        if(!vu)throw new Error('Terminé sans URL');
+        return vu;
+      }
+      if(['failed','error','cancelled','canceled','rejected'].includes(st)){
+        throw new Error('Échec vidéo ('+st+') : '+String(d.error||d.message||'').slice(0,150));
+      }
+      lastErr=null;
+    }catch(e){
+      if(e.message==='Arrêt demandé')throw e;
+      if(e.message.indexOf('Échec vidéo')===0||e.message==='Terminé sans URL')throw e;
+      lastErr=e.message;netErr++;
+      if(netErr>=10)throw new Error('Trop d\'erreurs réseau : '+lastErr);
+      await sleep(2000);
+    }
+  }
+  throw new Error('Délai maximal dépassé');
+}
+
+// ============================================================
+// WAKE LOCK
+// ============================================================
+async function activateWakeLock(){try{if('wakeLock' in navigator){state.wakeLock=await navigator.wakeLock.request('screen');return true}}catch(e){}return false}
+async function deactivateWakeLock(){if(state.wakeLock){try{await state.wakeLock.release()}catch(e){}state.wakeLock=null}}
+
+// ============================================================
+// MÉMOIRE
+// ============================================================
+function remember(text){state.memory.push(text);log('info','MÉMOIRE','💾 '+text)}
+function memoryBlock(){return state.memory.length?('\n\nUTILISATEUR — CHOIX ET AJUSTEMENTS DÉJÀ FAITS (respecte-les) :\n- '+state.memory.join('\n- ')):''}
+
+// ============================================================
+// UI : pills / sessions / clés
+// ============================================================
+function updatePills(){$('pill-keys').textContent=state.keys.filter(k=>k.active).length+' clé(s)';$('pill-keys').classList.toggle('on',state.keys.some(k=>k.active));
+$('pill-scenes').textContent=state.scenes.filter(s=>s.validated).length+'/'+state.scenes.length+' plans';
+$('pill-videos').textContent='Vidéos '+(state.scenes.filter(s=>s.videoUrl).length);
+const pend=state.scenes.filter(s=>s.videoBusy).length;$('pill-pending').textContent='En cours '+pend;$('pill-pending').classList.toggle('on',pend>0);
+let step='Étape 1';if(state.analysis)step='Étape 2 · Choix';if(state.script)step='Étape 3 · Scénario';if(state.scenes.some(s=>s.validated))step='Étape 4 · Images';if(state.scenes.some(s=>s.videoUrl))step='Étape 5 · Film';
+$('pill-step').textContent=step;$('pill-step').classList.toggle('on',!!state.analysis)}
+
+function renderKeysTable(){const tb=$('keys-table').querySelector('tbody');const now=Date.now();tb.innerHTML=state.keys.map((k,i)=>{
+let st='✓';
+if(!k.active)st='✕';
+else if(k.cooldownUntil>now)st='⏸ '+(Math.ceil((k.cooldownUntil-now)/1000))+'s';
+return '<tr><td>'+(i+1)+'</td><td>···'+esc(k.key.slice(-6))+'</td><td>'+k.imgRpm+'</td><td>'+k.videoRpm+'</td><td>'+(k.imgUsage+k.videoUsage+(k.textUsage||0))+'</td><td>'+st+'</td></tr>'}).join('')||'<tr><td colspan="6">Aucune clé</td></tr>'}
+
+async function refreshSessions(){const arr=await dbAll('sessions');state.sessionsIndex=arr.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));const sel=$('session-select');sel.innerHTML=state.sessionsIndex.map(s=>'<option value="'+esc(s.id)+'">'+esc(s.name)+'</option>').join('')||'<option value="">—</option>';if(state.currentSessionId)sel.value=state.currentSessionId}
+async function saveSession(){if(!state.currentSessionId)state.currentSessionId='s_'+Date.now();/* sans session courante, rien n'était jamais sauvegardé */const meta=state.sessionsIndex.find(s=>s.id===state.currentSessionId)||{name:'Session',createdAt:Date.now()};
+await dbPut('sessions',{id:state.currentSessionId,name:meta.name,createdAt:meta.createdAt,updatedAt:Date.now(),references:state.references,analysis:state.analysis,choices:state.choices,script:state.script,scenes:state.scenes,memory:state.memory,videoPreset:state.videoPreset,lockedSections:state.lockedSections});refreshSessions()}
+async function loadSession(id){if(!id)return;const s=await dbGet('sessions',id);if(!s)return;state.currentSessionId=id;state.references=s.references||[];state.analysis=s.analysis||null;state.choices=s.choices||{};state.script=s.script||null;state.scenes=s.scenes||[];state.memory=s.memory||[];state.videoPreset=s.videoPreset||'medium';state.lockedSections=s.lockedSections||{};
+state.scenes.forEach(sc=>{sc.busy=false;sc.videoBusy=false});// drapeaux « en cours » sauvegardés : plus rien ne tourne après rechargement
+applyLockedSections();renderRefs();renderOptions();renderScript();renderScenes();updatePills();refreshVideos();syncPresetUI()}
+function syncPresetUI(){document.querySelectorAll('.vpreset-btn').forEach(b=>b.classList.toggle('blue',b.dataset.preset===state.videoPreset));const p=VIDEO_PRESETS[state.videoPreset]||VIDEO_PRESETS.medium;$('vpreset-status-text').textContent=MODEL_VIDEO+' · '+p.num_frames+' frames · '+FRAME_RATE+'fps'}
+
+function lockSection(id){state.lockedSections[id]=true;const el=$(id);if(el)el.classList.add('locked')}
+function unlockSection(id){delete state.lockedSections[id];const el=$(id);if(el)el.classList.remove('locked')}
+function applyLockedSections(){['sec-photo','sec-options'].forEach(id=>{const el=$(id);if(!el)return;if(state.lockedSections[id])el.classList.add('locked');else el.classList.remove('locked')})}
+function toggleSection(id,open){$(id).classList.toggle('open',open)}
+
+// ============================================================
+// 1. PHOTO + ANALYSE
+// ============================================================
+function renderRefs(){$('ref-grid').innerHTML=state.references.map((r,i)=>'<div class="ref-thumb"><img src="'+r.uri+'"><button type="button" class="rm" data-i="'+i+'">✕</button></div>').join('');$('analyze-btn').disabled=state.references.length===0||state.isRunning||!!state.lockedSections['sec-photo'];$('photo-badge').textContent=state.references.length?state.references.length+' photo(s)':'Vide';if(state.lockedSections['sec-photo'])$('analyze-btn').textContent='✅ Analyse validée';}
+$('ref-input').addEventListener('change',async e=>{for(const f of e.target.files){let uri=await fileToDataUri(f);uri=await compressDataUri(uri,1024);state.references.push({uri})}e.target.value='';renderRefs();toast('Photo ajoutée')});
+$('ref-drop').addEventListener('dragover',e=>e.preventDefault());
+$('ref-drop').addEventListener('drop',async e=>{e.preventDefault();for(const f of e.dataTransfer.files){if(!f.type.startsWith('image/'))continue;let uri=await fileToDataUri(f);uri=await compressDataUri(uri,1024);state.references.push({uri})}renderRefs()});
+$('ref-grid').addEventListener('click',e=>{const b=e.target.closest('.rm');if(!b)return;state.references.splice(+b.dataset.i,1);renderRefs()});
+
+$('analyze-btn').addEventListener('click',async()=>{
+if(!state.references.length||state.lockedSections['sec-photo'])return;
+state.isRunning=true;state.stopRequested=false;$('analyze-btn').disabled=true;await activateWakeLock();
+try{
+  showProgress('Analyse de la photo…');setProgress(8);
+  $('analyze-status-text').textContent='🔎 L\'IA regarde votre photo…';
+  const key=await acquireKey('text');
+  const txt=await callVision(PROMPT_ANALYSIS,'Analyse cette photo pour un court-métrage.',state.references.map(r=>r.uri),key,4000);
+  setProgress(55);
+  $('analyze-status-text').textContent='✨ Extraction du style, palette et sujet…';
+  const j=parseJson(txt);
+  if(!j||!j.suggestions)throw new Error('Analyse incomplète');
+  state.analysis=j;state.choices={};
+  setProgress(100);
+  $('analyze-status-text').textContent='✅ Analyse terminée — passez aux questions créatives.';
+  log('success','IA','Analyse OK : '+j.subject.slice(0,80));
+  lockSection('sec-photo');
+  renderOptions();
+  toggleSection('sec-options',true);
+  scrollTo('sec-options');
+  await saveSession();
+}catch(e){log('error','IA',e.message);toast('Erreur analyse : '+e.message,'error');$('analyze-status-text').textContent='❌ '+e.message}
+state.isRunning=false;$('analyze-btn').disabled=false;hideProgress();await deactivateWakeLock();updatePills();
+});
+
+// ============================================================
+// 2. QUESTIONNAIRE créatif
+// ============================================================
+function renderOptions(){const c=$('options-content');
+if(!state.analysis){c.innerHTML='<div class="empty"><span class="big">🤖</span>Après l\'analyse, un questionnaire guidé apparaîtra ici.</div>';return}
+const a=state.analysis;
+
+const totalQ=Q_STRUCT.length;
+let answered=0;
+for(const q of Q_STRUCT){if(state.choices[q.id])answered++}
+if(state.choices['film_ref'])answered++;
+
+let html='';
+html+='<div class="status blue"><span class="dot"></span><span><strong>Sujet :</strong> '+esc(a.subject)+'<br><strong>Style :</strong> '+esc(a.style_detected)+' · <strong>Palette :</strong> '+esc(a.palette)+'</span></div>';
+
+// Q1 — Films
+html+='<div class="q-block"><div class="q-label"><span class="q-num">1</span> Quel film vous parle ? <span class="q-hint">Votre référence majeure</span></div><div class="film-list" id="film-list">';
+for(const f of FILM_CATALOG){
+  const on=state.choices['film_ref']===f.id?' on':'';
+  html+='<button type="button" class="film-chip'+on+'" data-film="'+f.id+'"><span class="fc-t">'+esc(f.t)+'</span><span class="fc-m">'+esc(f.m)+'</span></button>';
+}
+html+='</div></div>';
+
+// Suggestions IA
+if(a.suggestions&&a.suggestions.length){
+  html+='<div class="q-block"><div class="q-label">💡 Ou inspirez-vous d\'une idée proposée par l\'IA <span class="q-hint">Optionnel</span></div><div class="q-chips">';
+  for(const s of a.suggestions){
+    const on=state.choices['ai_sugg']===s.id?' on':'';
+    html+='<button type="button" class="q-chip'+on+'" data-sugg="'+esc(s.id)+'">'+esc(s.t)+'<small>'+esc(s.d)+'</small></button>';
+  }
+  html+='</div></div>';
+}
+
+// 8 questions
+for(let i=0;i<Q_STRUCT.length;i++){
+  const q=Q_STRUCT[i];
+  html+='<div class="q-block"><div class="q-label"><span class="q-num">'+(i+2)+'</span> '+esc(q.label)+' <span class="q-hint">'+esc(q.hint||'')+'</span></div><div class="q-chips">';
+  for(const ch of q.choices){
+    const on=state.choices[q.id]===ch.id?' on':'';
+    html+='<button type="button" class="q-chip'+on+'" data-q="'+esc(q.id)+'" data-v="'+esc(ch.id)+'">'+esc(ch.l)+'</button>';
+  }
+  html+='</div></div>';
+}
+
+const allDone=allOptionsChosen();
+html+='<button type="button" class="btn large" id="write-script-btn" '+(allDone?'':'disabled')+'>✍️ Écrire le scénario</button>';
+html+='<div class="status '+(allDone?'green':'')+'"><span class="dot"></span><span>'+(allDone?'✅ Toutes les réponses sont là — prêt à écrire le scénario.':'Répondez à toutes les questions pour continuer ('+answered+'/'+(totalQ+1)+').')+'</span></div>';
+c.innerHTML=html;
+$('options-badge').textContent=allDone?'Prêt':'En cours ('+answered+'/'+(totalQ+1)+')';
+}
+
+function allOptionsChosen(){
+  if(!state.choices['film_ref'])return false;
+  for(const q of Q_STRUCT){if(!state.choices[q.id])return false}
+  return true;
+}
+
+$('options-content').addEventListener('click',async e=>{
+  const fb=e.target.closest('[data-film]');if(fb){state.choices['film_ref']=fb.dataset.film;const f=FILM_CATALOG.find(x=>x.id===fb.dataset.film);remember('Film référence : « '+f.t+' » ('+f.m+')');renderOptions();saveSession();return}
+  const sb=e.target.closest('[data-sugg]');if(sb){state.choices['ai_sugg']=sb.dataset.sugg;const s=state.analysis.suggestions.find(x=>x.id===sb.dataset.sugg);remember('Idée IA retenue : '+s.t+' — '+s.d);renderOptions();saveSession();return}
+  const qb=e.target.closest('[data-q]');if(qb){state.choices[qb.dataset.q]=qb.dataset.v;
+    if(qb.dataset.q==='q_duree'&&DUREE_TO_PRESET[qb.dataset.v]){state.videoPreset=DUREE_TO_PRESET[qb.dataset.v];syncPresetUI()}// la durée choisie s'applique vraiment aux vidéos
+    const q=Q_STRUCT.find(x=>x.id===qb.dataset.q);const ch=q.choices.find(x=>x.id===qb.dataset.v);
+    remember('« '+q.label+' » → '+ch.l);renderOptions();saveSession();return}
+  if(e.target.id==='write-script-btn'){await writeScript();}
+});
+
+// ============================================================
+// 3. ÉCRITURE DU SCÉNARIO — avec loader + détection langue
+// ============================================================
+async function writeScript(){
+  if(!allOptionsChosen()||state.lockedSections['sec-options'])return;
+  if(state.isRunning){toast('Une génération est déjà en cours…');return}// évite deux scénarios simultanés (double-clic)
+  state.isRunning=true;state.stopRequested=false;
+  await activateWakeLock();
+
+  toggleSection('sec-script',true);
+  scrollTo('sec-script');
+  $('script-content').innerHTML='<div class="loading-block"><div class="lb-spin"></div><div class="lb-txt"><div class="lb-title">✍️ Écriture du scénario en cours</div><div class="lb-msg" id="script-loader-msg">L\'IA relit votre photo et vos réponses…</div></div></div>';
+  $('script-badge').textContent='En cours…';
+
+  const messages=[
+    'L\'IA relit votre photo et vos réponses…',
+    'Elle construit la structure narrative du film…',
+    'Elle invente les personnages et les dialogues en français…',
+    'Elle verrouille le style visuel pour la cohérence…',
+    'Elle écrit les 6 plans du découpage…',
+    'Elle vérifie la progression dramatique…',
+    'Elle prépare le montage et le son…',
+    'Dernière touche — presque terminé…'
+  ];
+  let msgIdx=0;
+  const msgTimer=setInterval(()=>{
+    const el=$('script-loader-msg');
+    if(el){msgIdx=(msgIdx+1)%messages.length;el.textContent=messages[msgIdx];}
+  },3200);
+
+  try{
+    const a=state.analysis;
+    const film=FILM_CATALOG.find(x=>x.id===state.choices['film_ref']);
+    const aiSugg=state.choices['ai_sugg']?a.suggestions.find(x=>x.id===state.choices['ai_sugg']):null;
+    const answers=Q_STRUCT.map(q=>{const ch=q.choices.find(x=>x.id===state.choices[q.id]);return '« '+q.label+' » → '+(ch?ch.l:'')}).join('\n');
+
+    const user=[
+      'SUJET DE LA PHOTO : '+a.subject,
+      'STYLE DÉTECTÉ : '+a.style_detected,
+      'PALETTE : '+a.palette,
+      'LUMIÈRE : '+a.lighting,
+      'AMBIANCE : '+a.mood,
+      '',
+      'FILM DE RÉFÉRENCE CHOISI : « '+film.t+' » ('+film.m+') — signature à évoquer : '+film.style,
+      aiSugg?('IDÉE ALTERNATIVE DE L\'IA RETENUE : '+aiSugg.t+' — '+aiSugg.d):'',
+      '',
+      'RÉPONSES AU QUESTIONNAIRE :',
+      answers,
+      memoryBlock(),
+      '',
+      'RAPPEL FINAL : TOUS les champs narratifs (title, logline, story, tone, montage_notes, sound_design, scenes[].desc, scenes[].dialogue_fr, scenes[].camera, scenes[].sfx, scenes[].transition) DOIVENT être EN FRANÇAIS.',
+      'SEULS style_lock et scenes[].image_prompt sont en ANGLAIS.'
+    ].filter(Boolean).join('\n');
+
+    showProgress('L\'IA écrit votre scénario…');setProgress(20);
+    const key=await acquireKey('text');
+    const txt=await callText(PROMPT_SCRIPT,user,key,6000,.8);
+    setProgress(75);
+
+    const j=parseJson(txt);
+    if(!j||!j.scenes||!j.scenes.length)throw new Error('Scénario incomplet — réessayez');
+    if(j.scenes.length>8)j.scenes=j.scenes.slice(0,8);
+    j.scenes.forEach((s,i)=>{
+      s.num=i+1;s.url=null;s.validated=false;s.busy=false;s.videoUrl=null;s.videoBusy=false;s.note='';
+    });
+    state.script=j;state.scenes=j.scenes;
+
+    // Détection langue — si l'IA a écrit en anglais/espagnol dans les champs narratifs
+    const narText=[j.title,j.logline,j.story,j.tone,j.montage_notes,j.sound_design,...j.scenes.map(s=>s.desc+s.dialogue_fr+s.camera+s.sfx)].join(' ');
+    if(containsEnglishOrSpanish(narText)){
+      log('warn','LANGUE','⚠ Détection de mots anglais/espagnols dans les champs narratifs — demandez une réécriture en français');
+      toast('Certains textes sont peut-être dans une autre langue — vérifiez et réécrivez si besoin','error');
+    }
+
+    remember('Scénario retenu : « '+j.title+' » — '+j.logline);
+    setProgress(100);
+    log('success','IA','Scénario écrit : « '+j.title+' » ('+state.scenes.length+' plans)');
+
+    lockSection('sec-options');
+    renderScript();renderScenes();
+    toggleSection('sec-script',true);toggleSection('sec-images',true);
+    renderOptions();
+    setTimeout(()=>scrollTo('sec-images'),400);
+
+    await generateAllImages();
+  }catch(e){
+    clearInterval(msgTimer);
+    log('error','IA','Scénario : '+e.message);
+    toast('Erreur : '+e.message,'error');
+    $('script-content').innerHTML='<div class="status err"><span class="dot"></span><span>❌ '+esc(e.message)+'</span></div><button type="button" class="btn secondary" onclick="writeScript()">↻ Réessayer</button>';
+    unlockSection('sec-options');
+    renderOptions();
+  }
+  clearInterval(msgTimer);
+  state.isRunning=false;hideProgress();await deactivateWakeLock();updatePills();
+}
+
+// ============================================================
+// 4. RENDU SCÉNARIO
+// ============================================================
+function renderScript(){const c=$('script-content');const s=state.script;
+if(!s){c.innerHTML='<div class="empty"><span class="big">📖</span>Le scénario apparaîtra ici.</div>';return}
+$('script-badge').textContent=s.scenes.length+' plans';
+c.innerHTML='<div class="story-panel"><div class="sp-title">'+esc(s.title)+'</div><div class="sp-story"><strong>'+esc(s.logline)+'</strong><br><br>'+esc(s.story)+'</div>'+
+'<div class="sp-note">🎬 Montage : '+esc(s.montage_notes||'')+'</div>'+
+'<div class="sp-note">🔊 Son : '+esc(s.sound_design||'')+'</div>'+
+'<div class="sp-note">🔒 Style : '+esc(s.style_lock||'')+'</div>'+
+'<div style="display:flex;gap:.4rem;margin-top:.6rem;flex-wrap:wrap"><button type="button" class="btn ghost small" id="regen-script-btn">↺ Autre scénario</button><button type="button" class="btn blue small" id="regen-images-btn">🔁 Régénérer toutes les images</button></div>'+
+'</div>'}
+$('script-content').addEventListener('click',async e=>{
+  if(e.target.id==='regen-script-btn'){
+    unlockSection('sec-options');
+    state.script=null;state.scenes=[];delete state.lockedSections['sec-options'];
+    renderScript();renderScenes();renderOptions();
+    refreshVideos();saveSession();// efface l'affichage du film précédent et mémorise le changement
+    scrollTo('sec-options');
+  }
+  if(e.target.id==='regen-images-btn'){await generateAllImages();}
+});
+
+// ============================================================
+// 5. IMAGES DES PLANS
+// ============================================================
+function imagePromptFor(scn){const sc=state.script;return scn.image_prompt+'. Visual style lock (mandatory): '+sc.style_lock+'. Palette: '+state.analysis.palette+'. Lighting: '+state.analysis.lighting+'.'}
+function renderScenes(){const g=$('scene-grid');
+g.innerHTML=state.scenes.map((s,i)=>{
+let thumb;
+if(s.busy)thumb='<div class="loading-card" style="border:none"></div>';
+else if(s.url)thumb='<img src="'+s.url+'">';
+else thumb='<div class="placeholder">'+(s.err?'❌ '+esc(s.err):'Image non générée')+'</div>';
+return '<div class="scene-card2">'+
+'<div class="thumb">'+thumb+'<span class="sc-num">PLAN '+s.num+'</span><span class="sc-state'+(s.validated?' validated':'')+'">'+(s.videoUrl?'🎬 VIDÉO':(s.validated?'✔ AUTO-VALIDÉ':'…'))+'</span></div>'+
+'<div class="sc-body"><div class="sc-desc">'+esc(s.desc)+'</div>'+
+(s.dialogue_fr?'<div class="sc-dialogue">« '+esc(s.dialogue_fr)+' »</div>':'')+
+'<div class="sc-meta">🎥 '+esc(s.camera||'')+' · '+esc(s.transition||'')+'</div>'+
+(s.note?'<div class="sc-meta" style="color:#0a7a3e">'+esc(s.note)+'</div>':'')+'</div>'+
+'<div class="sc-acts">'+
+'<button type="button" class="ok-btn'+(s.validated?' on':'')+'" data-ok="'+i+'" '+(s.url&&!s.busy?'':'disabled')+'>'+(s.validated?'✔ Validé':'✔ Valider')+'</button>'+
+'<button type="button" data-tool="'+i+'" '+((s.url||s.err)&&!s.busy?'':'disabled')+'>🛠 Ajuster</button>'+
+'<button type="button" data-regen="'+i+'" '+((s.url||s.err)&&!s.busy?'':'disabled')+'>🔁 Variante</button>'+
+'</div>'+
+'<div class="sc-tools" id="tools-'+i+'">'+
+'<input type="text" placeholder="Changement (ex : plus sombre, la nuit, ajouter de la pluie…)" data-input="'+i+'">'+
+'<button type="button" class="btn small blue" data-apply="'+i+'">✨ Appliquer (l\'IA retient ce choix)</button>'+
+'</div></div>'}).join('');
+const valid=state.scenes.filter(s=>s.validated&&s.url).length;
+$('images-badge').textContent=valid+'/'+state.scenes.length+' validées';
+$('make-film-btn').disabled=!(state.scenes.length&&state.scenes.every(s=>s.validated&&s.url));
+$('images-status-text').textContent=state.scenes.length?(valid===state.scenes.length?'✅ Tous les plans sont validés — le film peut être généré.':valid+' plan(s) validé(s) sur '+state.scenes.length+'.'):'En attente du scénario.';
+updatePills()}
+document.querySelectorAll('.section-header').forEach(h=>h.addEventListener('click',()=>{if(h.parentElement.classList.contains('locked'))return;h.parentElement.classList.toggle('open')}));
+
+async function generateSceneImage(i,silent){const s=state.scenes[i];if(!s||s.busy)return;
+s.busy=true;s.err='';renderScenes();
+try{const key=await acquireKey('image');
+const refUri=s.use_ref&&state.references.length?state.references[0].uri:null;
+showProgress('Image plan '+s.num+'…');
+s.url=await callImage(imagePromptFor(s),refUri,key);
+s.validated=true;
+log('success','IMAGE','Plan '+s.num+' OK (auto-validé)');
+}catch(e){s.err=e.message;log('error','IMAGE','Plan '+s.num+' : '+e.message);if(!silent)toast('Plan '+s.num+' : '+e.message,'error')}
+s.busy=false;renderScenes();saveSession()}
+
+async function generateAllImages(){state.isRunning=true;await activateWakeLock();
+  for(let i=0;i<state.scenes.length;i++){
+    if(state.stopRequested)break;
+    if(!state.scenes[i].url||state.scenes[i].err)await generateSceneImage(i,true);
+    setProgress((i+1)/state.scenes.length*100);
+  }
+  state.isRunning=false;hideProgress();await deactivateWakeLock();saveSession();
+  scrollTo('sec-images');
+}
+
+$('scene-grid').addEventListener('click',async e=>{
+  const ok=e.target.closest('[data-ok]');if(ok){const s=state.scenes[+ok.dataset.ok];s.validated=!s.validated;renderScenes();saveSession();if(s.validated)remember('Plan '+s.num+' validé');return}
+  const reg=e.target.closest('[data-regen]');if(reg){const i=+reg.dataset.regen;const s=state.scenes[i];s.validated=false;s.url=null;await generateSceneImage(i,false);return}
+  const tool=e.target.closest('[data-tool]');if(tool){$('tools-'+tool.dataset.tool).classList.toggle('open');return}
+  const ap=e.target.closest('[data-apply]');if(ap){const i=+ap.dataset.apply;const req=$('scene-grid').querySelector('[data-input="'+i+'"]').value.trim();if(!req){toast('Décrivez le changement','error');return}
+  const s=state.scenes[i];s.busy=true;renderScenes();
+  try{const key=await acquireKey('text');
+    showProgress('Ajustement plan '+s.num+'…');
+    const txt=await callText(PROMPT_TWEAK,'Demande de l\'utilisateur (en français) : '+req+'\n\nPrompt actuel : '+s.image_prompt+'\nStyle lock : '+state.script.style_lock+'\nSujet : '+state.analysis.subject+memoryBlock(),key,2000,.6);
+    const j=parseJson(txt);
+    if(!j||!j.image_prompt)throw new Error('Réponse invalide');
+    s.image_prompt=j.image_prompt;s.note=j.note||req;
+    remember('Plan '+s.num+' ajusté : '+req+' → '+(j.note||''));
+    s.validated=false;s.url=null;
+    s.busy=false;// sinon generateSceneImage() sort tout de suite (s.busy) et le plan reste bloqué
+    await generateSceneImage(i,false);
+  }catch(e){log('error','IA',e.message);toast('Erreur : '+e.message,'error');s.busy=false;renderScenes()}
+  }
+});
+
+// ============================================================
+// 6. FILM — Batch parallèle adaptatif + gestion 503 global
+// ============================================================
+function videoPromptFor(s){const sc=state.script;
+let p='Continue this scene into a cinematic live shot. '+s.desc+'. ';
+if(s.dialogue_fr)p+='The character speaks this exact line in French, lip-synced: "'+s.dialogue_fr+'". ';
+if(s.camera)p+='Camera: '+s.camera+'. ';
+if(s.sfx)p+='Ambient sound and sound effects: '+s.sfx+'. ';
+p+='Visual style (mandatory, identical to the first frame): '+sc.style_lock+'. Tone: '+sc.tone+'. ';
+if(s.transition)p+='This shot is designed to cut to: '+s.transition+'. ';
+p+='IMPORTANT: NO MUSIC. Only diegetic dialogue in French and realistic ambient sound effects. Natural motion, cinematic lighting, 9:16 vertical film.';
+if(state.memory.length)p+='\nUser preferences (respect them): '+state.memory.join(' | ');
+return p}
+
+async function launchVideoForScene(s){
+  const maxAttempts=5;
+  for(let attempt=0;attempt<maxAttempts;attempt++){
+    if(state.stopRequested)throw new Error('Arrêt demandé');
+    
+    // Attendre si le service est en pause globale
+    if(state.global503PauseUntil>Date.now()){
+      await waitForServiceAvailability();
+    }
+    
+    try{
+      const key=await acquireKey('video');
+      const vp=videoPromptFor(s);
+      log('api','VIDEO','Plan '+s.num+' · clé ···'+key.key.slice(-4)+' · prompt '+vp.length+'c');
+      const task=await createVideoTask(vp,s.url,key);
+      const vu=await pollVideoTask(task,key,m=>{showProgress('Plan '+s.num+'/'+state.scenes.length+' — '+m)});
+      return vu;
+    }catch(e){
+      if(e.message==='Arrêt demandé')throw e;
+      
+      // Si c'est un 503 service global
+      if(e.serviceDown){
+        const isGlobal=register503Global();
+        if(isGlobal){
+          // Pause globale déclenchée — on attend puis on retente
+          await waitForServiceAvailability();
+          continue;
+        }
+        // Compteur 503 pas encore global — on retente rapidement
+        await sleep(2000);
+        continue;
+      }
+      
+      if(e.status===429){await sleep(3000);continue}
+      
+      log('warn','VIDEO','Plan '+s.num+' : '+e.message+' — nouvel essai');
+      await sleep(1500);
+    }
+  }
+  throw new Error('Échec après '+maxAttempts+' tentatives');
+}
+
+$('make-film-btn').addEventListener('click',async()=>{
+  const ready=state.scenes.every(s=>s.validated&&s.url);if(!ready)return;
+  state.isRunning=true;state.stopRequested=false;await activateWakeLock();
+  
+  // Reset global 503 counter
+  state.global503Count=0;
+  state.global503LastAt=0;
+  state.global503PauseUntil=0;
+  state.global503Warned=false;
+  
+  toggleSection('sec-images',true);
+  $('make-film-btn').disabled=true;
+  $('make-film-btn').textContent='⏳ Génération des vidéos…';
+  scrollTo('sec-images');
+
+  try{
+    const todoScenes=state.scenes.filter(s=>!s.videoUrl);
+    log('info','VIDEO','Lancement de '+todoScenes.length+' vidéo(s) · lot max '+MAX_PARALLEL_VIDEOS+' en parallèle');
+    showProgress('Démarrage de la génération vidéo…');
+
+    for(let batchStart=0;batchStart<todoScenes.length;batchStart+=MAX_PARALLEL_VIDEOS){
+      if(state.stopRequested)break;
+      // Vérifier la pause globale avant de lancer le lot
+      if(state.global503PauseUntil>Date.now()){
+        await waitForServiceAvailability();
+      }
+      const batch=todoScenes.slice(batchStart,batchStart+MAX_PARALLEL_VIDEOS);
+      batch.forEach(s=>{s.videoBusy=true});
+      renderScenes();
+      log('info','VIDEO','Lot '+(Math.floor(batchStart/MAX_PARALLEL_VIDEOS)+1)+' · '+batch.length+' plan(s) : '+batch.map(s=>s.num).join(', '));
+
+      const promises=batch.map(async s=>{
+        try{
+          const vu=await launchVideoForScene(s);
+          s.videoUrl=vu;
+          await dbPut('videos',{id:state.currentSessionId+'_s'+s.num,sessionId:state.currentSessionId,sceneNum:s.num,url:vu,dialogue:s.dialogue_fr,title:state.script.title,createdAt:Date.now()});
+          log('success','VIDEO','Plan '+s.num+' ✓');
+        }catch(e){
+          if(e.message!=='Arrêt demandé'){
+            log('error','VIDEO','Plan '+s.num+' : '+e.message);
+            s.err='Vidéo échouée';
+          }
+        }finally{
+          s.videoBusy=false;
+          renderScenes();saveSession();refreshVideos();
+          updatePills();
+        }
+      });
+      await Promise.all(promises);
+    }
+  }catch(e){log('error','VIDEO',e.message)}
+  state.isRunning=false;hideProgress();await deactivateWakeLock();refreshVideos();updatePills();
+  $('make-film-btn').textContent='🎬 Générer le film';
+  renderScenes();
+  scrollTo('sec-images');
+});
+
+// ============================================================
+// 7. VIDEOS render
+// ============================================================
+async function refreshVideos(){const vids=(await dbAll('videos')).sort((a,b)=>a.sceneNum-b.sceneNum);
+const mine=vids.filter(v=>v.sessionId===state.currentSessionId&&state.script);
+const fl=$('film-list');
+
+if(state.script&&state.scenes.length){
+  let html='<div class="story-panel" style="margin-bottom:.7rem"><div class="sp-title">🎬 '+esc(state.script.title)+' — montage dans l\'ordre</div><div class="sp-story">Lecture séquentielle : chaque plan enchaîne avec le suivant.</div></div>';
+  let shown=0;
+  for(const s of state.scenes){
+    // même n° de plan ET même URL : n'affiche pas la vidéo d'un scénario précédent (« Autre scénario »)
+    const v=mine.find(x=>x.sceneNum===s.num&&x.url===s.videoUrl);if(v)shown++;
+    const st=v?'done':(s.videoBusy?'loading':(s.err?'err':'pending'));
+    const stTxt=v?'✓ Prête':(s.videoBusy?'⏳ Rendu en cours…':(s.err?'✕ '+s.err:'En attente'));
+    html+='<div class="film-video-item"><div class="fv-head"><span>Séquence '+s.num+' / '+state.scenes.length+'</span><span class="fv-status '+(v?'done':(s.err?'err':''))+'">'+stTxt+'</span></div>';
+    if(v){
+      html+='<div class="fv-video"><video src="'+v.url+'" controls playsinline preload="metadata"></video></div><div class="fv-text">'+(v.dialogue?'<div class="fv-dialogue">« '+esc(v.dialogue)+' »</div>':'')+'<div style="font-size:.62rem;color:#999;font-family:monospace;margin-top:.3rem"><a href="'+v.url+'" target="_blank" rel="noopener">lien direct</a></div></div>';
+    }else{
+      html+='<div class="fv-video"><div class="fv-load">'+stTxt+'</div></div>';
+    }
+    html+='</div>';
+  }
+  fl.innerHTML=html;
+  $('film-empty').style.display='none';
+  $('film-count').textContent=shown+'/'+state.scenes.length+' séquence(s)';
+  $('export-film-btn').style.display=shown?'block':'none';
+}else{
+  fl.innerHTML='';$('film-empty').style.display='block';$('export-film-btn').style.display='none';
+}
+
+$('videolib-list').innerHTML=vids.map(v=>'<div class="video-lib-card"><video src="'+v.url+'" controls playsinline preload="metadata"></video><div class="vlb-cap"><div class="vlb-t">'+esc(v.title||'')+' — plan '+v.sceneNum+'</div><div class="vlb-s"><a href="'+v.url+'" target="_blank" rel="noopener">ouvrir</a></div></div></div>').join('');
+$('videolib-empty').style.display=vids.length?'none':'block';$('videolib-count').textContent=vids.length;
+}
+$('export-film-btn').addEventListener('click',()=>{const vids=document.querySelectorAll('#film-list video');vids.forEach((v,i)=>downloadUrl(v.src,'film_seq'+(i+1)+'.mp4'))});
+
+// ============================================================
+// ONGLETS / CONSOLE / ADMIN
+// ============================================================
+document.querySelectorAll('.main-tab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.main-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));t.classList.add('active');$('tab-'+t.dataset.tab).classList.add('active');if(t.dataset.tab==='videos')refreshVideos()}));
+$('console-header').addEventListener('click',e=>{if(e.target.closest('button'))return;$('console-dock').classList.toggle('collapsed');$('console-toggle').textContent=$('console-dock').classList.contains('collapsed')?'▴':'▾'});
+$('console-clear').addEventListener('click',()=>{$('console-body').innerHTML='';logCount=0;$('console-badge').textContent='0'});
+$('console-copy').addEventListener('click',async()=>{const txt=[...$('console-body').querySelectorAll('.log-entry')].map(e=>e.textContent.replace(/\s+/g,' ').trim()).join('\n');try{await navigator.clipboard.writeText(txt);toast('Console copiée','success')}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Console copiée','success')}});
+
+$('save-keys-btn').addEventListener('click',async()=>{const keys=parseKeys($('keys-input').value);state.keys=keys;await dbClear('keys');/* sinon les clés retirées reviennent au rechargement */for(const k of keys)await dbPut('keys',k);renderKeysTable();$('keys-status-text').textContent=keys.length+' clé(s) enregistrée(s)';$('keys-status').className='status ok';updatePills();toast(keys.length+' clés enregistrées','success');log('info','CLÉS',keys.length+' clé(s) active(s)')});
+
+document.querySelectorAll('.vpreset-btn').forEach(b=>b.addEventListener('click',()=>{state.videoPreset=b.dataset.preset;const p=VIDEO_PRESETS[state.videoPreset];document.querySelectorAll('.vpreset-btn').forEach(x=>x.classList.remove('blue'));b.classList.add('blue');$('vpreset-status-text').textContent=MODEL_VIDEO+' · '+p.num_frames+' frames · '+FRAME_RATE+'fps';saveSession()}));
+
+$('new-session-btn').addEventListener('click',async()=>{const id='s_'+Date.now();const name=prompt('Nom de la session :','Film '+new Date().toLocaleDateString('fr-FR'));if(name===null)return;await dbPut('sessions',{id,name,createdAt:Date.now(),updatedAt:Date.now()});state.currentSessionId=id;state.references=[];state.analysis=null;state.choices={};state.script=null;state.scenes=[];state.memory=[];state.lockedSections={};applyLockedSections();renderRefs();renderOptions();renderScript();renderScenes();refreshVideos();await refreshSessions();$('session-select').value=id;updatePills();log('info','SESSION','Nouvelle session '+name)});
+$('rename-session-btn').addEventListener('click',async()=>{if(!state.currentSessionId)return;const s=await dbGet('sessions',state.currentSessionId);const name=prompt('Nouveau nom :',s?s.name:'');if(!name)return;if(s){s.name=name;await dbPut('sessions',s)}refreshSessions()});
+$('delete-session-btn').addEventListener('click',async()=>{if(!state.currentSessionId||!confirm('Supprimer cette session ?'))return;await dbDel('sessions',state.currentSessionId);state.currentSessionId=null;state.references=[];state.analysis=null;state.script=null;state.scenes=[];state.memory=[];state.lockedSections={};applyLockedSections();renderRefs();renderOptions();renderScript();renderScenes();refreshVideos();refreshSessions();updatePills()});
+$('session-select').addEventListener('change',e=>loadSession(e.target.value));
+
+$('export-db-btn').addEventListener('click',async()=>{const data={sessions:await dbAll('sessions'),videos:await dbAll('videos'),keys:state.keys.map(k=>k.key+' = '+k.imgRpm+'/'+k.videoRpm)};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});downloadUrl(URL.createObjectURL(blob),'cine_studio_export.json')});
+$('import-db-btn').addEventListener('click',()=>$('import-file').click());
+$('import-file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const j=JSON.parse(await f.text());if(j.keys)$('keys-input').value=j.keys.join('\n');if(j.sessions)for(const s of j.sessions)await dbPut('sessions',s);if(j.videos)for(const v of j.videos)await dbPut('videos',v);await refreshSessions();refreshVideos();toast('Import OK','success')}catch(err){toast('Import invalide','error')}e.target.value=''});
+$('reset-db-btn').addEventListener('click',async()=>{if(!confirm('Tout effacer ?'))return;await dbClear('sessions');await dbClear('videos');await dbClear('keys');location.reload()});
+
+async function renderStats(){const sess=await dbAll('sessions'),vids=await dbAll('videos');
+$('stats-content').innerHTML='<div class="admin-stat"><span>Sessions</span><span>'+sess.length+'</span></div><div class="admin-stat"><span>Vidéos</span><span>'+vids.length+'</span></div><div class="admin-stat"><span>Plans session</span><span>'+state.scenes.length+'</span></div>';
+$('stats-keys').innerHTML=state.keys.map((k,i)=>'<div class="admin-stat"><span>···'+esc(k.key.slice(-6))+'</span><span>'+k.imgUsage+' img / '+k.videoUsage+' vid / '+(k.textUsage||0)+' txt</span></div>').join('')||'<div class="admin-stat"><span>Aucune clé</span></div>'}
+
+// ============================================================
+// INIT
+// ============================================================
+(async function init(){
+try{db=await openDB()}catch(e){toast('IndexedDB indisponible','error');return}
+const keys=await dbAll('keys');state.keys=keys.length?keys:state.keys;
+renderKeysTable();
+if(keys.length){$('keys-status-text').textContent=keys.length+' clé(s)';$('keys-status').className='status ok'}
+const cfg=await dbGet('config','preset');if(cfg&&cfg.value)state.videoPreset=cfg.value;
+await refreshSessions();
+// Reprendre la session la plus récente (avant : affichée dans la liste mais jamais chargée → travail « perdu » au rechargement)
+if(state.sessionsIndex.length)await loadSession(state.sessionsIndex[0].id);
+document.querySelectorAll('.vpreset-btn').forEach(b=>b.classList.toggle('blue',b.dataset.preset===state.videoPreset));
+const p=VIDEO_PRESETS[state.videoPreset];
+$('vpreset-status-text').textContent=MODEL_VIDEO+' · '+p.num_frames+' frames · '+FRAME_RATE+'fps';
+updatePills();refreshVideos();renderStats();renderRefs();renderOptions();renderScript();renderScenes();
+log('info','INIT','Ciné Studio prêt — français pour l\'utilisateur, anglais pour les prompts API');
+log('info','INIT','Modèle : '+MODEL_VIDEO+' · '+p.num_frames+' frames @ '+FRAME_RATE+'fps');
+log('info','INIT','Parallélisme vidéo : '+MAX_PARALLEL_VIDEOS+' maximum · '+state.keys.length+' clé(s) en pool');
+})();
+</script>
+</body>
+</html>

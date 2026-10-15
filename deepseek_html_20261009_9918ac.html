@@ -1,0 +1,1996 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Studio — Générateur créatif</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:#fff;color:#111}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;background:#fff;color:#111;min-height:100vh;padding:1.5rem 1.25rem 320px;font-size:15px;line-height:1.55;max-width:1700px;margin:0 auto;letter-spacing:-0.005em;-webkit-font-smoothing:antialiased}
+header{padding-bottom:1rem;border-bottom:1px solid #111;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap}
+header .brand h1{font-size:1.5rem;font-weight:600;letter-spacing:-0.02em;margin-bottom:.15rem}
+header .brand p{font-size:.72rem;color:#666;text-transform:uppercase;letter-spacing:.15em;font-weight:500}
+header .head-status{display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;padding-top:.35rem}
+.head-pill{font-size:.66rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:.28rem .55rem;border:1px solid #ccc;border-radius:100px;background:#fff;color:#999;display:inline-flex;align-items:center;gap:.3rem}
+.head-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:#ccc;display:inline-block}
+.head-pill.on{border-color:#111;color:#111}
+.head-pill.on::before{background:#111}
+.head-pill.gold{border-color:#d4a017;color:#b8860b}
+.head-pill.gold.on{background:#fffbe6}
+.head-pill.gold.on::before{background:#d4a017}
+.main-tabs{display:flex;gap:.3rem;margin-bottom:1rem;flex-wrap:wrap;border-bottom:1px solid #ddd}
+.main-tab{padding:.7rem 1.1rem;background:transparent;border:none;border-bottom:2px solid transparent;color:#666;font-family:inherit;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;cursor:pointer;transition:all .15s;margin-bottom:-1px}
+.main-tab:hover{color:#111}
+.main-tab.active{color:#111;border-bottom-color:#111}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.session-bar{background:#fafafa;border:1px solid #ddd;border-radius:8px;padding:.6rem .9rem;margin-bottom:1rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.session-bar .sb-label{font-size:.68rem;color:#111;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.session-bar select{flex:1;min-width:200px;padding:.5rem .75rem;border:1px solid #111;border-radius:6px;background:#fff;color:#111;font-family:inherit;font-size:.8rem;cursor:pointer}
+.session-bar button{padding:.5rem .8rem;border:1px solid #111;background:#fff;color:#111;border-radius:6px;font-family:inherit;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;transition:all .15s}
+.session-bar button:hover{background:#111;color:#fff}
+.session-bar button.danger{border-color:#c00;color:#c00}
+.session-bar button.danger:hover{background:#c00;color:#fff}
+.section{background:#fff;border:1px solid #ddd;border-radius:8px;margin-bottom:.85rem;overflow:hidden;transition:border-color .15s}
+.section:hover{border-color:#999}
+.section-header{padding:.85rem 1.15rem;cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+.section-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.18em;font-weight:700;color:#111;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.section-title .num{display:inline-flex;width:20px;height:20px;align-items:center;justify-content:center;background:#111;color:#fff;border-radius:50%;font-size:.6rem;font-weight:700}
+.section-title .badge{font-size:.58rem;padding:.1rem .4rem;border:1px solid #111;border-radius:100px;letter-spacing:.05em;font-weight:600;text-transform:uppercase}
+.section-title .badge.gray{border-color:#ccc;color:#888}
+.section-title .badge.gold{border-color:#d4a017;color:#b8860b;background:#fffbe6}
+.section-title .badge.green{border-color:#0a7a3e;color:#0a7a3e;background:#f0f9f3}
+.chevron{font-size:.85rem;color:#666;transition:transform .25s;line-height:1}
+.section.open .chevron{transform:rotate(180deg);color:#111}
+.section-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.section.open .section-body{max-height:200000px}
+.section-content{padding:0 1.15rem 1.1rem}
+.input-row{width:100%;padding:.8rem .95rem;border:1px solid #ddd;border-radius:6px;background:#fff;color:#111;font-family:inherit;font-size:.88rem;outline:none;transition:border-color .15s;margin-bottom:.5rem}
+textarea.input-row{font-family:ui-monospace,monospace;font-size:.74rem;line-height:1.55;min-height:100px;resize:vertical}
+.input-hint{font-size:.7rem;color:#666;line-height:1.5;margin-top:.35rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.8rem 1.1rem;border:1px solid #111;border-radius:6px;background:#111;color:#fff;font-size:.78rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:opacity .15s;width:100%;margin-bottom:.5rem;line-height:1}
+.btn:hover:not(:disabled){opacity:.85}
+.btn:disabled{opacity:.28;cursor:not-allowed}
+.btn.secondary{background:#fff;color:#111;border-color:#111}
+.btn.ghost{background:#fff;color:#666;border-color:#ddd}
+.btn.gold{background:#fff;color:#b8860b;border-color:#d4a017}
+.btn.danger{background:#fff;color:#c00;border-color:#c00}
+.btn.danger:hover:not(:disabled){background:#c00;color:#fff}
+.btn.large{padding:1rem 1.4rem;font-size:.9rem}
+.btn.small{padding:.5rem .8rem;font-size:.68rem;width:auto}
+.status{display:flex;align-items:center;gap:.5rem;font-size:.72rem;padding:.55rem .8rem;border:1px solid #ddd;border-radius:6px;background:#fafafa;color:#666;margin-bottom:.5rem}
+.status .dot{width:7px;height:7px;border-radius:50%;background:#ccc;flex-shrink:0}
+.status.ok{border-color:#111;color:#111;background:#f5f5f5}
+.status.ok .dot{background:#111}
+.status.err{border-color:#c00;color:#c00;background:#fff5f5}
+.status.err .dot{background:#c00}
+.status.gold{border-color:#d4a017;color:#b8860b;background:#fffbe6}
+.status.gold .dot{background:#d4a017}
+.ref-drop{border:2px dashed #ccc;border-radius:8px;padding:1.4rem 1rem;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa;position:relative;display:block}
+.ref-drop:hover{border-color:#111;background:#fff}
+.ref-drop.has-image{padding:0;border-style:solid;border-color:#111}
+.ref-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.ref-drop .ref-icon{font-size:1.6rem;color:#111;opacity:.35;margin-bottom:.35rem}
+.ref-drop .ref-text{font-size:.8rem;color:#666;line-height:1.5}
+.ref-drop .ref-text strong{color:#111;font-weight:600;display:block;margin-bottom:.15rem}
+.ref-preview{display:block;width:100%;max-height:380px;overflow:hidden;position:relative}
+.ref-preview img{width:100%;height:auto;max-height:380px;object-fit:contain;display:block;background:#f5f5f5}
+.ref-preview .ref-remove{position:absolute;top:.5rem;right:.5rem;width:30px;height:30px;border-radius:50%;background:#111;color:#fff;border:none;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.analysis-info{margin-top:.75rem;padding:.75rem .85rem;background:#f0f9f3;border:1px solid #0a7a3e;border-radius:8px;font-size:.72rem;color:#333;line-height:1.5}
+.analysis-info .ai-title{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#0a7a3e;margin-bottom:.35rem}
+.analysis-info .ai-row{padding:.15rem 0;font-family:ui-monospace,monospace;font-size:.66rem}
+.analysis-info .ai-k{color:#666;font-weight:700}
+/* BLOCKS */
+.blocks-container{margin-top:.3rem}
+.block-group{margin-bottom:1.3rem}
+.block-group-title{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:#111;padding:.3rem 0 .55rem;border-bottom:1px solid #eee;margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem}
+.block-group-title .bg-line{flex:1;height:1px;background:#eee}
+.block-group-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.5rem}
+@media(max-width:700px){.block-group-grid{grid-template-columns:1fr 1fr;gap:.4rem}}
+.block-btn{padding:.85rem .9rem;background:#fff;border:1px solid #ddd;border-radius:10px;font-family:inherit;font-size:.74rem;font-weight:600;color:#111;text-align:left;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:.3rem;line-height:1.25;position:relative;overflow:hidden}
+.block-btn:hover:not(:disabled){border-color:#111;background:#fafafa;transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.06)}
+.block-btn:disabled{opacity:.35;cursor:not-allowed}
+.block-btn.running{border-color:#d4a017;background:#fffbe6}
+.block-btn.done{border-color:#0a7a3e}
+.block-btn.done::after{content:'✓';position:absolute;top:.4rem;right:.5rem;color:#0a7a3e;font-size:.9rem;font-weight:700}
+.block-btn .bb-icon{font-size:1.4rem;line-height:1}
+.block-btn .bb-label{font-weight:700;font-size:.78rem}
+.block-btn .bb-desc{font-size:.6rem;color:#888;font-weight:400;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.block-btn .bb-count{font-size:.55rem;color:#999;font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.05em;margin-top:.15rem}
+.block-btn.running .bb-count{color:#b8860b;font-weight:700}
+.block-btn.done .bb-count{color:#0a7a3e;font-weight:700}
+/* LOADER */
+.loader-wrap{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;background:linear-gradient(180deg,#fafafa,#f0f0f0);position:relative;overflow:hidden}
+.loader-wrap::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.6) 50%,transparent 100%);animation:sweep 1.8s infinite;transform:translateX(-100%)}
+@keyframes sweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.loader-spin{width:32px;height:32px;border-radius:50%;border:3px solid #ddd;border-top-color:#111;animation:spin .9s linear infinite}
+.loader-txt{font-size:.6rem;font-family:ui-monospace,monospace;color:#666;letter-spacing:.05em;text-transform:uppercase}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+/* IMAGE GRID */
+.image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.7rem;margin-top:.6rem}
+@media(max-width:700px){.image-grid{grid-template-columns:1fr 1fr;gap:.45rem}}
+.image-card{border:1px solid #ddd;border-radius:10px;overflow:hidden;background:#fff;transition:transform .2s,border-color .15s,box-shadow .2s;display:flex;flex-direction:column;position:relative}
+.image-card:hover{border-color:#111;transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.06)}
+.image-card.saved-as-style{border-color:#d4a017;box-shadow:0 0 0 1px #d4a017}
+.image-card.loading{background:linear-gradient(90deg,#f5f5f5 0%,#eee 50%,#f5f5f5 100%);background-size:200% 100%;animation:shimmer 1.6s infinite}
+.image-card.error{border-color:#c00;background:#fff5f5}
+.image-card .thumb{position:relative;aspect-ratio:9/16;overflow:hidden;background:#f5f5f5;cursor:zoom-in}
+.image-card .thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.image-card:hover .thumb img{transform:scale(1.03)}
+.image-card .thumb .placeholder.err{color:#c00;font-size:.62rem;padding:.5rem;text-align:center;font-family:ui-monospace,monospace;line-height:1.4;display:flex;align-items:center;justify-content:center;height:100%}
+.image-card .thumb .kind-badge{position:absolute;top:.35rem;right:.35rem;font-size:.5rem;padding:.15rem .4rem;background:#111;color:#fff;border-radius:100px;letter-spacing:.06em;font-weight:700;text-transform:uppercase;z-index:2}
+.image-card .thumb .text-only-badge{position:absolute;top:.35rem;left:.35rem;font-size:.48rem;padding:.13rem .35rem;background:#fff;color:#a0306b;border:1px solid #a0306b;border-radius:100px;letter-spacing:.04em;font-weight:700;text-transform:uppercase;z-index:2}
+.image-card .thumb .star-badge{position:absolute;bottom:.35rem;right:.35rem;font-size:.9rem;color:#d4a017;text-shadow:0 1px 3px rgba(0,0,0,.7);z-index:2}
+.image-card .cap{padding:.4rem .55rem;font-size:.65rem;font-weight:600;color:#111;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center;gap:.3rem;background:#fafafa}
+.image-card .cap .cap-lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.image-card .cap .cap-key{font-family:ui-monospace,monospace;font-size:.55rem;color:#999;flex-shrink:0}
+.image-card .acts{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #eee;background:#fff}
+.image-card .acts button{padding:.4rem .1rem;background:transparent;border:none;color:#666;cursor:pointer;font-family:inherit;font-size:.6rem;font-weight:600;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.image-card .acts button:not(:last-child){border-right:1px solid #eee}
+.image-card .acts button:hover:not(:disabled){background:#111;color:#fff}
+.image-card .acts button:disabled{opacity:.3;cursor:not-allowed}
+.image-card .acts button.star-btn:hover{background:#d4a017;color:#fff}
+.image-card .acts button.star-btn.on{color:#d4a017}
+.image-card .acts button.dev-btn:hover{background:#a0306b;color:#fff}
+/* FILTER */
+.filter-bar{display:flex;gap:.35rem;flex-wrap:wrap;margin:.5rem 0 .3rem;padding-bottom:.5rem;border-bottom:1px solid #eee}
+.filter-chip{padding:.35rem .7rem;border:1px solid #ddd;background:#fff;color:#666;border-radius:100px;font-family:inherit;font-size:.66rem;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:.35rem}
+.filter-chip:hover{border-color:#111;color:#111}
+.filter-chip.active{background:#111;color:#fff;border-color:#111}
+.filter-chip .fc-count{font-family:ui-monospace,monospace;font-size:.6rem;opacity:.7}
+.filter-chip .fc-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.filter-bar-lbl{font-size:.6rem;color:#999;text-transform:uppercase;letter-spacing:.1em;font-weight:700;align-self:center;padding-right:.35rem}
+/* SAVED */
+.saved-styles-empty{padding:1.1rem 1rem;text-align:center;color:#999;font-size:.76rem;border:1px dashed #ddd;border-radius:6px;font-family:ui-monospace,monospace}
+.saved-styles-empty .big{font-size:1.4rem;display:block;margin-bottom:.3rem;opacity:.4}
+.saved-styles-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.55rem;margin-bottom:.7rem;max-height:520px;overflow-y:auto;padding:.15rem}
+.saved-style-card{background:#fffbe6;border:1px solid #d4a017;border-radius:8px;padding:.6rem .7rem;display:flex;flex-direction:column;gap:.35rem}
+.saved-style-card.selected{box-shadow:0 0 0 2px #d4a017;background:#fff9d6}
+.saved-style-card .ss-head{display:flex;justify-content:space-between;align-items:flex-start;gap:.4rem}
+.saved-style-card .ss-label{font-size:.76rem;font-weight:700;color:#111;flex:1;word-break:break-word;line-height:1.3}
+.saved-style-card .ss-cat{font-size:.58rem;color:#b8860b;text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-top:.1rem}
+.saved-style-card .ss-toggle{width:22px;height:22px;border:2px solid #d4a017;border-radius:4px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0}
+.saved-style-card .ss-toggle.on{background:#d4a017}
+.saved-style-card .ss-toggle.on::after{content:'✓';color:#fff;font-size:.7rem;font-weight:700}
+.saved-style-card .ss-prompt{font-size:.6rem;color:#666;font-family:ui-monospace,monospace;line-height:1.4;max-height:48px;overflow:hidden;word-break:break-word}
+.saved-style-card .ss-actions{display:flex;gap:.3rem;margin-top:auto}
+.saved-style-card .ss-actions button{flex:1;padding:.28rem .4rem;background:transparent;border:1px solid #d4a017;color:#b8860b;border-radius:4px;font-family:inherit;font-size:.58rem;font-weight:600;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.saved-style-card .ss-actions button:hover{background:#d4a017;color:#fff}
+/* CONSOLE */
+.bottom-dock{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #111;z-index:900}
+.progress-strip{height:4px;background:#eee;position:relative;overflow:hidden}
+.progress-fill{height:100%;background:#111;width:0%;transition:width .35s ease}
+.progress-meta{display:none;justify-content:space-between;align-items:center;gap:.5rem;padding:.35rem .9rem;font-size:.66rem;font-family:ui-monospace,monospace;color:#666;background:#fafafa;border-bottom:1px solid #eee}
+.progress-meta.visible{display:flex}
+.progress-meta .lbl{color:#111;font-weight:600}
+.console-dock{border-top:1px solid #eee;display:flex;flex-direction:column;height:170px;transition:height .3s ease;background:#fff}
+.console-dock.collapsed{height:34px}
+.console-header{display:flex;align-items:center;gap:.5rem;padding:.45rem .85rem;background:#fafafa;border-bottom:1px solid #eee;cursor:pointer;user-select:none;min-height:34px}
+.console-title{font-size:.6rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#111}
+.console-badge{font-size:.55rem;padding:.08rem .35rem;background:#111;color:#fff;border-radius:100px;font-weight:700}
+.console-actions{margin-left:auto;display:flex;gap:.25rem}
+.console-actions button{background:#fff;border:1px solid #ddd;color:#666;font-size:.55rem;padding:.2rem .45rem;border-radius:3px;cursor:pointer;font-family:inherit;letter-spacing:.04em;text-transform:uppercase}
+.console-toggle{background:transparent;border:none;cursor:pointer;color:#111;font-size:.75rem;padding:.2rem .4rem;font-family:inherit}
+.console-body{flex:1;overflow-y:auto;padding:.4rem .85rem .8rem;font-family:ui-monospace,monospace;font-size:.66rem;line-height:1.5;color:#333;background:#fff}
+.log-entry{padding:.15rem 0;border-bottom:1px solid #f3f3f3;word-break:break-word;display:flex;gap:.45rem}
+.log-time{color:#999;font-size:.58rem;flex-shrink:0;min-width:54px}
+.log-cat{color:#111;font-weight:700;font-size:.58rem;flex-shrink:0;min-width:62px}
+.log-msg{color:#333;flex:1}
+.log-entry.success .log-msg{color:#0a7a3e}
+.log-entry.warn .log-msg{color:#b8860b}
+.log-entry.error .log-msg{color:#c00}
+.log-entry.api .log-cat{color:#0045b5}
+/* TOAST */
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%) translateY(-140px);background:#111;color:#fff;padding:.7rem 1.15rem;border-radius:6px;font-size:.8rem;font-weight:500;z-index:1100;opacity:0;transition:transform .3s,opacity .3s;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.toast.visible{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.error{background:#c00}
+.toast.warn{background:#b8860b}
+.toast.gold{background:#d4a017}
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:1200;display:none;align-items:center;justify-content:center;padding:2rem;animation:lbFade .25s ease}
+.lightbox.visible{display:flex}
+.lightbox .lb-stage{position:relative;max-width:100%;max-height:100%;display:flex;flex-direction:column;align-items:center;gap:.75rem}
+.lightbox .lb-img{max-width:100%;max-height:78vh;object-fit:contain;cursor:zoom-out;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:lbZoom .3s ease}
+.lightbox .lb-close{position:fixed;top:1rem;right:1rem;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:background .15s;z-index:3}
+.lightbox .lb-close:hover{background:rgba(255,255,255,.3)}
+.lightbox .lb-info{display:flex;flex-direction:column;align-items:center;gap:.5rem;max-width:90vw}
+.lightbox .lb-caption{color:#fff;font-size:.75rem;font-family:ui-monospace,monospace;background:rgba(0,0,0,.55);padding:.4rem .9rem;border-radius:100px;text-align:center;backdrop-filter:blur(8px);max-width:100%}
+.lightbox .lb-develop{padding:.85rem 1.4rem;background:#fff;color:#111;border:none;border-radius:100px;font-family:inherit;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:.5rem;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.lightbox .lb-develop:hover{background:#d4a017;color:#fff;transform:scale(1.03)}
+@keyframes lbFade{from{opacity:0}to{opacity:1}}
+@keyframes lbZoom{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+/* ADMIN */
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+@media(max-width:800px){.admin-grid{grid-template-columns:1fr}}
+.admin-card{border:1px solid #ddd;border-radius:8px;padding:.85rem;background:#fafafa}
+.admin-card h3{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.6rem}
+.admin-stat{display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #eee;font-size:.75rem}
+.admin-stat:last-child{border-bottom:none}
+.admin-stat .as-k{color:#666}
+.admin-stat .as-v{font-weight:700;color:#111;font-family:ui-monospace,monospace}
+.admin-table{width:100%;font-size:.7rem;border-collapse:collapse}
+.admin-table th{text-align:left;padding:.35rem .4rem;font-size:.6rem;text-transform:uppercase;letter-spacing:.05em;color:#666;border-bottom:1px solid #ddd;font-weight:700}
+.admin-table td{padding:.35rem .4rem;border-bottom:1px solid #f3f3f3;font-family:ui-monospace,monospace;font-size:.68rem}
+.admin-table .trunc{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.admin-scroll{max-height:280px;overflow-y:auto;border:1px solid #eee;border-radius:6px;background:#fff}
+.chat-panel{border:1px solid #ddd;border-radius:8px;background:#fff;overflow:hidden;display:flex;flex-direction:column;height:400px}
+.chat-messages{flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.5rem}
+.chat-msg{padding:.55rem .75rem;border-radius:8px;font-size:.78rem;line-height:1.5;max-width:85%}
+.chat-msg.user{background:#111;color:#fff;align-self:flex-end}
+.chat-msg.assistant{background:#f5f5f5;color:#111;align-self:flex-start;white-space:pre-wrap}
+.chat-input-bar{display:flex;gap:.4rem;padding:.6rem;border-top:1px solid #eee;background:#fafafa}
+.chat-input-bar input{flex:1;padding:.55rem .75rem;border:1px solid #ddd;border-radius:6px;background:#fff;font-family:inherit;font-size:.78rem;outline:none}
+.chat-input-bar button{padding:.55rem .9rem;border:1px solid #111;background:#111;color:#fff;border-radius:6px;font-family:inherit;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal.visible{display:flex}
+.modal-inner{background:#fff;border-radius:10px;max-width:760px;width:100%;max-height:88vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-head{padding:.85rem 1.15rem;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+.modal-head h3{font-size:.75rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase}
+.modal-head .close{background:transparent;border:1px solid #ddd;width:26px;height:26px;border-radius:50%;cursor:pointer;color:#666;font-family:inherit;font-size:.8rem;display:flex;align-items:center;justify-content:center;padding:0}
+.modal-body{padding:.9rem 1.15rem;overflow-y:auto;flex:1}
+.modal-body textarea{width:100%;min-height:280px;padding:.85rem .95rem;border:1px solid #ddd;border-radius:6px;background:#fafafa;font-family:ui-monospace,monospace;font-size:.72rem;line-height:1.55;color:#111;resize:vertical;outline:none}
+.modal-actions{display:flex;gap:.5rem;padding:.85rem 1.15rem;border-top:1px solid #eee;background:#fafafa}
+.modal-actions .btn{margin:0;flex:1}
+.empty{padding:1.4rem 1rem;text-align:center;color:#999;font-size:.78rem;border:1px dashed #ddd;border-radius:6px;margin-top:.5rem;font-family:ui-monospace,monospace}
+.empty .big{font-size:1.5rem;opacity:.35;display:block;margin-bottom:.35rem}
+@media(max-width:600px){
+  header{flex-direction:column;gap:.55rem}
+  .section-header{padding:.8rem 1rem}
+  .section-content{padding:0 1rem 1rem}
+  .image-grid{grid-template-columns:1fr 1fr;gap:.45rem}
+  body{padding:1rem .6rem 260px}
+  .console-dock{height:150px}
+  .saved-styles-list{grid-template-columns:1fr}
+  .main-tab{padding:.55rem .7rem;font-size:.66rem}
+  .lightbox{padding:.75rem}
+  .block-group-grid{grid-template-columns:1fr 1fr;gap:.35rem}
+  .block-btn{padding:.6rem .6rem;font-size:.66rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Studio</h1>
+    <p>Photo → 40 images par bloc · Text-only pour persos & décors</p>
+  </div>
+  <div class="head-status">
+    <span class="head-pill" id="pill-db">DB</span>
+    <span class="head-pill" id="pill-keys">0 clé</span>
+    <span class="head-pill" id="pill-images">0 image</span>
+    <span class="head-pill gold" id="pill-styles">⭐ 0</span>
+  </div>
+</header>
+
+<div class="main-tabs">
+  <button type="button" class="main-tab active" data-tab="studio">🎨 Studio</button>
+  <button type="button" class="main-tab" data-tab="admin">⚙️ Admin</button>
+</div>
+
+<div class="tab-panel active" id="tab-studio">
+
+  <div class="session-bar">
+    <span class="sb-label">Session :</span>
+    <select id="session-select"></select>
+    <button type="button" id="new-session-btn">+ Nouvelle</button>
+    <button type="button" id="rename-session-btn">Renommer</button>
+    <button type="button" class="danger" id="delete-session-btn">Supprimer</button>
+  </div>
+
+  <!-- 1. PHOTO -->
+  <div class="section open" id="section-ref">
+    <div class="section-header" data-toggle="section-ref">
+      <span class="section-title"><span class="num">1</span> Photo de référence <span class="badge gray" id="ref-badge">En attente</span></span>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="section-body"><div class="section-content">
+      <div class="ref-drop" id="ref-drop">
+        <input type="file" accept="image/*" id="ref-input">
+        <div class="ref-icon">◯</div>
+        <div class="ref-text"><strong>Choisir une photo</strong>Une seule photo, puis autant de blocs créatifs que vous voulez — 40 images par bloc.</div>
+      </div>
+      <div class="status" id="launch-status-line"><span class="dot"></span><span id="launch-status-text">En attente de la photo.</span></div>
+      <div class="analysis-info" id="analysis-info" style="display:none"></div>
+    </div></div>
+  </div>
+
+  <!-- 2. BLOCS -->
+  <div class="section" id="section-blocks" style="display:none">
+    <div class="section-header" data-toggle="section-blocks">
+      <span class="section-title"><span class="num">2</span> Blocs créatifs <span class="badge gold" id="blocks-badge">Cliquez pour lancer 40</span></span>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="section-body"><div class="section-content">
+      <div class="input-hint" style="margin-bottom:.7rem">Chaque bouton lance un lot de 40 images. Les catégories « nouveaux personnages » et « décors » sont générées SANS votre photo (texte seul) pour créer de la vraie nouveauté.</div>
+      <div class="blocks-container" id="blocks-container"></div>
+    </div></div>
+  </div>
+
+  <!-- 3. GALERIE -->
+  <div class="section open" id="section-images">
+    <div class="section-header" data-toggle="section-images">
+      <span class="section-title"><span class="num">3</span> Galerie <span class="badge green" id="images-count-badge">0 / 0</span></span>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="section-body"><div class="section-content">
+      <div class="empty" id="images-empty"><span class="big">◯</span>Vos images apparaîtront ici</div>
+      <div id="filter-blocks" class="filter-bar" style="display:none"></div>
+      <div id="filter-cats" class="filter-bar" style="display:none"></div>
+      <div class="image-grid" id="image-grid"></div>
+    </div></div>
+  </div>
+
+  <!-- 4. FAVORIS -->
+  <div class="section" id="section-saved">
+    <div class="section-header" data-toggle="section-saved">
+      <span class="section-title"><span class="num">4</span> Styles favoris <span class="badge gold" id="saved-count">0</span></span>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="section-body"><div class="section-content">
+      <div class="saved-styles-empty" id="saved-styles-empty"><span class="big">⭐</span>Cliquez sur l'étoile d'une image pour mémoriser son style.</div>
+      <div id="saved-styles-container" style="display:none">
+        <div class="saved-styles-list" id="saved-styles-list"></div>
+        <div style="display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:.5rem">
+          <button type="button" class="btn gold small" id="saved-select-all">Tout sélectionner</button>
+          <button type="button" class="btn gold small" id="saved-deselect-all">Tout désélectionner</button>
+          <button type="button" class="btn ghost small" id="saved-delete-selected">Supprimer sélection</button>
+        </div>
+        <button type="button" class="btn" id="saved-generate-btn">🎨 Appliquer mes favoris</button>
+      </div>
+    </div></div>
+  </div>
+
+</div>
+
+<div class="tab-panel" id="tab-admin">
+  <div class="section open">
+    <div class="section-header" data-toggle="section-admin-keys"><span class="section-title">🔑 Clés API</span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content">
+      <textarea class="input-row" id="keys-input" placeholder="sk-xxxx = 20&#10;sk-yyyy = 30" spellcheck="false"></textarea>
+      <button type="button" class="btn secondary" id="save-keys-btn">Enregistrer les clés</button>
+      <div class="status" id="keys-status-line"><span class="dot"></span><span id="keys-status-text">Aucune clé</span></div>
+      <div class="admin-scroll" style="margin-top:.5rem">
+        <table class="admin-table" id="keys-table">
+          <thead><tr><th>#</th><th>Clé</th><th>RPM</th><th>Util.</th><th>État</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div></div>
+  </div>
+  <div class="section open">
+    <div class="section-header" data-toggle="section-admin-stats"><span class="section-title">📊 Stats</span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content">
+      <div class="admin-grid">
+        <div class="admin-card"><h3>Contenus</h3><div id="stats-content"></div></div>
+        <div class="admin-card"><h3>Clés</h3><div id="stats-keys"></div></div>
+      </div>
+      <div style="display:flex;gap:.5rem;margin-top:.7rem;flex-wrap:wrap">
+        <button type="button" class="btn secondary small" id="export-db-btn">📥 Exporter</button>
+        <button type="button" class="btn secondary small" id="import-db-btn">📤 Importer</button>
+        <button type="button" class="btn danger small" id="reset-db-btn">🗑 Réinitialiser</button>
+      </div>
+    </div></div>
+  </div>
+  <div class="section open">
+    <div class="section-header" data-toggle="section-admin-prompts"><span class="section-title">📝 Prompts système</span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content">
+      <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#666;display:block;margin-bottom:.3rem">Analyse de la photo</label>
+      <textarea class="input-row" id="prompt-analysis" style="min-height:120px"></textarea>
+      <label style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#666;display:block;margin:.7rem 0 .3rem">Génération des 40 prompts d'un bloc</label>
+      <textarea class="input-row" id="prompt-block" style="min-height:200px"></textarea>
+      <button type="button" class="btn secondary" id="save-prompts-btn" style="margin-top:.5rem">💾 Enregistrer</button>
+      <button type="button" class="btn ghost" id="reset-prompts-btn">↺ Restaurer</button>
+    </div></div>
+  </div>
+  <div class="section open">
+    <div class="section-header" data-toggle="section-admin-chat"><span class="section-title">💬 Chat IA</span><span class="chevron">▾</span></div>
+    <div class="section-body"><div class="section-content">
+      <div class="chat-panel" id="chat-panel">
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-bar">
+          <input type="text" id="chat-input" placeholder="Votre demande à l'IA…">
+          <button type="button" id="chat-send-btn">Envoyer</button>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<div class="modal" id="prompt-modal">
+  <div class="modal-inner">
+    <div class="modal-head"><h3 id="prompt-modal-title">Prompt</h3><button class="close" type="button" id="prompt-modal-close">✕</button></div>
+    <div class="modal-body"><textarea id="prompt-modal-text" readonly></textarea></div>
+    <div class="modal-actions"><button class="btn secondary" type="button" id="prompt-modal-copy">Copier</button></div>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox">
+  <button type="button" class="lb-close" id="lightbox-close">✕</button>
+  <div class="lb-stage">
+    <img class="lb-img" id="lightbox-img" src="" alt="">
+    <div class="lb-info">
+      <div class="lb-caption" id="lightbox-caption"></div>
+      <button type="button" class="lb-develop" id="lightbox-develop">✦ Développer cette variante (40 images)</button>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-dock">
+  <div class="progress-strip"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="progress-meta" id="progress-meta"><span class="lbl" id="progress-label">—</span><span id="progress-eta">—</span></div>
+  <div class="console-dock collapsed" id="console-dock">
+    <div class="console-header" id="console-header">
+      <span class="console-title">Console</span>
+      <span class="console-badge" id="console-badge">0</span>
+      <div class="console-actions">
+        <button type="button" id="console-copy">Copier</button>
+        <button type="button" id="console-clear">Effacer</button>
+      </div>
+      <button type="button" class="console-toggle" id="console-toggle">▴</button>
+    </div>
+    <div class="console-body" id="console-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<canvas id="noSleepCanvas" width="2" height="2"></canvas>
+<video id="noSleepVideo" playsinline muted loop></video>
+
+<script>
+// ==================================================================
+// CONFIG
+// ==================================================================
+const API_BASE = 'https://apihub.agnes-ai.com/v1';
+const MODEL_IMAGE = 'agnes-image-2.1-flash';
+const MODEL_TEXT = 'agnes-2.5-flash';
+/* Base propre à cet outil : 'studio_db_v10' est aussi celle de Studio Portrait 9:16, et les deux
+   outils réécrivaient les sessions l'un de l'autre. Les données sont reprises au 1er lancement. */
+const DB_NAME = 'studio_db_v10_40img';
+const OLD_DB_NAME = 'studio_db_v10';
+const DB_VERSION = 1;
+const IMG_RATIO = '9:16';
+const IMG_SIZE = '1K';
+const TOTAL_IMAGES = 40;
+
+// Catégories internes d'un lot structuré (8 catégories → 40 images)
+const CATEGORY_SPEC = {
+  perfect:     { count:1,  label:'Copie',            color:'#0a7a3e', icon:'◉', textOnly:false },
+  reconstruct: { count:3,  label:'Reconstruction',   color:'#5e2ca5', icon:'◐', textOnly:true  },
+  variation:   { count:12, label:'Variation',        color:'#0045b5', icon:'◆', textOnly:false },
+  partner:     { count:5,  label:'Avec partenaire',  color:'#d4a017', icon:'❖', textOnly:false },
+  other:       { count:7,  label:'Autres personnages', color:'#c05a00', icon:'✦', textOnly:true },
+  environment: { count:7,  label:'Décors',           color:'#0a5c8a', icon:'◇', textOnly:true  },
+  wild:        { count:5,  label:'Créatif',          color:'#a0306b', icon:'✺', textOnly:false }
+};
+
+// BLOCS créatifs, organisés par groupes
+const BLOCKS = [
+  // ============ EXPLOSIFS ============
+  { id:'explosion', group:'💥 Explosifs', icon:'💥', label:'Style Explosion',
+    desc:'Votre photo dans 40 styles radicalement différents',
+    type:'structured' },
+  { id:'colors', group:'💥 Explosifs', icon:'🌈', label:'Couleurs & Ambiances',
+    desc:'Palettes et humeurs extrêmes',
+    type:'structured', hint:'Push wildly different color palettes, mood shifts, lighting extremes' },
+  { id:'newchars', group:'💥 Explosifs', icon:'👥', label:'Nouveaux Personnages',
+    desc:'40 personnages inédits inspirés de l\'univers (SANS votre photo)',
+    type:'characters' },
+  { id:'environments', group:'💥 Explosifs', icon:'🏞️', label:'Décors & Univers',
+    desc:'40 lieux, paysages, intérieurs (SANS aucun personnage)',
+    type:'environments' },
+  { id:'wild', group:'💥 Explosifs', icon:'✦', label:'Créatif Libre',
+    desc:'Explorations folles, genre-bending',
+    type:'structured', hint:'Extremely unexpected, mind-blowing, boundary-pushing' },
+
+  // ============ CINÉMA & SCÈNE ============
+  { id:'cinema', group:'🎬 Cinéma & Scène', icon:'🎬', label:'Cinéma', desc:'Cinematic still, film grain, dramatic lighting', type:'structured' },
+  { id:'filmnoir', group:'🎬 Cinéma & Scène', icon:'🎞️', label:'Film Noir', desc:'1940s noir, high contrast B&W', type:'structured' },
+  { id:'theatre', group:'🎬 Cinéma & Scène', icon:'🎭', label:'Théâtre', desc:'Stage, spotlight, costumes', type:'structured' },
+  { id:'opera', group:'🎬 Cinéma & Scène', icon:'🎼', label:'Opéra / Danse', desc:'Opera, ballet, theatrical', type:'structured' },
+  { id:'cirque', group:'🎬 Cinéma & Scène', icon:'🎪', label:'Cirque / Cabaret', desc:'Vintage circus poster', type:'structured' },
+  { id:'technicolor', group:'🎬 Cinéma & Scène', icon:'🌈', label:'Technicolor', desc:'1950s saturated Hollywood', type:'structured' },
+
+  // ============ GRAPHIQUE & ILLUSTRATION ============
+  { id:'manga', group:'🎨 Graphique & Illustration', icon:'📺', label:'Manga / Anime', desc:'Manga panel, cel-shading', type:'structured' },
+  { id:'bd', group:'🎨 Graphique & Illustration', icon:'📚', label:'BD / Comics', desc:'Inked lines, halftone', type:'structured' },
+  { id:'illustration', group:'🎨 Graphique & Illustration', icon:'🎨', label:'Illustration', desc:'Editorial, stylized shapes', type:'structured' },
+  { id:'pencil', group:'🎨 Graphique & Illustration', icon:'✏️', label:'Crayon / Graphite', desc:'Pencil sketch, graphite', type:'structured' },
+  { id:'pastel', group:'🎨 Graphique & Illustration', icon:'🖍️', label:'Pastel', desc:'Soft chalk pastel', type:'structured' },
+  { id:'ink', group:'🎨 Graphique & Illustration', icon:'🖋️', label:'Encre de Chine', desc:'Ink wash, sumi-e', type:'structured' },
+  { id:'watercolor', group:'🎨 Graphique & Illustration', icon:'💧', label:'Aquarelle', desc:'Watercolor washes, textured paper', type:'structured' },
+  { id:'vitrail', group:'🎨 Graphique & Illustration', icon:'🔷', label:'Vitrail', desc:'Stained glass, leaded panels', type:'structured' },
+  { id:'graffiti', group:'🎨 Graphique & Illustration', icon:'🏙️', label:'Graffiti', desc:'Spray paint, urban wall', type:'structured' },
+  { id:'stencil', group:'🎨 Graphique & Illustration', icon:'✂️', label:'Pochoir / Stencil', desc:'Banksy-style stencil', type:'structured' },
+  { id:'engraving', group:'🎨 Graphique & Illustration', icon:'🖨️', label:'Gravure', desc:'Etching, woodcut, linocut', type:'structured' },
+  { id:'embroidery', group:'🎨 Graphique & Illustration', icon:'🧵', label:'Broderie', desc:'Embroidery, textile art', type:'structured' },
+
+  // ============ PEINTURE & ART ============
+  { id:'classical', group:'🖼️ Peinture & Art', icon:'🖼️', label:'Classique', desc:'Old masters, Renaissance', type:'structured' },
+  { id:'oil', group:'🖼️ Peinture & Art', icon:'🎨', label:'Huile', desc:'Oil on canvas, visible brushwork', type:'structured' },
+  { id:'acrylic', group:'🖼️ Peinture & Art', icon:'🖌️', label:'Acrylique', desc:'Acrylic, bold flat colors', type:'structured' },
+  { id:'popart', group:'🖼️ Peinture & Art', icon:'🎨', label:'Pop Art', desc:'Warhol, Lichtenstein', type:'structured' },
+  { id:'surreal', group:'🖼️ Peinture & Art', icon:'🌀', label:'Surréalisme', desc:'Dalí, Magritte, dreamlike', type:'structured' },
+  { id:'abstract', group:'🖼️ Peinture & Art', icon:'◼️', label:'Abstrait', desc:'Color field, geometric', type:'structured' },
+  { id:'naif', group:'🖼️ Peinture & Art', icon:'🧸', label:'Art naïf', desc:'Folk art, childlike wonder', type:'structured' },
+  { id:'collage', group:'🖼️ Peinture & Art', icon:'✂️', label:'Collage', desc:'Mixed media, cut paper', type:'structured' },
+
+  // ============ PHOTO & MODE ============
+  { id:'photoart', group:'📷 Photo & Mode', icon:'📷', label:'Photo d\'art', desc:'Fine art, studio lighting', type:'structured' },
+  { id:'fashion', group:'📷 Photo & Mode', icon:'👗', label:'Mode / Couture', desc:'Vogue, high fashion', type:'structured' },
+  { id:'streetwear', group:'📷 Photo & Mode', icon:'👟', label:'Streetwear', desc:'Urban fashion, sneaker culture', type:'structured' },
+  { id:'polaroid', group:'📷 Photo & Mode', icon:'📸', label:'Polaroid', desc:'Instant film, faded colors', type:'structured' },
+  { id:'vintage', group:'📷 Photo & Mode', icon:'📽️', label:'Vintage / Rétro', desc:'Super 8, 16mm, VHS', type:'structured' },
+
+  // ============ NUMÉRIQUE & 3D ============
+  { id:'3d', group:'💻 Numérique & 3D', icon:'✨', label:'3D / CGI', desc:'Pixar, DreamWorks, hyperreal', type:'structured' },
+  { id:'pixel', group:'💻 Numérique & 3D', icon:'🎮', label:'Pixel art', desc:'8-bit, 16-bit, retro game', type:'structured' },
+  { id:'game', group:'💻 Numérique & 3D', icon:'🕹️', label:'Jeu vidéo', desc:'Key art, character select', type:'structured' },
+  { id:'scifi', group:'💻 Numérique & 3D', icon:'🚀', label:'Sci-Fi', desc:'Cyberpunk, space opera', type:'structured' },
+  { id:'fantasy', group:'💻 Numérique & 3D', icon:'🧙', label:'Fantasy', desc:'High fantasy, medieval, magic', type:'structured' },
+  { id:'glitch', group:'💻 Numérique & 3D', icon:'💻', label:'Glitch / Vaporwave', desc:'Datamosh, retro-futurism', type:'structured' },
+
+  // ============ UNIVERS & GENRES ============
+  { id:'horror', group:'🌍 Univers & Genres', icon:'👻', label:'Horreur', desc:'Gothic, dark atmosphere', type:'structured' },
+  { id:'historical', group:'🌍 Univers & Genres', icon:'📜', label:'Époques', desc:'Antiquity → Renaissance → XXe', type:'structured' },
+  { id:'sculpture', group:'🌍 Univers & Genres', icon:'🗿', label:'Sculpture', desc:'Marble, bronze, clay', type:'structured' },
+  { id:'archi', group:'🌍 Univers & Genres', icon:'🏛️', label:'Architecture', desc:'Interiors, brutalist, classic', type:'structured' },
+  { id:'tattoo', group:'🌍 Univers & Genres', icon:'🎨', label:'Tatouage', desc:'Blackwork, irezumi', type:'structured' },
+  { id:'luxury', group:'🌍 Univers & Genres', icon:'💎', label:'Luxe / Bijou', desc:'Gold, silver, precious stones', type:'structured' },
+  { id:'food', group:'🌍 Univers & Genres', icon:'🍽️', label:'Food styling', desc:'Culinary art, gastronomy', type:'structured' },
+  { id:'sport', group:'🌍 Univers & Genres', icon:'⚽', label:'Sport', desc:'Action shots, dynamic motion', type:'structured' },
+  { id:'cosplay', group:'🌍 Univers & Genres', icon:'🎭', label:'Cosplay', desc:'Character recreation, costume', type:'structured' },
+
+  // ============ PRO & MONÉTISATION ============
+  { id:'pub', group:'💼 Pro & Monétisation', icon:'📢', label:'Publicité', desc:'Ad campaign, hero shot', type:'structured' },
+  { id:'monetization', group:'💼 Pro & Monétisation', icon:'💼', label:'Monétisation', desc:'Product mockup, packaging, merch', type:'structured' },
+  { id:'poster', group:'💼 Pro & Monétisation', icon:'🖼️', label:'Affiche', desc:'Movie / concert poster', type:'structured' },
+  { id:'album', group:'💼 Pro & Monétisation', icon:'💿', label:'Album / Cover', desc:'Vinyl art, iconic cover', type:'structured' },
+  { id:'book', group:'💼 Pro & Monétisation', icon:'📖', label:'Couverture livre', desc:'Editorial illustration', type:'structured' }
+];
+function blockById(id){ return BLOCKS.find(b=>b.id===id) }
+
+// ==================================================================
+// PROMPTS
+// ==================================================================
+const DEFAULT_PROMPTS = {
+  analysis: `Tu es directeur artistique visionnaire. Analyse cette image et produis un JSON de référence.
+
+RÉPONDS UNIQUEMENT PAR UN OBJET JSON VALIDE. AUCUN TEXTE AVANT/APRÈS. PAS DE MARKDOWN. PAS DE BACKTICKS.
+
+RÈGLES JSON STRICTES :
+- N'utilise PAS de guillemets doubles " à l'intérieur des chaînes. Si tu dois citer, utilise l'apostrophe droite '.
+- N'utilise PAS l'apostrophe typographique française (') : utilise '.
+- Pas de retour à la ligne brut dans une chaîne.
+
+Structure exacte :
+{
+  "subject": "English description of the character (face, age, gender, hair, clothes, posture)",
+  "environment": "English description of the setting",
+  "lighting": "English description of the lighting",
+  "style_detected": "English description of the visual style",
+  "world_descriptor": "Rich English paragraph (60-100 words) describing the universe/world: era, genre, atmosphere, cultural context, visual codes. Used later to invent NEW characters and environments without the reference image.",
+  "identity_lock": "English sentence locking the character's identity (face, gender, age, hair, outfit)",
+  "style_lock": "English sentence locking the visual style (medium, palette, lighting, mood)"
+}`,
+
+  block: `Tu es directeur artistique visionnaire. Tu crées 40 prompts d'images à partir d'une analyse de référence et d'un THÈME.
+
+RÉPONDS UNIQUEMENT PAR UN OBJET JSON VALIDE. AUCUN TEXTE AVANT/APRÈS. PAS DE MARKDOWN. PAS DE BACKTICKS.
+
+RÈGLES JSON STRICTES :
+- N'utilise PAS de guillemets doubles " à l'intérieur des chaînes.
+- N'utilise PAS l'apostrophe typographique française (') : utilise '.
+- Pas de retour à la ligne brut dans une chaîne.
+- Chaque prompt est une chaîne unique sur une ligne.
+
+RÉPARTITION EXACTE (total = 40) :
+- "perfect" (1)     : copie améliorée de la référence dans le thème
+- "reconstruct" (3) : recréations text-to-image SANS référence, dans le thème
+- "variation" (12)  : MÊME personnage que la référence, nouvelles scènes dans le thème
+- "partner" (5)     : personnage principal + nouveaux partenaires dans le thème
+- "other" (7)       : 7 NOUVEAUX personnages — DIFFÉRENTS (change gender, age, ethnicity, hairstyle, outfit). NE PAS reproduire le personnage de la référence.
+- "environment" (7) : 7 DÉCORS uniquement, AUCUN personnage, AUCUN visage. Dans le thème.
+- "wild" (5)        : explorations créatives folles, dans le thème
+
+RÈGLES DE CONTENU :
+- Prompts en ANGLAIS, riches (30-60 mots), autonomes.
+- Pour "variation" et "partner" : inclus l'identité exacte (face, gender, age, hair, outfit).
+- Pour "other" : décris un personnage TOTALEMENT NOUVEAU et différent.
+- Pour "environment" : JAMAIS de personne, de visage, de silhouette.
+- Pour "reconstruct" : recréer la scène depuis la description seule.
+- Chaque prompt doit être visuellement très différent des autres.
+
+Labels déjà utilisés dans cette session (à éviter) :
+{USED}
+
+Labels utilisés dans les autres sessions (réutilise max 30%) :
+{GLOBAL}
+
+Retourne UNIQUEMENT :
+{
+  "images": [
+    { "category":"perfect", "label":"Court label", "prompt":"Full English prompt" },
+    ... 40 items ...
+  ]
+}`
+};
+
+// ==================================================================
+// INDEXEDDB
+// ==================================================================
+let db = null;
+/* Ouverture sans numéro de version (accepte une base déjà montée en version supérieure)
+   et ajout des stores manquants si besoin. */
+const REQUIRED_STORES = ['keys','sessions','savedStyles','config','chatHistory'];
+function openDB(ver){
+  return new Promise((res,rej)=>{
+    const r = ver ? indexedDB.open(DB_NAME, ver) : indexedDB.open(DB_NAME);
+    r.onerror = ()=>rej(r.error);
+    r.onsuccess = ()=>{
+      const d = r.result;
+      if(REQUIRED_STORES.every(n=>d.objectStoreNames.contains(n))) return res(d);
+      const v = d.version+1; d.close(); openDB(v).then(res,rej);
+    };
+    r.onupgradeneeded = (ev)=>{
+      const d = ev.target.result;
+      if(!d.objectStoreNames.contains('keys')){ const s=d.createObjectStore('keys',{keyPath:'id'}); s.createIndex('key','key',{unique:true}) }
+      if(!d.objectStoreNames.contains('sessions')) d.createObjectStore('sessions',{keyPath:'id'});
+      if(!d.objectStoreNames.contains('savedStyles')) d.createObjectStore('savedStyles',{keyPath:'id'});
+      if(!d.objectStoreNames.contains('config')) d.createObjectStore('config',{keyPath:'key'});
+      if(!d.objectStoreNames.contains('chatHistory')) d.createObjectStore('chatHistory',{keyPath:'id',autoIncrement:true});
+    };
+  });
+}
+/* Reprise unique depuis l'ancienne base partagée : clés, styles, historique du chat, réglages
+   et les sessions de CET outil (celles qui ont des « lots »). Rien n'est effacé de l'ancienne base. */
+async function migrateFromSharedDB(){
+  try{
+    if(await dbGet('config','migratedFromShared')) return;
+    let exists = true;
+    if(indexedDB.databases){ try{ exists = (await indexedDB.databases()).some(d=>d.name===OLD_DB_NAME) }catch(e){} }
+    if(exists){
+      const old = await new Promise((res,rej)=>{ const r=indexedDB.open(OLD_DB_NAME); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error) });
+      const all = s => old.objectStoreNames.contains(s) ? new Promise((r,j)=>{const t=old.transaction(s,'readonly').objectStore(s).getAll();t.onsuccess=()=>r(t.result||[]);t.onerror=()=>j(t.error)}) : Promise.resolve([]);
+      let n = 0;
+      for(const k of await all('keys')){ try{ await dbPut('keys', k) }catch(e){} }
+      for(const s of await all('savedStyles')){ try{ await dbPut('savedStyles', s) }catch(e){} }
+      for(const c of await all('chatHistory')){ try{ await dbPut('chatHistory', c) }catch(e){} }
+      // 'prompt_analysis' n'a pas le même format dans Studio Portrait : on ne le reprend pas
+      for(const c of await all('config')){ if(c.key!=='prompt_analysis'){ try{ await dbPut('config', c) }catch(e){} } }
+      for(const s of await all('sessions')){ if(Array.isArray(s.lots)){ try{ await dbPut('sessions', s); n++ }catch(e){} } }
+      old.close();
+      log('success','DB','Reprise depuis l\'ancienne base partagée : '+n+' session(s)');
+    }
+    await dbPut('config', {key:'migratedFromShared', value:true});
+  }catch(e){ log('warn','DB','Reprise de l\'ancienne base impossible : '+e.message) }
+}
+function dbGet(s,k){return new Promise((r,j)=>{const t=db.transaction(s,'readonly').objectStore(s).get(k);t.onsuccess=()=>r(t.result);t.onerror=()=>j(t.error)})}
+function dbPut(s,v){return new Promise((r,j)=>{const t=db.transaction(s,'readwrite').objectStore(s).put(v);t.onsuccess=()=>r(t.result);t.onerror=()=>j(t.error)})}
+function dbDelete(s,k){return new Promise((r,j)=>{const t=db.transaction(s,'readwrite').objectStore(s).delete(k);t.onsuccess=()=>r();t.onerror=()=>j(t.error)})}
+function dbGetAll(s){return new Promise((r,j)=>{const t=db.transaction(s,'readonly').objectStore(s).getAll();t.onsuccess=()=>r(t.result||[]);t.onerror=()=>j(t.error)})}
+function dbClear(s){return new Promise((r,j)=>{const t=db.transaction(s,'readwrite').objectStore(s).clear();t.onsuccess=()=>r();t.onerror=()=>j(t.error)})}
+
+// ==================================================================
+// STATE
+// ==================================================================
+const state = {
+  keys:[], sessionsIndex:[], currentSessionId:null,
+  savedStyles:[], config:{}, chatHistory:[], savedStyleSelected:{},
+  reference:null,
+  activeReference:null,
+  activeReferenceLabel:'Photo originale',
+  analysis:null,
+  analysisSignature:null,
+  lots:[],       // [{id, blockId, refUri, refLabel, createdAt}]
+  images:[],     // each: {id, lotId, blockId, category, label, prompt, status, url, ...}
+  usedLabels:[],
+  globalUsedLabels:[],
+  filterLot:'all', filterCategory:'all',
+  isRunning:false, isAnalyzing:false, isGeneratingFromSaved:false,
+  stopRequested:false,
+  wakeLockSentinel:null, canvasStream:null, canvasInterval:null,
+  loaderPhases:{}
+};
+let nextImgId = 1, nextLotId = 1, logCount = 0;
+
+// ==================================================================
+// UTILS
+// ==================================================================
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function nowTime(){return new Date().toLocaleTimeString('fr-FR',{hour12:false})}
+function fmtEta(s){if(!isFinite(s)||s<0)return '—';if(s<60)return Math.round(s)+'s';const m=Math.floor(s/60);return m+'m'+Math.round(s%60)+'s'}
+function $(id){return document.getElementById(id)}
+function uid(p){return (p||'id')+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)}
+function blockOf(id){return BLOCKS.find(b=>b.id===id)||BLOCKS[0]}
+function catOf(id){return CATEGORY_SPEC[id]||CATEGORY_SPEC.variation}
+
+// ==================================================================
+// LOG
+// ==================================================================
+function log(level, cat, msg){
+  const body = $('console-body'); if(!body) return;
+  const e = document.createElement('div');
+  e.className = 'log-entry ' + (level||'info');
+  e.innerHTML = '<span class="log-time">'+esc(nowTime())+'</span><span class="log-cat">'+esc(cat)+'</span><span class="log-msg">'+esc(msg)+'</span>';
+  body.appendChild(e);
+  while(body.children.length > 500) body.removeChild(body.firstChild);
+  body.scrollTop = body.scrollHeight;
+  logCount++;
+  const b = $('console-badge'); if(b) b.textContent = logCount;
+}
+function clearConsole(){$('console-body').innerHTML='';logCount=0;$('console-badge').textContent='0'}
+function copyConsole(){
+  const txt = Array.from(document.querySelectorAll('#console-body .log-entry')).map(el=>{
+    const t = el.querySelector('.log-time')?.textContent || '';
+    const c = el.querySelector('.log-cat')?.textContent || '';
+    const m = el.querySelector('.log-msg')?.textContent || '';
+    return t+' ['+c+'] '+m;
+  }).join('\n');
+  copyToClipboard(txt).then(ok=>toast(ok?'Copiée':'Échec', ok?'ok':'err'));
+}
+async function copyToClipboard(t){
+  try{ if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(t); return true } }catch(e){}
+  try{ const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();const ok=document.execCommand('copy');document.body.removeChild(ta);return ok }catch(e){return false}
+}
+let toastTO=null;
+function toast(msg, type){
+  type = type||'ok';
+  const t = $('toast'); if(!t) return;
+  t.classList.remove('visible','error','warn','gold'); t.textContent = msg;
+  if(type==='err') t.classList.add('error');
+  if(type==='warn') t.classList.add('warn');
+  if(type==='gold') t.classList.add('gold');
+  void t.offsetWidth; t.classList.add('visible');
+  if(toastTO) clearTimeout(toastTO);
+  toastTO = setTimeout(()=>t.classList.remove('visible'), 2800);
+}
+function showProgress(l,e){ $('progress-meta').classList.add('visible'); if(l!==undefined)$('progress-label').textContent=l; if(e!==undefined)$('progress-eta').textContent=e }
+function setProgress(p){ $('progress-fill').style.width = Math.max(0, Math.min(100,p)) + '%' }
+function hideProgress(){ $('progress-meta').classList.remove('visible'); $('progress-fill').style.width='0%' }
+
+// ==================================================================
+// LIGHTBOX
+// ==================================================================
+let lightboxImgId = null;
+function openLightbox(img){
+  if(!img || !img.url) return;
+  lightboxImgId = img.id;
+  const lb = $('lightbox'), im = $('lightbox-img'), cap = $('lightbox-caption');
+  const blk = blockOf(img.blockId);
+  const cat = catOf(img.category);
+  im.src = img.url;
+  cap.textContent = [blk.label, cat.label, img.label].filter(Boolean).join(' · ');
+  lb.classList.add('visible');
+}
+function closeLightbox(){
+  const lb = $('lightbox'), im = $('lightbox-img');
+  if(!lb) return;
+  lb.classList.remove('visible');
+  lightboxImgId = null;
+  if(im) setTimeout(()=>{ if(!lb.classList.contains('visible')) im.src = '' }, 250);
+}
+
+// ==================================================================
+// JSON — extraction ultra-robuste
+// ==================================================================
+function extractJson(raw){
+  if(!raw) return null;
+  let c = String(raw).trim();
+  // Enlève les fences markdown
+  c = c.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+  // Trouve les accolades externes
+  const fb = c.indexOf('{');
+  const lb = c.lastIndexOf('}');
+  if(fb < 0 || lb < 0 || lb < fb) return null;
+  c = c.slice(fb, lb+1);
+
+  // Tentative 1 : direct
+  try{ return JSON.parse(c) }catch(e){}
+
+  // Tentative 2 : échappe les caractères de contrôle non échappés
+  let out = '', inS = false, esc = false;
+  for(let i=0; i<c.length; i++){
+    const ch = c[i];
+    if(esc){ out += ch; esc = false; continue }
+    if(ch === '\\'){ out += ch; esc = true; continue }
+    if(ch === '"'){ inS = !inS; out += ch; continue }
+    if(inS){
+      if(ch === '\n'){ out += '\\n'; continue }
+      if(ch === '\r'){ out += '\\r'; continue }
+      if(ch === '\t'){ out += '\\t'; continue }
+      const code = ch.charCodeAt(0);
+      if(code < 32){ out += '\\u' + code.toString(16).padStart(4,'0'); continue }
+    }
+    out += ch;
+  }
+  // Supprime les virgules traînantes
+  out = out.replace(/,\s*([}\]])/g, '$1');
+  try{ return JSON.parse(out) }catch(e){}
+
+  // Tentative 3 : remplace les apostrophes typographiques dans les chaînes
+  try{
+    const fixed = out.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '\\"');
+    return JSON.parse(fixed);
+  }catch(e){}
+
+  return null;
+}
+
+// ==================================================================
+// WAKE LOCK
+// ==================================================================
+async function activateWakeLock(){
+  try{ if('wakeLock' in navigator && typeof navigator.wakeLock.request === 'function'){ state.wakeLockSentinel = await navigator.wakeLock.request('screen'); return true } }catch(e){}
+  try{
+    const canvas = $('noSleepCanvas'), video = $('noSleepVideo'), ctx = canvas.getContext('2d');
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,2,2);
+    if(typeof canvas.captureStream === 'function'){
+      state.canvasStream = canvas.captureStream(1);
+      let t = false;
+      state.canvasInterval = setInterval(()=>{ t=!t; ctx.fillStyle = t?'#000':'#010101'; ctx.fillRect(0,0,2,2) }, 1000);
+      video.srcObject = state.canvasStream; video.muted = true; video.playsInline = true; video.play().catch(()=>{});
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+async function deactivateWakeLock(){
+  if(state.wakeLockSentinel){try{await state.wakeLockSentinel.release()}catch(e){} state.wakeLockSentinel=null}
+  if(state.canvasInterval){clearInterval(state.canvasInterval); state.canvasInterval=null}
+  const v = $('noSleepVideo'); if(v){try{v.pause(); v.srcObject=null}catch(e){}}
+  if(state.canvasStream){try{state.canvasStream.getTracks().forEach(t=>t.stop())}catch(e){} state.canvasStream=null}
+}
+
+// ==================================================================
+// FICHIERS
+// ==================================================================
+function fileToDataUri(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=()=>rej(new Error('Lecture'));r.readAsDataURL(f)})}
+function compressDataUri(uri, maxSide){
+  return new Promise(resolve=>{
+    const img = new Image();
+    img.onload = ()=>{try{let w=img.width,h=img.height;const s=Math.min(1,maxSide/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);resolve(c.toDataURL('image/jpeg',0.9))}catch(e){resolve(uri)}};
+    img.onerror = ()=>resolve(uri);
+    img.src = uri;
+  });
+}
+function downloadUrl(url, name){const a=document.createElement('a');a.href=url;a.download=name;a.target='_blank';document.body.appendChild(a);a.click();document.body.removeChild(a)}
+
+// ==================================================================
+// CLÉS
+// ==================================================================
+function parseKeys(raw){
+  const out=[], seen={};
+  for(const line of String(raw||'').split(/\r?\n/)){
+    const l = line.trim(); if(!l || l.startsWith('#')) continue;
+    let key = l, rpm = 20;
+    const m = l.match(/^([^=|]+?)\s*[=|]\s*(\d+)\s*$/);
+    if(m){ key = m[1].trim(); const r = parseInt(m[2],10); if(!isNaN(r)&&r>0) rpm = Math.min(500, Math.max(1,r)) }
+    key = key.trim();
+    if(!key.startsWith('sk-') || seen[key]) continue;
+    seen[key] = true;
+    out.push({key, imgRpm: rpm});
+  }
+  return out;
+}
+function getAvailableKey(){
+  const now = Date.now(), cutoff = now - 60000;
+  const cands = [];
+  for(const k of state.keys){
+    if(!k.active || k.cooldownUntil > now) continue;
+    k.imgTimes = (k.imgTimes||[]).filter(t=>t>cutoff);
+    if(k.imgTimes.length >= k.imgRpm) continue;
+    cands.push(k);
+  }
+  if(!cands.length) return null;
+  cands.sort((a,b)=>a.imgTimes.length - b.imgTimes.length);
+  return cands[0];
+}
+function getSoonestMs(){
+  const now = Date.now(), cutoff = now - 60000;
+  let soonest = Infinity, any = false;
+  for(const k of state.keys){
+    if(!k.active) continue; any = true;
+    if(k.cooldownUntil > now){ soonest = Math.min(soonest, k.cooldownUntil - now); continue }
+    k.imgTimes = (k.imgTimes||[]).filter(t=>t>cutoff);
+    if(k.imgTimes.length >= k.imgRpm){ const o = Math.min(...k.imgTimes); soonest = Math.min(soonest, o + 60000 - now) }
+    else return 0;
+  }
+  if(!any) return 30000;
+  if(soonest === Infinity) return 500;
+  return Math.max(150, soonest);
+}
+async function acquireKey(){
+  while(true){
+    if(state.stopRequested) throw new Error('Arrêt');
+    const k = getAvailableKey();
+    if(k) return k;
+    const w = getSoonestMs();
+    log('warn','CLÉS','Attente '+Math.ceil(w/1000)+'s');
+    await sleep(w + 80);
+  }
+}
+async function registerRequest(k){
+  k.imgTimes = (k.imgTimes||[]); k.imgTimes.push(Date.now());
+  k.imgUsage = (k.imgUsage||0) + 1; k.lastUsed = Date.now();
+  try{ const s = await dbGet('keys', k.id); if(s){ s.imgUsage = k.imgUsage; s.lastUsed = k.lastUsed; await dbPut('keys', s) } }catch(e){}
+  renderKeysTable();
+}
+
+// ==================================================================
+// API
+// ==================================================================
+async function callImage(prompt, refUri, keyObj){
+  const body = {model:MODEL_IMAGE, prompt, n:1, size:IMG_SIZE, ratio:IMG_RATIO, extra_body:{response_format:'url'}};
+  if(refUri) body.extra_body.image = [refUri];
+  await registerRequest(keyObj);
+  log('api','IMAGE', (refUri?'+ref ':'text ')+keyObj.key.slice(-4));
+  const res = await fetch(API_BASE + '/images/generations', {method:'POST', headers:{'Authorization':'Bearer '+keyObj.key,'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  if(res.status===429){ keyObj.cooldownUntil = Date.now()+30000; throw new Error('HTTP 429') }
+  if(res.status===401||res.status===403){ keyObj.errorCount=(keyObj.errorCount||0)+1; if(keyObj.errorCount>=3) keyObj.active=false; const e=new Error('HTTP '+res.status); e.status=res.status; throw e }
+  if(!res.ok){ const t = await res.text().catch(()=>''); throw new Error('HTTP '+res.status+' '+t.slice(0,100)) }
+  const data = await res.json();
+  const item = data.data && data.data[0];
+  if(!item) throw new Error('Pas d\'image');
+  if(item.url) return item.url;
+  if(item.b64_json) return 'data:image/png;base64,'+item.b64_json;
+  throw new Error('Format');
+}
+async function callVision(sysPrompt, userText, imageUri, keyObj, maxTokens){
+  const body = {model:MODEL_TEXT, messages:[{role:'system',content:sysPrompt},{role:'user',content:[{type:'text',text:userText},{type:'image_url',image_url:{url:imageUri}}]}], temperature:0.85, max_tokens:maxTokens||4000, response_format:{type:'json_object'}};
+  await registerRequest(keyObj);
+  log('api','VISION', keyObj.key.slice(-4));
+  const res = await fetch(API_BASE + '/chat/completions', {method:'POST', headers:{'Authorization':'Bearer '+keyObj.key,'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  if(res.status===429){ keyObj.cooldownUntil = Date.now()+30000; throw new Error('HTTP 429') }
+  if(res.status===401||res.status===403){ keyObj.errorCount=(keyObj.errorCount||0)+1; if(keyObj.errorCount>=3) keyObj.active=false; const e=new Error('HTTP '+res.status); e.status=res.status; throw e }
+  if(!res.ok){ const t = await res.text().catch(()=>''); throw new Error('HTTP '+res.status+' '+t.slice(0,100)) }
+  const data = await res.json();
+  const ch = data.choices && data.choices[0];
+  let content = ch && ch.message && ch.message.content;
+  if(!content && ch && ch.message && ch.message.reasoning_content) content = ch.message.reasoning_content;
+  if(!content) throw new Error('Pas de contenu');
+  return content;
+}
+async function callText(sysPrompt, userText, keyObj, maxTokens, temp){
+  const body = {model:MODEL_TEXT, messages:[{role:'system',content:sysPrompt},{role:'user',content:userText}], temperature: temp!==undefined?temp:0.9, max_tokens:maxTokens||8000, response_format:{type:'json_object'}};
+  await registerRequest(keyObj);
+  log('api','TEXT', keyObj.key.slice(-4));
+  const res = await fetch(API_BASE + '/chat/completions', {method:'POST', headers:{'Authorization':'Bearer '+keyObj.key,'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  if(res.status===429){ keyObj.cooldownUntil = Date.now()+30000; throw new Error('HTTP 429') }
+  if(res.status===401||res.status===403){ keyObj.errorCount=(keyObj.errorCount||0)+1; if(keyObj.errorCount>=3) keyObj.active=false; const e=new Error('HTTP '+res.status); e.status=res.status; throw e }
+  if(!res.ok){ const t = await res.text().catch(()=>''); throw new Error('HTTP '+res.status+' '+t.slice(0,100)) }
+  const data = await res.json();
+  const ch = data.choices && data.choices[0];
+  let content = ch && ch.message && ch.message.content;
+  if(!content && ch && ch.message && ch.message.reasoning_content) content = ch.message.reasoning_content;
+  if(!content) throw new Error('Pas de contenu');
+  return content;
+}
+
+// ==================================================================
+// SESSIONS
+// ==================================================================
+async function loadSessionsIndex(){
+  try{ const a = await dbGetAll('sessions'); return a.sort((x,y)=>(y.updatedAt||0)-(x.updatedAt||0)) }catch(e){ return [] }
+}
+async function loadGlobalUsedLabels(){
+  try{
+    const all = await dbGetAll('sessions');
+    const set = new Set();
+    all.forEach(s=>{ if(s.id === state.currentSessionId) return; (s.usedLabels||[]).forEach(l=>set.add(l)) });
+    return Array.from(set);
+  }catch(e){ return [] }
+}
+async function saveSessionData(){
+  if(!state.currentSessionId) return;
+  const meta = state.sessionsIndex.find(s=>s.id===state.currentSessionId)||{};
+  const data = {
+    id: state.currentSessionId,
+    name: meta.name || 'Session',
+    createdAt: meta.createdAt || Date.now(),
+    updatedAt: Date.now(),
+    reference: state.reference,
+    activeReference: state.activeReference,
+    activeReferenceLabel: state.activeReferenceLabel,
+    analysis: state.analysis,
+    analysisSignature: state.analysisSignature,
+    lots: state.lots,
+    images: state.images.map(i=>({id:i.id, lotId:i.lotId, blockId:i.blockId, category:i.category, label:i.label, prompt:i.prompt, status:i.status, url:i.url, keyLast4:i.keyLast4, error:i.error, savedAsStyle:i.savedAsStyle||false})),
+    usedLabels: state.usedLabels
+  };
+  try{ await dbPut('sessions', data) }catch(e){ log('warn','SESSION','save '+e.message) }
+  if(meta){ meta.updatedAt = data.updatedAt; meta.imageCount = state.images.filter(i=>i.status==='done').length }
+}
+async function switchToSession(id){
+  await saveSessionData();
+  state.currentSessionId = id;
+  await dbPut('config', {key:'currentSession', value:id});
+  const data = await dbGet('sessions', id);
+  if(data){
+    state.reference = data.reference || null;
+    state.activeReference = data.activeReference || state.reference;
+    state.activeReferenceLabel = data.activeReferenceLabel || 'Photo originale';
+    state.analysis = data.analysis || null;
+    state.analysisSignature = data.analysisSignature || null;
+    state.lots = data.lots || [];
+    state.images = (data.images||[]).map(i=>{ if(i.status==='loading'){ i.status='error'; i.error='Interrompu' } return i });
+    nextImgId = Math.max(1, ...state.images.map(i=>i.id||0)) + 1;
+    nextLotId = Math.max(1, ...state.lots.map(l=>l.id||0)) + 1;
+    state.usedLabels = data.usedLabels || [];
+  } else {
+    state.reference=null; state.activeReference=null; state.activeReferenceLabel='Photo originale';
+    state.analysis=null; state.analysisSignature=null; state.lots=[]; state.images=[]; state.usedLabels=[];
+  }
+  state.filterLot='all'; state.filterCategory='all';
+  state.isRunning=false; state.isAnalyzing=false; state.isGeneratingFromSaved=false;
+  state.globalUsedLabels = await loadGlobalUsedLabels();
+  renderAll();
+  log('state','SESSION','Activée');
+}
+async function createSession(name){
+  const id = uid('sess');
+  const s = {id, name: name||('Session '+(state.sessionsIndex.length+1)), createdAt:Date.now(), updatedAt:Date.now(), imageCount:0};
+  state.sessionsIndex.push(s);
+  await dbPut('sessions', s);
+  await switchToSession(id);
+}
+async function renameSession(){
+  const cur = state.sessionsIndex.find(s=>s.id===state.currentSessionId); if(!cur) return;
+  const name = prompt('Nouveau nom :', cur.name);
+  if(name && name.trim()){ cur.name = name.trim(); await dbPut('sessions', cur); renderSessionBar() }
+}
+async function deleteSession(){
+  if(state.sessionsIndex.length <= 1){ toast('Au moins une session requise','warn'); return }
+  if(!confirm('Supprimer cette session ?')) return;
+  await dbDelete('sessions', state.currentSessionId);
+  state.sessionsIndex = state.sessionsIndex.filter(s=>s.id !== state.currentSessionId);
+  await switchToSession(state.sessionsIndex[0].id);
+}
+
+// ==================================================================
+// RENDER
+// ==================================================================
+function renderSessionBar(){
+  const sel = $('session-select'); if(!sel) return;
+  sel.innerHTML = state.sessionsIndex.map(s=>'<option value="'+s.id+'"'+(s.id===state.currentSessionId?' selected':'')+'>'+esc(s.name)+' · '+(s.imageCount||0)+' img</option>').join('');
+}
+function renderPills(){
+  const k=$('pill-keys'), i=$('pill-images'), s=$('pill-styles'), d=$('pill-db');
+  const active = state.keys.filter(x=>x.active).length;
+  k.textContent = active+' clé'+(active>1?'s':''); k.className = 'head-pill '+(active>0?'on':'');
+  const done = state.images.filter(x=>x.status==='done').length;
+  i.textContent = done+' image'+(done>1?'s':''); i.className = 'head-pill '+(done>0?'on':'');
+  s.textContent = '⭐ '+state.savedStyles.length; s.className = 'head-pill gold '+(state.savedStyles.length>0?'on':'');
+  d.textContent = 'DB ✓'; d.className = 'head-pill on';
+}
+function renderAll(){
+  renderSessionBar();
+  const ki = $('keys-input');
+  if(ki && state.keys.length) ki.value = state.keys.map(k=>k.imgRpm!==20 ? (k.key+' = '+k.imgRpm) : k.key).join('\n');
+  renderKeysStatus();
+  renderReference();
+  renderAnalysisInfo();
+  renderBlocks();
+  renderImages();
+  renderFilterBars();
+  renderSavedStyles();
+  renderKeysTable();
+  renderAdminStats();
+  renderPromptsAdmin();
+  renderPills();
+  updateButtons();
+}
+function renderKeysStatus(){
+  const line=$('keys-status-line'), txt=$('keys-status-text'); if(!line) return;
+  if(!state.keys.length){ line.classList.remove('ok'); txt.textContent='Aucune clé'; return }
+  line.classList.add('ok');
+  const active = state.keys.filter(k=>k.active).length;
+  const total = state.keys.reduce((s,k)=>s+(k.active?k.imgRpm:0),0);
+  txt.textContent = active+' clé(s) · '+total+' RPM image';
+}
+function renderKeysTable(){
+  const tb = document.querySelector('#keys-table tbody'); if(!tb) return;
+  tb.innerHTML = state.keys.map((k,i)=>
+    '<tr><td>'+(i+1)+'</td><td class="trunc" title="'+esc(k.key)+'">'+esc(k.key.slice(0,10))+'…'+esc(k.key.slice(-4))+'</td><td>'+k.imgRpm+'</td><td>'+(k.imgUsage||0)+'</td><td>'+(k.active?'ON':'OFF')+'</td><td><button class="btn ghost small" data-del-key="'+k.id+'" style="width:auto;margin:0;padding:.15rem .4rem">✕</button></td></tr>'
+  ).join('');
+  tb.querySelectorAll('[data-del-key]').forEach(b=>b.addEventListener('click', async ()=>{
+    if(!confirm('Supprimer cette clé ?')) return;
+    await dbDelete('keys', b.dataset.delKey);
+    state.keys = state.keys.filter(x=>String(x.id) !== b.dataset.delKey);
+    renderAll();
+  }));
+}
+function renderReference(){
+  const drop = $('ref-drop'); if(!drop) return;
+  const badge = $('ref-badge');
+  if(state.reference){
+    drop.classList.add('has-image');
+    drop.innerHTML = '<div class="ref-preview"><img src="'+esc(state.reference)+'" alt=""><button type="button" class="ref-remove" id="ref-remove">✕</button></div>';
+    drop.querySelector('#ref-remove').addEventListener('click', e=>{
+      e.stopPropagation();
+      state.reference = null;
+      if(!state.lots.length){ state.activeReference = null; state.activeReferenceLabel = 'Photo originale' }
+      state.analysis = null; state.analysisSignature = null;
+      saveSessionData(); renderAll();
+    });
+    if(badge){ badge.textContent = state.analysis ? 'Analysée' : 'Prête'; badge.className = 'badge ' + (state.analysis ? 'green' : 'gray') }
+  } else {
+    drop.classList.remove('has-image');
+    drop.innerHTML = '<input type="file" accept="image/*" id="ref-input"><div class="ref-icon">◯</div><div class="ref-text"><strong>Choisir une photo</strong>Une seule photo, puis autant de blocs créatifs que vous voulez — 40 images par bloc.</div>';
+    bindRefInput();
+    if(badge){ badge.textContent = 'En attente'; badge.className = 'badge gray' }
+  }
+}
+function bindRefInput(){
+  const inp = $('ref-input'); if(!inp) return;
+  inp.addEventListener('change', async e=>{
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    if(!f.type.startsWith('image/')){ toast('Pas une image','err'); return }
+    try{
+      const raw = await fileToDataUri(f);
+      const comp = await compressDataUri(raw, 1280);
+      state.reference = comp;
+      if(!state.lots.length){ state.activeReference = comp; state.activeReferenceLabel = 'Photo originale' }
+      state.analysis = null; state.analysisSignature = null;
+      await saveSessionData();
+      renderAll();
+      toast('Photo prête','ok');
+      // Analyse automatique en tâche de fond
+      analyzeReference().catch(e=>log('warn','ANALYSE','Auto '+e.message));
+    }catch(e){ toast('Erreur','err') }
+  });
+}
+function renderAnalysisInfo(){
+  const box = $('analysis-info'); if(!box) return;
+  if(!state.analysis){ box.style.display='none'; return }
+  box.style.display = 'block';
+  const a = state.analysis;
+  box.innerHTML = '<div class="ai-title">✓ Univers analysé</div>'+
+    '<div class="ai-row"><span class="ai-k">Sujet :</span> '+esc((a.subject||'').slice(0,120))+'</div>'+
+    '<div class="ai-row"><span class="ai-k">Décor :</span> '+esc((a.environment||'').slice(0,120))+'</div>'+
+    '<div class="ai-row"><span class="ai-k">Style :</span> '+esc((a.style_detected||'').slice(0,120))+'</div>'+
+    (a.world_descriptor ? '<div class="ai-row" style="margin-top:.4rem"><span class="ai-k">Univers :</span> '+esc(a.world_descriptor.slice(0,220))+'…</div>' : '');
+}
+function renderBlocks(){
+  const section = $('section-blocks');
+  if(!section) return;
+  if(!state.reference){ section.style.display='none'; return }
+  section.style.display = 'block';
+  const cont = $('blocks-container'); if(!cont) return;
+
+  // Grouper par group
+  const groups = {};
+  BLOCKS.forEach(b=>{ if(!groups[b.group]) groups[b.group]=[]; groups[b.group].push(b) });
+
+  const badge = $('blocks-badge');
+  if(badge) badge.textContent = state.lots.length ? (state.lots.length+' lot(s) lancé(s)') : 'Cliquez pour lancer 40';
+
+  let html = '';
+  Object.keys(groups).forEach(groupName=>{
+    html += '<div class="block-group"><div class="block-group-title">'+esc(groupName)+'<span class="bg-line"></span></div>';
+    html += '<div class="block-group-grid">';
+    groups[groupName].forEach(b=>{
+      const lotsOfBlock = state.lots.filter(l=>l.blockId === b.id);
+      const doneCount = state.images.filter(i=>i.blockId===b.id && i.status==='done').length;
+      const totalOfBlock = state.images.filter(i=>i.blockId===b.id).length;
+      const isRunning = state.images.some(i=>i.blockId===b.id && i.status==='loading');
+      const cls = 'block-btn'+(isRunning?' running':'')+(doneCount>0 && !isRunning ? ' done':'');
+      const countTxt = isRunning ? '⏳ Génération…' :
+                       doneCount>0 ? ('✓ '+doneCount+'/'+totalOfBlock+' images') :
+                       (b.type==='characters' ? '40 nouveaux persos · SANS photo' :
+                        b.type==='environments' ? '40 décors · SANS personnage' :
+                        '40 images · cliquez');
+      html += '<button type="button" class="'+cls+'" data-block="'+b.id+'" '+(state.isRunning||state.isAnalyzing?'disabled':'')+'>'+
+        '<div class="bb-icon">'+b.icon+'</div>'+
+        '<div class="bb-label">'+esc(b.label)+'</div>'+
+        '<div class="bb-desc">'+esc(b.desc||'')+'</div>'+
+        '<div class="bb-count">'+esc(countTxt)+'</div>'+
+      '</button>';
+    });
+    html += '</div></div>';
+  });
+  cont.innerHTML = html;
+
+  cont.querySelectorAll('.block-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>launchBlock(btn.dataset.block));
+  });
+}
+function renderFilterBars(){
+  const fb = $('filter-blocks'), fc = $('filter-cats');
+  if(!fb || !fc) return;
+  if(!state.images.length){ fb.style.display='none'; fc.style.display='none'; return }
+  fb.style.display='flex'; fc.style.display='flex';
+
+  // Blocs
+  let htmlB = '<span class="filter-bar-lbl">Blocs :</span>';
+  htmlB += '<button type="button" class="filter-chip'+(state.filterLot==='all'?' active':'')+'" data-lot="all">Tous <span class="fc-count">'+state.images.filter(i=>i.status==='done').length+'</span></button>';
+  state.lots.forEach(l=>{
+    const b = blockOf(l.blockId);
+    const done = state.images.filter(i=>i.lotId===l.id && i.status==='done').length;
+    const total = state.images.filter(i=>i.lotId===l.id).length;
+    htmlB += '<button type="button" class="filter-chip'+(state.filterLot===l.id?' active':'')+'" data-lot="'+l.id+'">'+b.icon+' '+esc(b.label)+' <span class="fc-count">'+done+'/'+total+'</span></button>';
+  });
+  fb.innerHTML = htmlB;
+  fb.querySelectorAll('.filter-chip').forEach(c=>c.addEventListener('click', ()=>{
+    state.filterLot = c.dataset.lot;
+    state.filterCategory = 'all';
+    renderImages(); renderFilterBars();
+  }));
+
+  // Catégories
+  const pool = state.filterLot === 'all' ? state.images : state.images.filter(i=>i.lotId === parseInt(state.filterLot,10));
+  let htmlC = '<span class="filter-bar-lbl">Catégories :</span>';
+  htmlC += '<button type="button" class="filter-chip'+(state.filterCategory==='all'?' active':'')+'" data-cat="all">Toutes <span class="fc-count">'+pool.filter(i=>i.status==='done').length+'</span></button>';
+  Object.keys(CATEGORY_SPEC).forEach(cat=>{
+    const spec = CATEGORY_SPEC[cat];
+    const done = pool.filter(i=>i.category===cat && i.status==='done').length;
+    if(!done) return;
+    htmlC += '<button type="button" class="filter-chip'+(state.filterCategory===cat?' active':'')+'" data-cat="'+cat+'"><span class="fc-dot" style="background:'+spec.color+'"></span>'+spec.label+' <span class="fc-count">'+done+'</span></button>';
+  });
+  fc.innerHTML = htmlC;
+  fc.querySelectorAll('.filter-chip').forEach(c=>c.addEventListener('click', ()=>{
+    state.filterCategory = c.dataset.cat;
+    renderImages(); renderFilterBars();
+  }));
+}
+function renderImages(){
+  const grid = $('image-grid'), empty = $('images-empty');
+  if(!grid) return;
+  if(!state.images.length){ grid.innerHTML=''; if(empty) empty.style.display='block'; updateImagesCount(); return }
+  if(empty) empty.style.display = 'none';
+
+  let list = state.images;
+  if(state.filterLot !== 'all') list = list.filter(i=>i.lotId === parseInt(state.filterLot,10));
+  if(state.filterCategory !== 'all') list = list.filter(i=>i.category === state.filterCategory);
+
+  grid.innerHTML = list.map(img => renderImageCard(img)).join('');
+  grid.querySelectorAll('.image-card').forEach(card=>{
+    const id = parseInt(card.dataset.imgId, 10);
+    const img = state.images.find(x=>x.id === id);
+    if(!img) return;
+    const thumb = card.querySelector('.thumb');
+    if(thumb && img.status === 'done' && img.url) thumb.addEventListener('click', ()=>openLightbox(img));
+    card.querySelectorAll('button[data-act]').forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        e.stopPropagation();
+        const act = btn.dataset.act;
+        if(act==='prompt') openPromptModal(img.label, img.prompt);
+        else if(act==='download' && img.url) downloadUrl(img.url, 'studio-'+img.id+'.jpg');
+        else if(act==='star') toggleSaveStyle(img.id);
+        else if(act==='develop') prepareDevelop(img);
+      });
+    });
+  });
+  updateImagesCount();
+}
+function renderImageCard(img){
+  const spec = catOf(img.category);
+  const blk = blockOf(img.blockId);
+  let thumbInner = '';
+  if(img.status === 'loading'){
+    const phase = state.loaderPhases[img.id] || 'Génération…';
+    thumbInner = '<div class="loader-wrap"><div class="loader-spin"></div><div class="loader-txt">'+esc(phase)+'</div></div>';
+  } else if(img.status === 'error'){
+    thumbInner = '<div class="placeholder err">✕ '+esc((img.error||'Erreur').slice(0,50))+'</div>';
+  } else {
+    thumbInner = '<img src="'+esc(img.url)+'" alt="" loading="lazy" referrerpolicy="no-referrer">';
+  }
+  const isSaved = !!img.savedAsStyle;
+  const isDone = img.status === 'done';
+  const cardCls = 'image-card'+(isSaved?' saved-as-style':'')+(img.status==='loading'?' loading':'')+(img.status==='error'?' error':'');
+
+  return '<div class="'+cardCls+'" data-img-id="'+img.id+'">'+
+    '<div class="thumb">'+
+      thumbInner+
+      (spec.textOnly ? '<div class="text-only-badge">📝 texte</div>' : '')+
+      '<div class="kind-badge" style="background:'+spec.color+'">'+spec.icon+' '+esc(spec.label)+'</div>'+
+      (isSaved?'<div class="star-badge">★</div>':'')+
+    '</div>'+
+    '<div class="cap"><span class="cap-lbl" title="'+esc(img.label)+'">'+esc(img.label||'')+'</span><span class="cap-key">'+(img.keyLast4||'')+'</span></div>'+
+    '<div class="acts">'+
+      '<button type="button" data-act="prompt">📝</button>'+
+      '<button type="button" data-act="download" '+(isDone?'':'disabled')+'>⬇</button>'+
+      '<button type="button" class="star-btn'+(isSaved?' on':'')+'" data-act="star">'+(isSaved?'★':'☆')+'</button>'+
+    '</div>'+
+  '</div>';
+}
+function updateImagesCount(){
+  const b = $('images-count-badge'); if(!b) return;
+  b.textContent = state.images.filter(i=>i.status==='done').length+' / '+state.images.length;
+}
+function renderSavedStyles(){
+  const empty=$('saved-styles-empty'), cont=$('saved-styles-container'), list=$('saved-styles-list'), cnt=$('saved-count');
+  if(cnt) cnt.textContent = state.savedStyles.length;
+  if(!state.savedStyles.length){ if(empty) empty.style.display='block'; if(cont) cont.style.display='none'; return }
+  if(empty) empty.style.display='none'; if(cont) cont.style.display='block';
+  if(!list) return;
+  list.innerHTML = state.savedStyles.map(s=>{
+    const sel = !!state.savedStyleSelected[s.id];
+    return '<div class="saved-style-card'+(sel?' selected':'')+'">'+
+      '<div class="ss-head"><span class="ss-label">⭐ '+esc(s.label)+'</span><button type="button" class="ss-toggle'+(sel?' on':'')+'" data-tg="'+s.id+'"></button></div>'+
+      '<div class="ss-cat">'+new Date(s.savedAt).toLocaleDateString('fr-FR')+'</div>'+
+      '<div class="ss-prompt">'+esc((s.prompt||'').slice(0,150))+'</div>'+
+      '<div class="ss-actions"><button type="button" data-vw="'+s.id+'">📝</button><button type="button" data-rm="'+s.id+'">✕</button></div>'+
+    '</div>';
+  }).join('');
+  list.querySelectorAll('[data-tg]').forEach(el=>el.addEventListener('click', e=>{ e.stopPropagation(); state.savedStyleSelected[el.dataset.tg] = !state.savedStyleSelected[el.dataset.tg]; renderSavedStyles() }));
+  list.querySelectorAll('[data-rm]').forEach(el=>el.addEventListener('click', async e=>{
+    e.stopPropagation();
+    if(!confirm('Supprimer ?')) return;
+    await dbDelete('savedStyles', el.dataset.rm);
+    state.savedStyles = state.savedStyles.filter(x=>x.id !== el.dataset.rm);
+    renderAll();
+  }));
+  list.querySelectorAll('[data-vw]').forEach(el=>el.addEventListener('click', e=>{
+    e.stopPropagation();
+    const s = state.savedStyles.find(x=>x.id === el.dataset.vw);
+    if(s) openPromptModal(s.label, s.prompt);
+  }));
+  updateSavedGenerateBtn();
+}
+function updateSavedGenerateBtn(){
+  const btn = $('saved-generate-btn'); if(!btn) return;
+  const ids = Object.keys(state.savedStyleSelected).filter(k=>state.savedStyleSelected[k]);
+  if(!ids.length){ btn.disabled = true; btn.textContent = '🎨 Sélectionnez au moins 1 style'; return }
+  btn.disabled = state.isGeneratingFromSaved || state.isRunning;
+  btn.textContent = state.isGeneratingFromSaved ? '⏳ Génération…' : ('🎨 Appliquer mes favoris ('+ids.length+')');
+}
+function renderAdminStats(){
+  const c = $('stats-content'), k = $('stats-keys');
+  if(!c) return;
+  c.innerHTML = [
+    ['Sessions', state.sessionsIndex.length],
+    ['Clés API', state.keys.length],
+    ['Lots', state.lots.length],
+    ['Images', state.images.length],
+    ['Labels uniques', state.usedLabels.length],
+    ['Labels vus ailleurs', state.globalUsedLabels.length],
+    ['Styles favoris', state.savedStyles.length]
+  ].map(([a,b])=>'<div class="admin-stat"><span class="as-k">'+a+'</span><span class="as-v">'+b+'</span></div>').join('');
+  if(k){
+    const t = state.keys.reduce((s,x)=>s+(x.imgUsage||0),0);
+    k.innerHTML = [['Utilisations', t],['Actives', state.keys.filter(x=>x.active).length]].map(([a,b])=>'<div class="admin-stat"><span class="as-k">'+a+'</span><span class="as-v">'+b+'</span></div>').join('');
+  }
+}
+function renderPromptsAdmin(){
+  if($('prompt-analysis')) $('prompt-analysis').value = state.config.prompt_analysis || DEFAULT_PROMPTS.analysis;
+  if($('prompt-block')) $('prompt-block').value = state.config.prompt_block || DEFAULT_PROMPTS.block;
+}
+function updateButtons(){
+  const hasRef = !!state.reference;
+  const hasKey = state.keys.filter(k=>k.active).length > 0;
+  const busy = state.isRunning || state.isAnalyzing;
+  document.querySelectorAll('.block-btn').forEach(b=>{
+    b.disabled = busy || !hasRef || !hasKey;
+  });
+  updateSavedGenerateBtn();
+}
+
+// ==================================================================
+// ANALYSE
+// ==================================================================
+async function analyzeReference(force){
+  if(!state.reference) throw new Error('Pas de photo');
+  if(state.analysis && state.analysisSignature === state.reference && !force) return state.analysis;
+  if(state.keys.filter(k=>k.active).length === 0) throw new Error('Pas de clé API');
+
+  state.isAnalyzing = true;
+  updateButtons();
+  const stl = $('launch-status-line'), stt = $('launch-status-text');
+  stl.classList.remove('ok','err','gold'); stl.classList.add('gold');
+  stt.textContent = '🔍 Analyse de votre photo…';
+
+  try{
+    const keyObj = await acquireKey();
+    const sys = state.config.prompt_analysis || DEFAULT_PROMPTS.analysis;
+    const userText = 'Analyse cette image. Réponds uniquement par un objet JSON valide, sans markdown.';
+
+    let content = null, att = 0;
+    while(!content && att < 3){
+      att++;
+      try{ content = await callVision(sys, userText, state.reference, keyObj, 4000) }
+      catch(e){ if(e.status===429){ await sleep(15000); continue } if(att>=3) throw e; await sleep(2000) }
+    }
+    if(!content) throw new Error('Pas de contenu');
+    const parsed = extractJson(content);
+    if(!parsed || !parsed.subject) throw new Error('JSON invalide');
+
+    state.analysis = {
+      subject: parsed.subject || '',
+      environment: parsed.environment || '',
+      lighting: parsed.lighting || '',
+      style_detected: parsed.style_detected || '',
+      world_descriptor: parsed.world_descriptor || '',
+      identity_lock: parsed.identity_lock || '',
+      style_lock: parsed.style_lock || ''
+    };
+    state.analysisSignature = state.reference;
+    await saveSessionData();
+    renderAnalysisInfo();
+    stl.classList.remove('gold'); stl.classList.add('ok');
+    stt.textContent = '✓ Photo analysée. Cliquez sur un bloc pour générer 40 images.';
+    log('success','ANALYSE','Univers décrit');
+    return state.analysis;
+  } catch(e){
+    stl.classList.remove('gold','ok'); stl.classList.add('err');
+    stt.textContent = '✕ Analyse : '+e.message.slice(0,80);
+    log('error','ANALYSE', e.message);
+    throw e;
+  } finally {
+    state.isAnalyzing = false;
+    updateButtons();
+  }
+}
+
+// ==================================================================
+// LAUNCH BLOCK
+// ==================================================================
+async function launchBlock(blockId){
+  const blk = blockOf(blockId);
+  if(!blk){ toast('Bloc inconnu','err'); return }
+  if(state.isRunning || state.isAnalyzing){ toast('Déjà en cours','warn'); return }
+  if(!state.reference){ toast('Ajoutez une photo','err'); return }
+  if(state.keys.filter(k=>k.active).length === 0){ toast('Ajoutez une clé API','err'); return }
+
+  try{
+    // 1) Analyse si nécessaire
+    if(!state.analysis || state.analysisSignature !== state.reference){
+      await analyzeReference();
+    }
+    // 2) Générer les 40 prompts du bloc
+    state.isAnalyzing = true;
+    updateButtons();
+    showProgress('Plan '+blk.label+'…','');
+    setProgress(2);
+
+    const tasks = await generateBlockPrompts(blk);
+    if(!tasks || !tasks.length) throw new Error('Plan vide');
+
+    // 3) Créer le lot
+    const lotId = nextLotId++;
+    const refUri = (blk.type === 'characters' || blk.type === 'environments') ? null : (state.activeReference || state.reference);
+    state.lots.push({
+      id: lotId,
+      blockId: blk.id,
+      refUri: refUri,
+      refLabel: state.activeReferenceLabel || 'Photo originale',
+      createdAt: Date.now()
+    });
+    // 4) Ajouter les labels utilisés
+    tasks.forEach(t=>state.usedLabels.push(t.label));
+    await saveSessionData();
+
+    state.isAnalyzing = false;
+    renderBlocks();
+    setProgress(8);
+
+    // 5) Générer les images
+    await runLot(tasks, lotId, blk, refUri);
+    toast('✓ '+tasks.length+' images · '+blk.label, 'ok');
+    renderBlocks();
+    await saveSessionData();
+  } catch(e){
+    log('error','BLOC', e.message);
+    toast('Échec : '+e.message.slice(0,50),'err');
+    hideProgress();
+    state.isAnalyzing = false;
+    updateButtons();
+  }
+}
+
+async function generateBlockPrompts(blk){
+  const keyObj = await acquireKey();
+  const sys = state.config.prompt_block || DEFAULT_PROMPTS.block;
+  const a = state.analysis;
+  const usedStr = state.usedLabels.length ? state.usedLabels.map(l=>'- '+l).join('\n') : '(aucun)';
+  const globalStr = (state.globalUsedLabels||[]).slice(0, 80).map(l=>'- '+l).join('\n') || '(aucun)';
+
+  // Pour characters / environments, forcer un type unique
+  let structSpec;
+  if(blk.type === 'characters'){
+    structSpec = '- "other" (40) : 40 NOUVEAUX personnages TOTALEMENT DIFFÉRENTS les uns des autres (varie gender, age, ethnicity, hairstyle, outfit, personality). Ne reproduis PAS le personnage de la référence.';
+  } else if(blk.type === 'environments'){
+    structSpec = '- "environment" (40) : 40 DÉCORS / LIEUX / PAYSAGES / INTÉRIEURS, AUCUN personnage, AUCUN visage, AUCUNE silhouette.';
+  } else {
+    structSpec = [
+      '- "perfect" (1)     : copie améliorée de la référence dans le thème',
+      '- "reconstruct" (3) : recréations text-to-image SANS référence, dans le thème',
+      '- "variation" (12)  : MÊME personnage que la référence, nouvelles scènes dans le thème',
+      '- "partner" (5)     : personnage principal + nouveaux partenaires dans le thème',
+      '- "other" (7)       : 7 NOUVEAUX personnages, TOTALEMENT DIFFÉRENTS de la référence (varie gender, age, ethnicity, hairstyle, outfit). Ne reproduis PAS notre personnage.',
+      '- "environment" (7) : 7 DÉCORS uniquement, AUCUN personnage, AUCUN visage, AUCUNE silhouette.',
+      '- "wild" (5)        : explorations créatives folles, dans le thème'
+    ].join('\n');
+  }
+
+  const userText = [
+    'CONTEXTE DE RÉFÉRENCE (analyse préalable) :',
+    'Sujet : ' + (a.subject || '(non renseigné)'),
+    'Décor : ' + (a.environment || ''),
+    'Lumière : ' + (a.lighting || ''),
+    'Style détecté : ' + (a.style_detected || ''),
+    'Univers : ' + (a.world_descriptor || ''),
+    'Identity lock : ' + (a.identity_lock || ''),
+    'Style lock : ' + (a.style_lock || ''),
+    '',
+    'THÈME DU BLOC : « ' + blk.label + ' »',
+    'Description : ' + (blk.desc || ''),
+    blk.hint ? ('Consigne créative supplémentaire : ' + blk.hint) : '',
+    '',
+    'RÉPARTITION EXACTE DES IMAGES :',
+    structSpec,
+    '',
+    'LABELS DÉJÀ UTILISÉS DANS CETTE SESSION (à éviter absolument) :',
+    usedStr,
+    '',
+    'LABELS DES AUTRES SESSIONS (réutilise 30% maximum) :',
+    globalStr,
+    '',
+    'RAPPEL JSON : pas de markdown, pas de backticks, pas de guillemets doubles internes, apostrophe droite uniquement.',
+    'Retourne UNIQUEMENT : { "images": [ { "category":"...", "label":"Court label", "prompt":"Full English prompt" }, ... ] }'
+  ].filter(Boolean).join('\n');
+
+  let content = null, att = 0;
+  while(!content && att < 3){
+    att++;
+    try{ content = await callText(sys, userText, keyObj, 8000, 0.95) }
+    catch(e){ if(e.status===429){ await sleep(15000); continue } if(att>=3) throw e; await sleep(2000) }
+  }
+  const parsed = extractJson(content);
+  if(!parsed || !Array.isArray(parsed.images)) throw new Error('Plan invalide (JSON)');
+
+  // Normaliser : exactement 40 items
+  let items = parsed.images.filter(x=>x && x.prompt);
+  if(blk.type === 'characters'){
+    // Forcer catégorie 'other'
+    items = items.map(x=>({category:'other', label: x.label || 'Nouveau personnage', prompt: x.prompt}));
+    while(items.length < TOTAL_IMAGES) items.push({category:'other', label:'Personnage '+(items.length+1), prompt: fbPrompt('other', a, blk)});
+    items = items.slice(0, TOTAL_IMAGES);
+  } else if(blk.type === 'environments'){
+    items = items.map(x=>({category:'environment', label: x.label || 'Décor', prompt: x.prompt}));
+    while(items.length < TOTAL_IMAGES) items.push({category:'environment', label:'Décor '+(items.length+1), prompt: fbPrompt('environment', a, blk)});
+    items = items.slice(0, TOTAL_IMAGES);
+  } else {
+    // Structural normalisation : remplir par catégorie
+    const byCat = {};
+    items.forEach(x=>{
+      const cat = CATEGORY_SPEC[x.category] ? x.category : 'variation';
+      if(!byCat[cat]) byCat[cat] = [];
+      byCat[cat].push(x);
+    });
+    const norm = [];
+    Object.keys(CATEGORY_SPEC).forEach(cat=>{
+      const spec = CATEGORY_SPEC[cat];
+      const pool = byCat[cat] || [];
+      for(let i=0; i<spec.count; i++){
+        if(pool[i]) norm.push({category:cat, label:pool[i].label || (spec.label+' '+(i+1)), prompt:pool[i].prompt});
+        else norm.push({category:cat, label:spec.label+' '+(i+1), prompt: fbPrompt(cat, a, blk)});
+      }
+    });
+    items = norm;
+  }
+  return items;
+}
+
+function fbPrompt(cat, a, blk){
+  const stylePart = 'STYLE: ' + (a.style_lock || 'match reference visual style');
+  const identityPart = 'IDENTITY: ' + (a.identity_lock || 'same character as reference');
+  const themePart = blk ? ('THEME: ' + blk.label + '. ' + (blk.desc || '')) : '';
+  if(cat === 'environment'){
+    return themePart + '\nA rich atmospheric environment, no people, no faces, no silhouettes. ' + stylePart;
+  }
+  if(cat === 'other'){
+    return themePart + '\nA brand new character completely different from the original reference (different face, gender, age, hair, outfit). ' + stylePart;
+  }
+  return themePart + '\n' + identityPart + '\n' + stylePart + '\nA new scene in this theme.';
+}
+
+// ==================================================================
+// RUN LOT
+// ==================================================================
+async function runLot(tasks, lotId, blk, refUri){
+  if(state.isRunning){ toast('Déjà en cours','warn'); return }
+  state.isRunning = true;
+  state.stopRequested = false;
+  updateButtons();
+  showProgress('Génération · '+blk.label,'');
+  setProgress(0);
+  await activateWakeLock();
+
+  const newImgs = tasks.map(t=>{
+    const cat = catOf(t.category);
+    // Règle clé : text-only pour les catégories marquées textOnly
+    const useRef = cat.textOnly ? null : refUri;
+    return {
+      id: nextImgId++,
+      lotId,
+      blockId: blk.id,
+      category: t.category,
+      label: t.label,
+      prompt: t.prompt,
+      status: 'loading',
+      url: null,
+      keyLast4: '',
+      error: null,
+      referenceUri: useRef,
+      savedAsStyle: false
+    };
+  });
+  newImgs.forEach(i=>state.images.push(i));
+  renderImages(); renderFilterBars(); renderBlocks();
+
+  const startTime = Date.now();
+  const workers = Math.min(Math.max(1, state.keys.filter(k=>k.active).length), tasks.length);
+  const q = newImgs.slice();
+  let done = 0;
+
+  const worker = async ()=>{
+    while(q.length > 0 && !state.stopRequested){
+      const img = q.shift(); if(!img) break;
+      let att = 0; const max = Math.max(5, state.keys.length*2); let ok = false;
+      while(att < max && !state.stopRequested && !ok){
+        att++;
+        let k = null;
+        try{ k = await acquireKey() }catch(e){ img.status='error'; img.error='Pas de clé'; renderImages(); return }
+        img.keyLast4 = k.key.slice(-4);
+        state.loaderPhases[img.id] = catOf(img.category).textOnly ? 'Texte seul…' : 'Génération…';
+        renderImages();
+        try{
+          const url = await callImage(img.prompt, img.referenceUri, k);
+          img.status = 'done'; img.url = url; ok = true; done++;
+          delete state.loaderPhases[img.id];
+          renderImages(); renderFilterBars(); renderBlocks();
+          await saveSessionData();
+          updateProg(startTime, tasks.length, done);
+        }catch(e){
+          if(e.message === 'Arrêt'){ img.status='error'; img.error='Arrêté'; renderImages(); return }
+          if(e.status === 429){ continue }
+          if(att >= max){ img.status='error'; img.error=(e.message||'Erreur').slice(0,50); done++; delete state.loaderPhases[img.id]; renderImages(); updateProg(startTime, tasks.length, done) }
+          else await sleep(700);
+        }
+      }
+    }
+  };
+  const ws = []; for(let i=0; i<workers; i++) ws.push(worker());
+  await Promise.all(ws);
+
+  state.isRunning = false;
+  state.stopRequested = false;
+  updateButtons();
+  await deactivateWakeLock();
+  const succ = newImgs.filter(i=>i.status==='done').length;
+  hideProgress();
+  log('success','LOT', succ+'/'+tasks.length+' · '+blk.label);
+  await saveSessionData();
+  renderFilterBars();
+}
+function updateProg(startTime, total, done){
+  setProgress((done/total)*100);
+  showProgress(done+' / '+total, '');
+  if(done > 0){
+    const el = (Date.now()-startTime)/1000;
+    const rate = done/el;
+    if(rate > 0) $('progress-eta').textContent = 'ETA ≈ '+fmtEta((total-done)/rate);
+  }
+}
+
+// ==================================================================
+// SAVED STYLES
+// ==================================================================
+async function toggleSaveStyle(imgId){
+  const img = state.images.find(i=>i.id === imgId); if(!img) return;
+  const existing = state.savedStyles.find(s=>s.sourceImageId === img.id && s.sessionId === state.currentSessionId);
+  if(existing){
+    await dbDelete('savedStyles', existing.id);
+    state.savedStyles = state.savedStyles.filter(s=>s.id !== existing.id);
+    img.savedAsStyle = false;
+    toast('Retiré','warn');
+  } else {
+    const id = uid('style');
+    const style = {id, label: img.label || 'Style', prompt: img.prompt || '', savedAt: Date.now(), sessionId: state.currentSessionId, sourceImageId: img.id, category: img.category, blockId: img.blockId};
+    await dbPut('savedStyles', style);
+    state.savedStyles.push(style);
+    img.savedAsStyle = true;
+    toast('Enregistré ⭐','gold');
+  }
+  await saveSessionData();
+  renderImages(); renderSavedStyles(); renderPills();
+}
+async function generateFromSavedStyles(){
+  if(state.isGeneratingFromSaved) return;
+  const ids = Object.keys(state.savedStyleSelected).filter(k=>state.savedStyleSelected[k]);
+  if(!ids.length){ toast('Aucun style sélectionné','warn'); return }
+  if(state.keys.filter(k=>k.active).length === 0){ toast('Ajoutez une clé','err'); return }
+  const refUri = state.activeReference || state.reference;
+  if(!refUri){ toast('Ajoutez une photo','err'); return }
+  const selected = state.savedStyles.filter(s=>ids.indexOf(s.id) !== -1);
+  if(!selected.length) return;
+
+  state.isGeneratingFromSaved = true;
+  updateButtons();
+  const lotId = nextLotId++;
+  state.lots.push({id:lotId, blockId:'favorites', refUri, refLabel: state.activeReferenceLabel, createdAt: Date.now()});
+  // Ajout des blocs pour 'favorites' si absent
+  const tasks = selected.map(s=>({category:'variation', label:'⭐ '+s.label, prompt:s.prompt}));
+  const fakeBlk = {id:'favorites', label:'Favoris ⭐', icon:'⭐', desc:'Styles favoris'};
+  try{
+    await runLot(tasks, lotId, fakeBlk, refUri);
+    toast(tasks.length+' images générées','ok');
+  } catch(e){ log('error','FAV', e.message) }
+  finally { state.isGeneratingFromSaved = false; updateButtons(); renderBlocks() }
+}
+
+// ==================================================================
+// DEVELOP
+// ==================================================================
+function prepareDevelop(img){
+  if(!img || !img.url) return;
+  state.activeReference = img.url;
+  const blk = blockOf(img.blockId);
+  const cat = catOf(img.category);
+  state.activeReferenceLabel = blk.label + ' · ' + cat.label + ' · ' + (img.label||'');
+  saveSessionData();
+  closeLightbox();
+  const section = $('section-blocks');
+  if(section){
+    section.classList.add('open');
+    section.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  toast('Référence active : '+state.activeReferenceLabel.slice(0,40)+'…','gold');
+}
+
+// ==================================================================
+// CHAT IA
+// ==================================================================
+function renderChatHistory(){
+  const box = $('chat-messages'); if(!box) return;
+  box.innerHTML = state.chatHistory.map(m=>'<div class="chat-msg '+(m.role==='user'?'user':'assistant')+'">'+esc(m.content)+'</div>').join('');
+  box.scrollTop = box.scrollHeight;
+}
+async function sendChatMessage(){
+  const inp = $('chat-input');
+  const msg = (inp.value||'').trim(); if(!msg) return;
+  inp.value = '';
+  state.chatHistory.push({role:'user', content: msg, createdAt: Date.now()});
+  await dbPut('chatHistory', {role:'user', content: msg, createdAt: Date.now()});
+  renderChatHistory();
+  try{
+    const k = await acquireKey();
+    const sys = 'Tu es un assistant expert en direction artistique. Tu réponds en français, concis.';
+    const content = await callText(sys, msg, k, 1500, 0.85);
+    state.chatHistory.push({role:'assistant', content, createdAt: Date.now()});
+    await dbPut('chatHistory', {role:'assistant', content, createdAt: Date.now()});
+    renderChatHistory();
+  } catch(e){
+    const m = {role:'assistant', content: 'Erreur : '+e.message, createdAt: Date.now()};
+    state.chatHistory.push(m); renderChatHistory();
+  }
+}
+
+// ==================================================================
+// EXPORT / IMPORT / RESET
+// ==================================================================
+async function exportDB(){
+  const dump = {
+    version: DB_VERSION, exportedAt: new Date().toISOString(),
+    keys: state.keys.map(k=>({id:k.id, key:k.key, imgRpm:k.imgRpm, createdAt:k.createdAt, imgUsage:k.imgUsage, active:k.active})),
+    sessions: await dbGetAll('sessions'),
+    savedStyles: state.savedStyles,
+    config: state.config,
+    chatHistory: state.chatHistory
+  };
+  const blob = new Blob([JSON.stringify(dump, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'studio-db-'+Date.now()+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Exporté','ok');
+}
+async function importDB(){
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = async e=>{
+    const f = e.target.files[0]; if(!f) return;
+    try{
+      const data = JSON.parse(await f.text());
+      if(!confirm('Remplacer la base ?')) return;
+      if(data.keys) for(const k of data.keys){ if(!k.id) k.id = uid('k'); await dbPut('keys', k) }
+      if(data.sessions) for(const s of data.sessions) await dbPut('sessions', s);
+      if(data.savedStyles) for(const s of data.savedStyles) await dbPut('savedStyles', s);
+      if(data.config) for(const key of Object.keys(data.config)) await dbPut('config', {key, value: data.config[key]});
+      if(data.chatHistory) for(const m of data.chatHistory){ delete m.id; await dbPut('chatHistory', m) }
+      location.reload();
+    } catch(e){ toast('Erreur','err') }
+  };
+  inp.click();
+}
+async function resetDB(){
+  if(!confirm('Effacer TOUT ?')) return;
+  if(!confirm('Vraiment sûr ?')) return;
+  await dbClear('keys'); await dbClear('sessions'); await dbClear('savedStyles');
+  await dbClear('config'); await dbClear('chatHistory');
+  location.reload();
+}
+
+// ==================================================================
+// MODAL / CONSOLE
+// ==================================================================
+function toggleConsole(){
+  const d = $('console-dock'), b = $('console-toggle');
+  const collapsed = d.classList.toggle('collapsed');
+  b.textContent = collapsed ? '▴' : '▾';
+}
+function openPromptModal(label, prompt){
+  $('prompt-modal-title').textContent = label || 'Prompt';
+  $('prompt-modal-text').value = prompt || '';
+  $('prompt-modal').classList.add('visible');
+}
+
+// ==================================================================
+// INIT
+// ==================================================================
+async function init(){
+  log('state','INIT','Ouverture DB…');
+  try{ db = await openDB() }
+  catch(e){ alert('Impossible d\'ouvrir IndexedDB'); return }
+  log('success','DB','DB ouverte');
+  await migrateFromSharedDB();
+
+  try{ const cs = await dbGetAll('config'); cs.forEach(c=>{ state.config[c.key] = c.value }) }catch(e){}
+  try{ state.keys = await dbGetAll('keys') }catch(e){ state.keys = [] }
+  state.keys.forEach(k=>{ k.imgTimes = []; k.active = k.active !== false; k.cooldownUntil = 0; k.errorCount = 0 });
+
+  state.sessionsIndex = await loadSessionsIndex();
+  if(!state.sessionsIndex.length){
+    const id = uid('sess');
+    const s = {id, name:'Session 1', createdAt: Date.now(), updatedAt: Date.now(), imageCount:0};
+    state.sessionsIndex.push(s);
+    await dbPut('sessions', s);
+  }
+  try{ state.savedStyles = await dbGetAll('savedStyles') }catch(e){ state.savedStyles = [] }
+  try{ state.chatHistory = (await dbGetAll('chatHistory')).slice(-40) }catch(e){ state.chatHistory = [] }
+
+  const savedCurrent = state.config.currentSession;
+  const exists = state.sessionsIndex.find(s=>s.id===savedCurrent);
+  state.currentSessionId = exists ? savedCurrent : state.sessionsIndex[0].id;
+  const data = await dbGet('sessions', state.currentSessionId);
+  if(data){
+    state.reference = data.reference || null;
+    state.activeReference = data.activeReference || state.reference;
+    state.activeReferenceLabel = data.activeReferenceLabel || 'Photo originale';
+    state.analysis = data.analysis || null;
+    state.analysisSignature = data.analysisSignature || null;
+    state.lots = data.lots || [];
+    state.images = (data.images||[]).map(i=>{ if(i.status==='loading'){ i.status='error'; i.error='Interrompu' } return i });
+    nextImgId = Math.max(1, ...state.images.map(i=>i.id||0)) + 1;
+    nextLotId = Math.max(1, ...state.lots.map(l=>l.id||0)) + 1;
+    state.usedLabels = data.usedLabels || [];
+  }
+  state.globalUsedLabels = await loadGlobalUsedLabels();
+
+  renderAll();
+  renderChatHistory();
+
+  // Tabs
+  document.querySelectorAll('.main-tab').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      document.querySelectorAll('.main-tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      $('tab-'+t.dataset.tab).classList.add('active');
+      if(t.dataset.tab === 'admin'){ renderAdminStats(); renderKeysTable(); renderPromptsAdmin() }
+    });
+  });
+  // Sections
+  document.querySelectorAll('[data-toggle]').forEach(h=>{
+    h.addEventListener('click', ()=>{
+      const el = $(h.dataset.toggle);
+      if(el) el.classList.toggle('open');
+    });
+  });
+  // Sessions
+  $('session-select').addEventListener('change', e=>switchToSession(e.target.value));
+  $('new-session-btn').addEventListener('click', ()=>{
+    const name = prompt('Nom :', 'Session '+(state.sessionsIndex.length+1));
+    if(name !== null) createSession(name.trim() || undefined);
+  });
+  $('rename-session-btn').addEventListener('click', renameSession);
+  $('delete-session-btn').addEventListener('click', deleteSession);
+  // Saved
+  $('saved-generate-btn').addEventListener('click', e=>{ e.preventDefault(); generateFromSavedStyles() });
+  $('saved-select-all').addEventListener('click', ()=>{ state.savedStyles.forEach(s=>{ state.savedStyleSelected[s.id]=true }); renderSavedStyles() });
+  $('saved-deselect-all').addEventListener('click', ()=>{ state.savedStyleSelected = {}; renderSavedStyles() });
+  $('saved-delete-selected').addEventListener('click', async ()=>{
+    const ids = Object.keys(state.savedStyleSelected).filter(k=>state.savedStyleSelected[k]);
+    if(!ids.length){ toast('Aucune sélection','warn'); return }
+    if(!confirm('Supprimer '+ids.length+' style(s) ?')) return;
+    for(const id of ids){ await dbDelete('savedStyles', id); state.savedStyles = state.savedStyles.filter(x=>x.id !== id) }
+    state.savedStyleSelected = {};
+    renderAll();
+  });
+  // Keys
+  $('save-keys-btn').addEventListener('click', async ()=>{
+    const parsed = parseKeys($('keys-input').value);
+    if(!parsed.length){ toast('Aucune clé','err'); return }
+    for(const p of parsed){
+      const ex = state.keys.find(x=>x.key === p.key);
+      if(ex){ ex.imgRpm = p.imgRpm; await dbPut('keys', ex) }
+      else{
+        const k = {id: uid('k'), key:p.key, imgRpm:p.imgRpm, createdAt:Date.now(), imgUsage:0, lastUsed:null, active:true};
+        await dbPut('keys', k);
+        k.imgTimes = []; k.cooldownUntil = 0; k.errorCount = 0;
+        state.keys.push(k);
+      }
+    }
+    renderAll();
+    toast(parsed.length+' clé(s) enregistrée(s)','ok');
+  });
+  // Prompts
+  $('save-prompts-btn').addEventListener('click', async ()=>{
+    await dbPut('config', {key:'prompt_analysis', value: $('prompt-analysis').value});
+    await dbPut('config', {key:'prompt_block', value: $('prompt-block').value});
+    state.config.prompt_analysis = $('prompt-analysis').value;
+    state.config.prompt_block = $('prompt-block').value;
+    toast('Enregistrés','ok');
+  });
+  $('reset-prompts-btn').addEventListener('click', async ()=>{
+    if(!confirm('Restaurer ?')) return;
+    $('prompt-analysis').value = DEFAULT_PROMPTS.analysis;
+    $('prompt-block').value = DEFAULT_PROMPTS.block;
+    await dbPut('config', {key:'prompt_analysis', value: DEFAULT_PROMPTS.analysis});
+    await dbPut('config', {key:'prompt_block', value: DEFAULT_PROMPTS.block});
+    state.config.prompt_analysis = DEFAULT_PROMPTS.analysis;
+    state.config.prompt_block = DEFAULT_PROMPTS.block;
+    toast('Restaurés','ok');
+  });
+  // Chat
+  $('chat-send-btn').addEventListener('click', sendChatMessage);
+  $('chat-input').addEventListener('keydown', e=>{ if(e.key === 'Enter'){ e.preventDefault(); sendChatMessage() } });
+  // Export etc.
+  $('export-db-btn').addEventListener('click', exportDB);
+  $('import-db-btn').addEventListener('click', importDB);
+  $('reset-db-btn').addEventListener('click', resetDB);
+  // Modal prompt
+  $('prompt-modal-close').addEventListener('click', ()=>$('prompt-modal').classList.remove('visible'));
+  $('prompt-modal').addEventListener('click', e=>{ if(e.target === $('prompt-modal')) $('prompt-modal').classList.remove('visible') });
+  $('prompt-modal-copy').addEventListener('click', async ()=>{ const ok = await copyToClipboard($('prompt-modal-text').value); toast(ok?'Copié':'Échec', ok?'ok':'err') });
+  // Lightbox
+  const lb = $('lightbox'), lbImg = $('lightbox-img');
+  if(lbImg) lbImg.addEventListener('click', e=>{ e.stopPropagation(); closeLightbox() });
+  if(lb) lb.addEventListener('click', e=>{ if(e.target === lb) closeLightbox() });
+  $('lightbox-close').addEventListener('click', e=>{ e.stopPropagation(); closeLightbox() });
+  $('lightbox-develop').addEventListener('click', e=>{
+    e.stopPropagation();
+    if(lightboxImgId == null) return;
+    const img = state.images.find(x=>x.id === lightboxImgId);
+    if(img) prepareDevelop(img);
+  });
+  document.addEventListener('keydown', e=>{
+    if(e.key === 'Escape'){
+      if(lb && lb.classList.contains('visible')) closeLightbox();
+      else if($('prompt-modal').classList.contains('visible')) $('prompt-modal').classList.remove('visible');
+    }
+  });
+  // Console
+  $('console-header').addEventListener('click', e=>{ if(e.target.tagName === 'BUTTON') return; toggleConsole() });
+  $('console-toggle').addEventListener('click', e=>{ e.stopPropagation(); toggleConsole() });
+  $('console-copy').addEventListener('click', e=>{ e.stopPropagation(); copyConsole() });
+  $('console-clear').addEventListener('click', e=>{ e.stopPropagation(); clearConsole() });
+
+  setInterval(async ()=>{ if(state.currentSessionId && !state.isRunning) await saveSessionData() }, 5000);
+  window.addEventListener('beforeunload', ()=>{ if(state.currentSessionId) saveSessionData() });
+
+  log('success','INIT', state.keys.length+' clés · '+state.sessionsIndex.length+' sessions · '+state.lots.length+' lots');
+  log('info','ASTUCE','Uploadez une photo → les blocs apparaissent. Chaque bloc lance 40 images.');
+  log('info','ASTUCE','Les catégories "autres personnages" et "décors" sont générées SANS votre photo (texte seul).');
+  log('info','ASTUCE','Cliquez sur une image en grand puis sur "Développer cette variante" pour relancer 40 images à partir d\'elle.');
+}
+init();
+</script>
+</body>
+</html>

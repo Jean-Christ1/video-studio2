@@ -1,0 +1,2230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>STUDIO D'AUTEUR — Créateur de Films IA</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+--bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a24;
+--ink:#e8e8f0;--dim:#8888a0;--faint:#55556a;
+--line:#2a2a3a;--line2:#3a3a4a;
+--acc:#e63946;--acc2:#4a9eff;--acc3:#9b59b6;
+--ok:#2a9d8f;--err:#e63946;--warn:#e9c46a;
+--fs:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
+--fm:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+--r:10px;
+}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--fs);font-size:14px;line-height:1.5;min-height:100vh;padding:0 0 30rem;max-width:1400px;margin:0 auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:.6rem 1.5rem;background:var(--bg2);border-bottom:1px solid var(--line);font-family:var(--fm);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase}
+.topbar .tb-id{color:var(--ink);font-weight:700}
+.topbar .tb-dot{width:6px;height:6px;background:var(--acc);display:inline-block;margin-right:.4rem;vertical-align:middle;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.topbar .tb-right{display:flex;gap:1.2rem;color:var(--dim)}
+header{padding:2rem 1.5rem 1.5rem;border-bottom:1px solid var(--line)}
+header h1{font-size:1.8rem;font-weight:300;letter-spacing:-.03em;margin-bottom:.2rem}
+header h1 .slash{color:var(--acc);font-weight:200;font-family:var(--fm);font-size:1.4rem;margin:0 .15em}
+header .sub{font-size:.72rem;color:var(--dim);font-family:var(--fm);letter-spacing:.04em}
+.container{padding:1.5rem}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:1.25rem 1.4rem;margin-bottom:1rem;transition:border-color .2s}
+.card:hover{border-color:var(--line2)}
+.card.active{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem}
+.card-title{font-family:var(--fm);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600}
+.card-title .num{color:var(--acc);font-weight:700;margin-right:.4rem}
+.card-status{font-family:var(--fm);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;padding:.15rem .5rem;border-radius:3px;font-weight:700}
+.card-status.ok{background:rgba(42,157,143,.15);color:var(--ok)}
+.card-status.pending{background:rgba(233,196,106,.15);color:var(--warn)}
+.card-status.empty{background:var(--bg3);color:var(--faint)}
+.card-status.info{background:rgba(74,158,255,.15);color:var(--acc2)}
+input[type=password],input[type=text],textarea,select{width:100%;padding:.7rem .9rem;border:1px solid var(--line);border-radius:var(--r);background:var(--bg3);color:var(--ink);font-family:var(--fs);font-size:.85rem;outline:none;transition:border-color .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 2px rgba(230,57,70,.1)}
+textarea{resize:vertical;min-height:80px;line-height:1.6}
+select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238888a0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .8rem center;padding-right:2rem}
+.btn{padding:.75rem 1.2rem;border:1px solid var(--line);border-radius:var(--r);background:var(--bg3);color:var(--ink);font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .15s;font-family:var(--fm)}
+.btn:hover:not(:disabled){background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-primary{background:var(--acc);color:#fff;border-color:var(--acc);font-size:.82rem;padding:.9rem 1.5rem;letter-spacing:.12em}
+.btn-primary:hover:not(:disabled){background:#c1121f;border-color:#c1121f}
+.btn-accent{background:var(--acc2);color:#fff;border-color:var(--acc2)}
+.btn-accent:hover:not(:disabled){background:#3a8eef;border-color:#3a8eef}
+.btn-ghost{background:transparent}
+.btn-ghost:hover:not(:disabled){background:var(--bg3);color:var(--ink);border-color:var(--line2)}
+.btn-sm{padding:.5rem .8rem;font-size:.65rem}
+.btn-full{width:100%}
+.btn-row{display:flex;gap:.5rem;flex-wrap:wrap}
+.btn-row .btn{flex:1;min-width:120px}
+/* ── IMAGE DE RÉFÉRENCE ── */
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.8rem}
+.ref-slot{border:2px dashed var(--line);border-radius:var(--r);padding:1rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);position:relative;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ref-slot:hover{border-color:var(--acc);background:var(--bg2)}
+.ref-slot.has-image{border-style:solid;border-color:var(--ok);padding:.5rem;justify-content:flex-start}
+.ref-slot .ref-slot-label{font-family:var(--fm);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:.5rem}
+.ref-slot .ref-slot-role{font-size:.65rem;color:var(--faint);margin-top:.3rem}
+.ref-image-container{width:100%;height:200px;overflow:hidden;border-radius:6px;background:var(--bg2);display:flex;align-items:center;justify-content:center;margin-bottom:.5rem}
+.ref-image-container img{width:100%;height:100%;object-fit:contain;display:block}
+.ref-analyze-badge{position:absolute;top:.5rem;right:.5rem;font-size:.55rem;font-family:var(--fm);padding:.15rem .4rem;border-radius:3px;font-weight:700;text-transform:uppercase}
+.ref-analyze-badge.ok{background:var(--ok);color:#fff}
+.ref-analyze-badge.pending{background:var(--warn);color:#000}
+.ref-role-select{margin-top:.4rem;font-size:.7rem;padding:.4rem .6rem;border-radius:6px;background:var(--bg2);border:1px solid var(--line);color:var(--ink);width:100%}
+/* ── MODE / GENRE ── */
+.mode-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem}
+.mode-card{border:1px solid var(--line);border-radius:var(--r);padding:1rem .8rem;cursor:pointer;text-align:center;transition:all .15s;background:var(--bg3)}
+.mode-card:hover{border-color:var(--acc2);background:var(--bg2)}
+.mode-card.active{border-color:var(--acc);background:rgba(230,57,70,.08);box-shadow:0 0 0 1px var(--acc)}
+.mode-card .mc-icon{font-size:1.6rem;margin-bottom:.4rem}
+.mode-card .mc-title{font-weight:600;font-size:.8rem;margin-bottom:.15rem}
+.mode-card .mc-desc{font-size:.6rem;color:var(--dim);font-family:var(--fm)}
+/* ── STYLE ── */
+.style-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.5rem;max-height:400px;overflow-y:auto;padding:.2rem}
+.style-item{border:1px solid var(--line);border-radius:8px;padding:.7rem;cursor:pointer;text-align:center;transition:all .15s;background:var(--bg3)}
+.style-item:hover{border-color:var(--acc2);background:var(--bg2)}
+.style-item.active{border-color:var(--acc);background:rgba(230,57,70,.08);box-shadow:0 0 0 1px var(--acc)}
+.style-item .si-name{font-weight:600;font-size:.72rem;margin-bottom:.15rem}
+.style-item .si-desc{font-size:.58rem;color:var(--dim);font-family:var(--fm);line-height:1.3}
+/* ── SCÉNARIO ── */
+.script-box{background:var(--bg3);border:1px solid var(--line);border-radius:var(--r);padding:1rem;margin-top:.5rem;max-height:500px;overflow-y:auto;font-size:.78rem;line-height:1.7}
+.scene-item{margin-bottom:.9rem;padding-left:.8rem;border-left:2px solid var(--line)}
+.scene-item .si-head{font-family:var(--fm);font-size:.62rem;color:var(--acc);font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.25rem}
+.scene-item .si-line{margin-bottom:.2rem;font-size:.76rem}
+.scene-item .si-label{display:inline-block;min-width:70px;color:var(--faint);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;font-family:var(--fm)}
+.scene-item .si-dialogue{color:var(--ink);font-style:italic}
+/* ── VIDÉOS (PLEINE LARGEUR) ── */
+.videos-list{display:flex;flex-direction:column;gap:1rem;margin-top:.6rem}
+.vcard{background:var(--bg3);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;transition:border-color .2s}
+.vcard.generating{border-color:var(--acc2)}
+.vcard.done{border-color:var(--ok)}
+.vcard.error{border-color:var(--err)}
+.vcard-header{padding:.5rem .8rem;font-family:var(--fm);font-size:.62rem;color:var(--dim);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);text-transform:uppercase;letter-spacing:.06em}
+.vcard-body{padding:.6rem}
+.vcard-body video{width:100%;border-radius:6px;background:#000;display:block;max-height:500px;object-fit:contain}
+.vcard-ph{width:100%;height:300px;background:var(--bg2);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:.7rem;font-family:var(--fm);flex-direction:column;gap:.4rem;text-align:center;padding:.5rem}
+.vcard-download{position:absolute;top:.5rem;right:.5rem;z-index:10}
+.vcard-download a{display:block;padding:.4rem .7rem;background:var(--acc);color:#fff;border-radius:6px;font-size:.6rem;font-family:var(--fm);text-decoration:none;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.vcard-download a:hover{background:#c1121f}
+.spinner{width:14px;height:14px;border:2px solid rgba(230,57,70,.2);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ── PIPELINE ── */
+.pipeline-steps{display:flex;gap:.3rem;margin-bottom:1rem;flex-wrap:wrap}
+.pipe-step{flex:1;min-width:100px;padding:.5rem .6rem;border:1px solid var(--line);border-radius:6px;text-align:center;font-size:.6rem;font-family:var(--fm);color:var(--faint);transition:all .2s}
+.pipe-step.active{border-color:var(--acc);color:var(--acc);background:rgba(230,57,70,.08)}
+.pipe-step.done{border-color:var(--ok);color:var(--ok)}
+/* ── UTILS ── */
+.hidden{display:none!important}
+.mt-1{margin-top:.5rem}.mt-2{margin-top:1rem}.mb-1{margin-bottom:.5rem}
+.flex{display:flex;gap:.5rem;align-items:center}
+.flex-wrap{flex-wrap:wrap}
+.grow{flex:1}
+.text-dim{color:var(--dim);font-size:.68rem;font-family:var(--fm)}
+.text-hint{color:var(--faint);font-size:.65rem;font-family:var(--fm);line-height:1.5}
+/* ── PLAYER ── */
+.player-overlay{position:fixed;inset:0;background:#000;z-index:2000;display:none;align-items:center;justify-content:center;cursor:pointer}
+.player-overlay.visible{display:flex}
+#player-canvas{display:block;max-width:100vw;max-height:100vh;background:#000}
+/* ── TOAST ── */
+.toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%) translateY(-120px);background:var(--bg2);color:var(--ink);padding:.7rem 1.2rem;border-radius:var(--r);font-size:.75rem;font-family:var(--fm);z-index:1000;opacity:0;transition:all .3s cubic-bezier(.2,.9,.3,1.2);max-width:90vw;text-align:center;border-left:3px solid var(--acc);box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.toast.visible{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.success{border-left-color:var(--ok)}
+.toast.error{border-left-color:var(--err)}
+.toast.warn{border-left-color:var(--warn)}
+/* ── DOCK ── */
+.dock{position:fixed;bottom:0;left:0;right:0;z-index:200;display:flex;flex-direction:column}
+.status-bar{background:var(--bg2);color:var(--ink);display:flex;align-items:center;gap:.6rem;font-family:var(--fm);font-size:.68rem;padding:0 1rem;max-height:0;overflow:hidden;transition:all .25s ease;border-top:2px solid var(--acc)}
+.status-bar.visible{max-height:60px;padding:.55rem 1rem}
+.status-bar .spinner{width:10px;height:10px;border-color:rgba(230,57,70,.15);border-top-color:var(--acc)}
+.debug-panel{background:var(--bg2);border-top:1px solid var(--line);display:flex;flex-direction:column;height:200px;transition:height .25s ease}
+.debug-panel.collapsed{height:36px}
+.debug-header{display:flex;justify-content:space-between;align-items:center;padding:.3rem .6rem;background:var(--bg3);border-bottom:1px solid var(--line);flex-shrink:0}
+.debug-tabs{display:flex;gap:.2rem}
+.debug-tab{background:var(--bg2);border:1px solid var(--line);color:var(--dim);font-size:.58rem;padding:.25rem .6rem;cursor:pointer;font-family:var(--fm);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.debug-tab.active{color:var(--ink);background:var(--acc);border-color:var(--acc)}
+.debug-actions{display:flex;gap:.2rem}
+.debug-actions button{background:var(--bg2);border:1px solid var(--line);color:var(--dim);font-size:.54rem;padding:.25rem .5rem;cursor:pointer;font-family:var(--fm);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.debug-actions button:hover{background:var(--ink);color:var(--bg)}
+.debug-body{flex:1;overflow-y:auto;padding:.4rem .6rem;font-size:.64rem;line-height:1.5;color:var(--dim);background:var(--bg2);font-family:var(--fm)}
+.debug-body.hidden{display:none}
+.j-entry{display:flex;gap:.5rem;padding:.15rem 0;align-items:flex-start;border-bottom:1px solid var(--line)}
+.j-entry:last-child{border-bottom:none}
+.j-time{font-size:.6rem;color:var(--faint);flex-shrink:0;min-width:58px;padding-top:.1rem}
+.j-icon{flex-shrink:0;width:14px;text-align:center}
+.j-msg{color:var(--ink);flex:1;word-break:break-word;font-family:var(--fs);font-size:.72rem}
+.j-entry.highlight .j-msg{color:var(--acc);font-weight:600}
+.j-entry.success .j-msg{color:var(--ok)}
+.j-entry.warn .j-msg{color:var(--warn)}
+.j-entry.error .j-msg{color:var(--err)}
+.d-entry{margin-bottom:.2rem;padding:.15rem .35rem;border-left:2px solid transparent;word-break:break-word}
+.d-entry.info{border-left-color:var(--line)}
+.d-entry.success{border-left-color:var(--ok);background:rgba(42,157,143,.06)}
+.d-entry.warn{border-left-color:var(--warn);background:rgba(233,196,106,.06)}
+.d-entry.error{border-left-color:var(--err);background:rgba(230,57,70,.06)}
+.d-time{color:var(--faint);margin-right:.4rem;font-size:.56rem}
+.d-cat{color:var(--acc);font-weight:700;margin-right:.3rem;font-size:.56rem}
+.d-data{margin-top:.2rem;padding:.3rem .4rem;background:var(--bg3);border:1px solid var(--line);font-size:.56rem;color:var(--ink);max-height:140px;overflow:auto;white-space:pre-wrap;word-break:break-all;line-height:1.4}
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+header h1{font-size:1.3rem}
+.ref-grid{grid-template-columns:1fr}
+.mode-grid{grid-template-columns:1fr 1fr}
+.container{padding:1rem}
+body{padding-bottom:32rem}
+.debug-panel{height:180px}
+.vcard-body video{max-height:350px}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+<div><span class="tb-dot"></span><span class="tb-id">STUDIO D'AUTEUR</span> / CRÉATEUR DE FILMS IA</div>
+<div class="tb-right"><span>v12.0</span><span>AUTEUR</span></div>
+</div>
+
+<header>
+<h1>Studio<span class="slash">/</span>Auteur</h1>
+<p class="sub">Chargez vos images · Choisissez un genre · Générez un film cohérent de 4 minutes</p>
+</header>
+
+<div class="container">
+
+<!-- PIPELINE -->
+<div class="pipeline-steps">
+<div class="pipe-step active" id="pipe-1">1. Images</div>
+<div class="pipe-step" id="pipe-2">2. Analyse</div>
+<div class="pipe-step" id="pipe-3">3. Scénario</div>
+<div class="pipe-step" id="pipe-4">4. Génération</div>
+<div class="pipe-step" id="pipe-5">5. Montage</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ÉTAPE 1 : CLÉS API -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="card" id="card-keys">
+<div class="card-header">
+<span class="card-title"><span class="num">01</span> Clés API</span>
+<span class="card-status empty" id="keys-status">Aucune clé</span>
+</div>
+<textarea id="api-keys-input" rows="3" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx&#10;sk-yyyyyyyyyyyyyyyyyyyyyyyy" spellcheck="false" autocomplete="off"></textarea>
+<div class="btn-row mt-1">
+<button class="btn btn-sm" id="api-save-btn">Enregistrer et valider</button>
+<button class="btn btn-sm btn-ghost" id="api-clear-btn">Effacer</button>
+</div>
+<div class="status-line" id="keys-line"><span class="dot"></span><span id="keys-text">Aucune clé API enregistrée</span></div>
+<div id="keys-list" class="mt-1"></div>
+<div class="text-hint mt-1">
+Collez vos clés API Agnes (une par ligne). Chaque clé = 1 worker vidéo simultané.
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ÉTAPE 2 : IMAGES DE RÉFÉRENCE (3 PERSONNAGES) -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="card" id="card-ref">
+<div class="card-header">
+<span class="card-title"><span class="num">02</span> Personnages (images de référence)</span>
+<span class="card-status empty" id="ref-status">Aucune image</span>
+</div>
+<div class="text-hint mb-1">
+Chargez une image pour chaque personnage. La première est obligatoire (protagoniste). Les deux autres sont optionnelles et auront un rôle défini.
+</div>
+<div class="ref-grid" id="ref-grid">
+<!-- Slot 1 : Protagoniste -->
+<div class="ref-slot" data-slot="0" id="ref-slot-0">
+<div class="ref-slot-label">👤 Protagoniste <span style="color:var(--acc)">*</span></div>
+<div class="ref-image-container" id="ref-img-container-0">
+<span id="ref-placeholder-0" style="color:var(--faint);font-size:.7rem">Cliquez pour charger</span>
+</div>
+<div class="ref-analyze-badge pending hidden" id="ref-badge-0">À analyser</div>
+<input type="file" class="hidden" id="ref-input-0" accept="image/*">
+<div class="ref-slot-role">Personnage principal de l'histoire</div>
+</div>
+<!-- Slot 2 : Personnage 2 -->
+<div class="ref-slot" data-slot="1" id="ref-slot-1">
+<div class="ref-slot-label">👥 Personnage 2</div>
+<div class="ref-image-container" id="ref-img-container-1">
+<span id="ref-placeholder-1" style="color:var(--faint);font-size:.7rem">Cliquez pour charger</span>
+</div>
+<div class="ref-analyze-badge pending hidden" id="ref-badge-1">À analyser</div>
+<input type="file" class="hidden" id="ref-input-1" accept="image/*">
+<select class="ref-role-select" id="ref-role-1">
+<option value="">— Choisir un rôle —</option>
+<option value="antagoniste">Antagoniste (opposant)</option>
+<option value="allie">Allié (soutien)</option>
+<option value="mentor">Mentor (guide)</option>
+<option value="amour">Amour (attachement)</option>
+<option value="contrepoint">Contrepoint (miroir)</option>
+</select>
+</div>
+<!-- Slot 3 : Personnage 3 -->
+<div class="ref-slot" data-slot="2" id="ref-slot-2">
+<div class="ref-slot-label">👤 Personnage 3</div>
+<div class="ref-image-container" id="ref-img-container-2">
+<span id="ref-placeholder-2" style="color:var(--faint);font-size:.7rem">Cliquez pour charger</span>
+</div>
+<div class="ref-analyze-badge pending hidden" id="ref-badge-2">À analyser</div>
+<input type="file" class="hidden" id="ref-input-2" accept="image/*">
+<select class="ref-role-select" id="ref-role-2">
+<option value="">— Choisir un rôle —</option>
+<option value="antagoniste">Antagoniste (opposant)</option>
+<option value="allie">Allié (soutien)</option>
+<option value="mentor">Mentor (guide)</option>
+<option value="amour">Amour (attachement)</option>
+<option value="contrepoint">Contrepoint (miroir)</option>
+</select>
+</div>
+</div>
+<div class="btn-row mt-1">
+<button class="btn btn-sm btn-accent" id="ref-analyze-all-btn" disabled>🔍 Analyser toutes les images</button>
+<button class="btn btn-sm btn-ghost" id="ref-clear-all-btn">Tout retirer</button>
+</div>
+<div class="status-line" id="ref-line"><span class="dot"></span><span id="ref-text">Chargez au moins une image (protagoniste)</span></div>
+<div class="analysis-box" id="ref-analysis"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ÉTAPE 3 : GENRE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="card" id="card-genre">
+<div class="card-header">
+<span class="card-title"><span class="num">03</span> Genre / Médium</span>
+<span class="card-status info" id="genre-status">Cinéma d'auteur</span>
+</div>
+<div class="mode-grid" id="genre-grid">
+<div class="mode-card active" data-genre="cinema"><div class="mc-icon">🎬</div><div class="mc-title">Cinéma d'auteur</div><div class="mc-desc">Kubrick, Kurosawa, Tarantino…</div></div>
+<div class="mode-card" data-genre="animation"><div class="mc-icon">🎨</div><div class="mc-title">Animation</div><div class="mc-desc">Pixar, Ghibli, Disney…</div></div>
+<div class="mode-card" data-genre="manga"><div class="mc-icon">📖</div><div class="mc-title">Manga / Anime</div><div class="mc-desc">Akira, Ghost in the Shell…</div></div>
+<div class="mode-card" data-genre="bd"><div class="mc-icon">🖌️</div><div class="mc-title">Bande dessinée</div><div class="mc-desc">Moebius, Bilal, Schuiten…</div></div>
+<div class="mode-card" data-genre="kungfu"><div class="mc-icon">🥋</div><div class="mc-title">Kung Fu Shaolin</div><div class="mc-desc">Shaw Brothers années 70</div></div>
+<div class="mode-card" data-genre="noir"><div class="mc-icon">🕵️</div><div class="mc-title">Film Noir</div><div class="mc-desc">Ombres, fatalité, cigarettes</div></div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ÉTAPE 4 : STYLE -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="card" id="card-style">
+<div class="card-header">
+<span class="card-title"><span class="num">04</span> Style visuel</span>
+<span class="card-status ok" id="style-status">Kubrick</span>
+</div>
+<div id="style-grid-container"></div>
+<div class="mt-1" id="style-detail" style="font-size:.7rem;color:var(--dim);font-family:var(--fm);display:none">
+<div><strong>Caractéristiques :</strong> <span id="style-detail-text"></span></div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ÉTAPE 5 : SCÉNARIO -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="card" id="card-script">
+<div class="card-header">
+<span class="card-title"><span class="num">05</span> Scénario</span>
+<span class="card-status" id="script-status">—</span>
+</div>
+<div id="script-mode-selector" class="btn-row mb-1">
+<button class="btn btn-sm active" data-script-mode="auto" id="s-mode-auto">✨ Automatique</button>
+<button class="btn btn-sm" data-script-mode="guided" id="s-mode-guided">📝 Guidé</button>
+<button class="btn btn-sm" data-script-mode="write" id="s-mode-write">✍️ Écriture libre</button>
+</div>
+<div id="script-auto-wrap">
+<div class="text-hint mb-1">L'IA génère un scénario complet basé sur vos images, le genre et le style choisis.</div>
+<div class="flex flex-wrap gap-1 mb-1">
+<input type="text" id="auto-theme-input" placeholder="Thème optionnel (ex: rédemption, quête…)" style="flex:2;min-width:180px">
+<select id="auto-structure-select" style="flex:1;min-width:140px">
+<option value="linear">Structure linéaire</option>
+<option value="nonlinear">Non-linéaire</option>
+<option value="circular">Circulaire</option>
+</select>
+<select id="auto-tone-select" style="flex:1;min-width:140px">
+<option value="melancholic">Mélancolique</option>
+<option value="tragic">Tragique</option>
+<option value="poetic">Poétique</option>
+<option value="hopeful">Lumineux</option>
+<option value="absurd">Absurde</option>
+</select>
+</div>
+</div>
+<div id="script-guided-wrap" class="hidden">
+<div class="text-hint mb-1">Cochez les éléments narratifs souhaités.</div>
+<div id="guided-options" style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-bottom:.6rem"></div>
+<div class="flex gap-1 mb-1">
+<input type="text" id="guided-lieu-input" placeholder="Lieu principal" style="flex:1">
+<input type="text" id="guided-epoque-input" placeholder="Époque" style="flex:1">
+</div>
+</div>
+<div id="script-write-wrap" class="hidden">
+<textarea id="story-input" placeholder="Écrivez votre histoire… L'IA en extraira les éléments pour construire un scénario en 24 séquences." style="min-height:160px"></textarea>
+</div>
+<div class="btn-row mt-1">
+<button class="btn btn-primary btn-full" id="launch-btn">🎬 Créer le film (24 séquences)</button>
+<button class="btn btn-ghost btn-full hidden" id="stop-btn" style="border-color:var(--err);color:var(--err)">Arrêter</button>
+<button class="btn btn-ghost btn-full hidden" id="new-film-btn">Nouveau film (efface le scénario et les vidéos)</button>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- RÉSULTATS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="card hidden" id="section-script">
+<div class="card-header">
+<span class="card-title"><span class="num">A</span> Scénario — 3 actes · 24 séquences</span>
+<span class="card-status ok" id="script-badge">—</span>
+</div>
+<div class="script-box" id="script-view"></div>
+</div>
+
+<div class="card hidden" id="section-videos">
+<div class="card-header">
+<span class="card-title"><span class="num">B</span> Séquences vidéo (24 × 9:16 · 10s)</span>
+<span class="card-status ok" id="videos-badge">0</span>
+</div>
+<div class="videos-list" id="videos-grid"></div>
+<div class="download-panel hidden" id="download-panel" style="background:var(--bg3);border:1px solid var(--acc3);border-radius:var(--r);padding:1rem;text-align:center;margin-top:.8rem">
+<div style="font-family:var(--fm);font-size:.62rem;color:var(--acc3);letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:.5rem">⬇ Télécharger toutes les vidéos</div>
+<button class="btn btn-accent btn-full" id="download-all-btn">Télécharger les 24 séquences (01→24)</button>
+<div class="text-dim mt-1" id="download-status"></div>
+</div>
+</div>
+
+<div class="card hidden" id="section-player">
+<div class="card-header">
+<span class="card-title"><span class="num">C</span> Diffusion</span>
+<span class="card-status ok" id="player-badge">0</span>
+</div>
+<div class="btn-row">
+<button class="btn" id="play-film-btn" disabled>▶ Diffuser le film</button>
+<button class="btn btn-ghost" id="replay-btn" disabled>↻ Rejouer</button>
+</div>
+<div class="flex mt-1" style="font-size:.7rem;color:var(--dim);font-family:var(--fm)">
+<input type="checkbox" id="voice-toggle" checked style="width:auto;margin:0;accent-color:var(--acc)">
+<label for="voice-toggle">Narration vocale française</label>
+</div>
+<div class="text-hint mt-1">Échap ou clic pour quitter la diffusion.</div>
+</div>
+
+</div><!-- /container -->
+
+<div class="toast" id="toast"><span id="toast-icon">✓</span><span id="toast-text">Message</span></div>
+
+<div class="dock">
+<div class="status-bar" id="status-bar"><div class="spinner"></div><span id="status-text">Préparation…</span></div>
+<div class="debug-panel" id="debug-panel">
+<div class="debug-header">
+<div class="debug-tabs">
+<button class="debug-tab active" data-tab="journal" id="tab-journal">Journal</button>
+<button class="debug-tab" data-tab="tech" id="tab-tech">Technique</button>
+</div>
+<div class="debug-actions">
+<button id="debug-copy-btn">Copier</button>
+<button id="debug-clear-btn">Effacer</button>
+<button id="debug-collapse-btn">−</button>
+</div>
+</div>
+<div class="debug-body" id="journal-body"></div>
+<div class="debug-body hidden" id="tech-body"></div>
+</div>
+</div>
+
+<div class="player-overlay" id="player-overlay"><canvas id="player-canvas"></canvas></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// CONFIGURATION
+// ══════════════════════════════════════════════════════════════════
+const API_BASE = 'https://apihub.agnes-ai.com/v1';
+const POLL_BASE = 'https://apihub.agnes-ai.com/agnesapi';
+const MODEL_TEXT = 'agnes-2.5-flash';
+const MODEL_IMAGE = 'agnes-image-2.1-flash';
+const MODEL_VIDEO = 'agnes-video-v2.0';
+const FRAME_RATE = 24;
+const NUM_FRAMES = 241;
+
+const VIDEO_RATIO = '9:16';
+
+// ── POLLING OPTIMISÉ (respecte les limites Agnes 1-8 RPM) ──
+const POLL_INITIAL_WAIT = 120;       // 2 minutes avant le premier check
+const POLL_MIN_INTERVAL = 20;        // 20 secondes minimum entre checks
+const POLL_MAX_INTERVAL = 45;        // 45 secondes maximum
+const POLL_BACKOFF = 1.2;            // augmentation progressive
+const POLL_MAX_ATTEMPTS = 50;        // ~25 minutes maximum
+const POLL_429_WAIT = 70;            // attente en cas de rate limit
+const VIDEO_MAX_RETRIES = 3;         // 3 tentatives par clip
+
+const REQUEST_MAX_CONCURRENT = 1;
+const REQUEST_MIN_INTERVAL_MS = 800;
+const VIDEO_CREATE_INTERVAL_MS = 3000;
+
+const API_KEYS_STORAGE = 'studio_v12_keys';
+const GENRE_STORAGE = 'studio_v12_genre';
+const STYLE_STORAGE = 'studio_v12_style';
+const PROJECT_DB_NAME = 'studio_auteur_v12'; // IndexedDB propre à cet outil (store 'kv' : 'project', 'images')
+const DEBUG_MAX = 800;
+
+const SCENE_COUNT = 24;
+
+// ══════════════════════════════════════════════════════════════════
+// GENRES
+// ══════════════════════════════════════════════════════════════════
+const GENRES = {
+  cinema: { id:'cinema', name:'Cinéma d\'auteur', icon:'🎬' },
+  animation: { id:'animation', name:'Animation', icon:'🎨' },
+  manga: { id:'manga', name:'Manga / Anime', icon:'📖' },
+  bd: { id:'bd', name:'Bande dessinée', icon:'🖌️' },
+  kungfu: { id:'kungfu', name:'Kung Fu Shaolin', icon:'🥋' },
+  noir: { id:'noir', name:'Film Noir', icon:'🕵️' }
+};
+
+// ══════════════════════════════════════════════════════════════════
+// STYLES (extraits, complets dans le code final)
+// ══════════════════════════════════════════════════════════════════
+const STYLES = {
+  cinema: [
+    { id:'kubrick', name:'Stanley Kubrick', desc:'Symétrie centripète', medium:'35mm film, sharp, high contrast', palette:['#1a1a2e','#e94560','#0f3460','#f5f5f5'], palette_label:'Bleu nuit, rouge, blanc', composition:'one-point perspective, symmetry', lighting:'clinical, stark', mood:'cold, obsessive', movement:'slow dolly, steady tracking', editing:'long takes, hard cuts' },
+    { id:'kurosawa', name:'Akira Kurosawa', desc:'Composition picturale, météo', medium:'35mm film, vivid color, painterly', palette:['#c1121f','#fdf0d5','#003049','#669bbc'], palette_label:'Rouge, crème, bleu nuit', composition:'dynamic composition, weather as character', lighting:'dramatic natural light', mood:'epic, humanist', movement:'long lenses, lateral tracking', editing:'axial cuts' },
+    { id:'chaplin', name:'Charlie Chaplin', desc:'Burlesque, caméra frontale', medium:'black and white, silent film, 35mm', palette:['#f5f5f0','#2b2b2b','#8b8b8b'], palette_label:'Noir et blanc, sépia', composition:'frontal fixed camera, theatrical', lighting:'flat theatrical', mood:'tender, melancholic', movement:'fixed camera, iris shots', editing:'gags, chase sequences' },
+    { id:'hitchcock', name:'Alfred Hitchcock', desc:'Suspense, POV', medium:'35mm film, classical Hollywood', palette:['#2d3047','#93b7be','#f5f5f5','#e84855'], palette_label:'Bleu acier, gris, blanc, rouge', composition:'subjective camera, voyeuristic', lighting:'chiaroscuro, shadows', mood:'tense, elegant', movement:'dolly zoom, POV', editing:'shot-reverse-shot' },
+    { id:'tarantino', name:'Quentin Tarantino', desc:'Dialogues, références', medium:'35mm film, saturated colors', palette:['#c1121f','#fdf0d5','#003049','#e9c46a'], palette_label:'Rouge, crème, bleu, or', composition:'long takes, low angles', lighting:'dramatic, saturated', mood:'cool, referential', movement:'slow push-ins, whip pans', editing:'chapter titles, non-linear' },
+    { id:'wenders', name:'Wim Wenders', desc:'Road movie, mélancolie', medium:'35mm film, desaturated, wide landscapes', palette:['#4a6fa5','#8ba3c7','#d4c5a9'], palette_label:'Bleu délavé, ocre', composition:'wide landscapes, isolation', lighting:'natural, melancholic', mood:'melancholic, contemplative', movement:'slow pans', editing:'contemplative pacing' },
+    { id:'jarmusch', name:'Jim Jarmusch', desc:'Rythme lent, deadpan', medium:'35mm film, black and white', palette:['#1a1a1a','#8b8b8b','#d4c5a9'], palette_label:'Noir, gris, beige', composition:'static shots, deadpan', lighting:'natural, low-key', mood:'deadpan, meditative', movement:'static, slow pan', editing:'long takes' },
+    { id:'tarkovsky', name:'Andreï Tarkovski', desc:'Plans-séquences, poésie', medium:'35mm film, poetic, slow', palette:['#2b2b2b','#8b8b8b','#6b8e6b'], palette_label:'Gris, terre, vert', composition:'long takes, water reflections', lighting:'natural, poetic', mood:'meditative, spiritual', movement:'extremely slow tracking', editing:'extremely long takes' },
+    { id:'wong', name:'Wong Kar-wai', desc:'Néon, mélancolie', medium:'35mm film, saturated, neon', palette:['#e94560','#0f3460','#533483'], palette_label:'Rouge néon, bleu nuit, violet', composition:'neon-lit, claustrophobic', lighting:'neon, saturated', mood:'melancholic, romantic', movement:'step-printing, slow motion', editing:'jump cuts' },
+    { id:'nolan', name:'Christopher Nolan', desc:'Temps, architecture', medium:'65mm IMAX, sharp, epic', palette:['#1a1a2e','#e94560','#0f3460'], palette_label:'Bleu nuit, rouge', composition:'epic scale, architectural', lighting:'naturalistic, dramatic', mood:'epic, cerebral', movement:'IMAX-scale tracking', editing:'cross-cutting' },
+    { id:'lynch', name:'David Lynch', desc:'Surréalisme, rêves', medium:'digital video, dreamlike, surreal', palette:['#1a1a2e','#e94560','#8b8b8b'], palette_label:'Bleu nuit, rouge, gris', composition:'dream logic, unsettling', lighting:'mysterious, neon', mood:'surreal, uncanny', movement:'slow, dreamlike', editing:'dream logic' },
+    { id:'scorsese', name:'Martin Scorsese', desc:'Caméra dynamique', medium:'35mm film, dynamic', palette:['#c1121f','#fdf0d5','#003049'], palette_label:'Rouge, crème, bleu', composition:'dynamic camera, long takes', lighting:'dramatic, high contrast', mood:'energetic, gritty', movement:'long tracking, whip pans', editing:'rapid cuts, voice-over' }
+  ],
+  animation: [
+    { id:'pixar', name:'Pixar', desc:'CGI stylisé, émotion', medium:'CGI animation, stylized, soft lighting', palette:['#4a9eff','#ff6b6b','#ffd93d','#6bcb77'], palette_label:'Bleu, corail, jaune, vert', composition:'expressive framing, character-focused', lighting:'soft, warm, cinematic', mood:'heartwarming, adventurous', movement:'smooth camera, dynamic angles', editing:'dynamic cuts' },
+    { id:'ghibli', name:'Studio Ghibli', desc:'Aquarelle, nature', medium:'hand-drawn animation, watercolor', palette:['#87c38f','#f4e9d8','#d4a373','#1b4965'], palette_label:'Vert sauge, crème, ocre', composition:'expansive landscapes', lighting:'soft natural light', mood:'dreamlike, nostalgic', movement:'slow pans, flying sequences', editing:'gentle cuts' },
+    { id:'miyazaki', name:'Hayao Miyazaki', desc:'Nature, vol, héroïnes', medium:'hand-drawn animation, watercolor', palette:['#87c38f','#f4e9d8','#d4a373','#1b4965'], palette_label:'Vert sauge, crème, ocre', composition:'human-scale against nature', lighting:'soft natural light', mood:'dreamlike, ecological', movement:'slow pans, flying sequences', editing:'gentle cuts' },
+    { id:'disney', name:'Walt Disney', desc:'Mélodrame, féerie', medium:'hand-drawn animation, rich colors', palette:['#1e3a8a','#dc2626','#fbbf24','#7c3aed'], palette_label:'Bleu roi, rouge, or, violet', composition:'theatrical framing', lighting:'dramatic, colorful', mood:'magical, romantic', movement:'sweeping camera', editing:'musical montage' },
+    { id:'dreamworks', name:'DreamWorks', desc:'Humour, CGI dynamique', medium:'CGI animation, dynamic', palette:['#f59e0b','#3b82f6','#ef4444','#10b981'], palette_label:'Orange, bleu, rouge, vert', composition:'dynamic framing', lighting:'bright, colorful', mood:'funny, energetic', movement:'fast camera', editing:'rapid cuts' }
+  ],
+  manga: [
+    { id:'akira', name:'Akira (Otomo)', desc:'Cyberpunk, hyperréalisme', medium:'manga, hard-edged, hyperrealistic, screentones', palette:['#1a1a2e','#e94560','#0f3460','#00b4d8'], palette_label:'Bleu nuit, rouge, cyan', composition:'dense urban, dynamic perspectives', lighting:'neon-lit, dystopian', mood:'dystopian, frenetic', movement:'dynamic panels', editing:'rapid transitions' },
+    { id:'ghost', name:'Ghost in the Shell', desc:'Cyberpunk 90s, cyborg', medium:'anime, 90s cel, neon, clean lines', palette:['#0a0a12','#00b4d8','#e94560','#533483'], palette_label:'Noir, cyan, rose, violet', composition:'tech-noir framing, reflections', lighting:'neon, rain', mood:'philosophical, melancholic', movement:'smooth animation, reflections', editing:'contemplative' },
+    { id:'ghibli-manga', name:'Ghibli (manga)', desc:'Douceur, nature', medium:'manga, soft lines, watercolor', palette:['#87c38f','#f4e9d8','#d4a373','#1b4965'], palette_label:'Vert, crème, ocre, bleu', composition:'gentle framing', lighting:'soft natural', mood:'nostalgic', movement:'slow pans', editing:'gentle cuts' },
+    { id:'evangelion', name:'Evangelion', desc:'Mecha, psychologie', medium:'anime, 90s cel, mecha', palette:['#1a1a2e','#e94560','#9b59b6','#00b4d8'], palette_label:'Bleu, rouge, violet, cyan', composition:'dramatic, psychological', lighting:'dramatic, apocalyptic', mood:'psychological, melancholic', movement:'dramatic camera', editing:'rapid cuts' }
+  ],
+  bd: [
+    { id:'moebius', name:'Moebius (Giraud)', desc:'Ligne claire, surréalisme', medium:'bande dessinée, ligne claire, precision', palette:['#f4e9d8','#d4a373','#1b4965','#87c38f'], palette_label:'Crème, ocre, bleu, vert', composition:'precision, surreal landscapes', lighting:'flat, graphic', mood:'surreal, precise', movement:'static panels', editing:'panel transitions' },
+    { id:'bilal', name:'Enki Bilal', desc:'Réalisme sale, punk, SF', medium:'bande dessinée, gritty realism, punk', palette:['#2b2b2b','#8b8b8b','#e94560','#d4c5a9'], palette_label:'Gris, noir, rouge, beige', composition:'gritty, urban decay', lighting:'harsh, dystopian', mood:'gritty, political', movement:'static', editing:'panel transitions' },
+    { id:'schuiten', name:'François Schuiten', desc:'Architectures oniriques', medium:'bande dessinée, engraving style', palette:['#d4c5a9','#2b2b2b','#4a6fa5'], palette_label:'Sépia, noir, bleu', composition:'architectural, monumental', lighting:'engraved, atmospheric', mood:'dreamlike, mysterious', movement:'static', editing:'panel transitions' }
+  ],
+  kungfu: [
+    { id:'shaw', name:'Shaw Brothers', desc:'Chorégraphie, décors studio', medium:'35mm film, studio sets, vibrant colors', palette:['#c1121f','#fdf0d5','#003049','#e9c46a'], palette_label:'Rouge, crème, bleu, or', composition:'theatrical, wide shots', lighting:'studio, dramatic', mood:'epic, disciplined', movement:'martial arts choreography', editing:'action cuts' },
+    { id:'shaolin', name:'Shaolin Temple', desc:'Spiritualité, nature', medium:'35mm film, natural settings, spiritual', palette:['#6b8e6b','#d4c5a9','#2b2b2b'], palette_label:'Vert, beige, noir', composition:'temple settings, spiritual', lighting:'natural, spiritual', mood:'spiritual, epic', movement:'martial arts, meditative', editing:'action cuts' }
+  ],
+  noir: [
+    { id:'classic-noir', name:'Film Noir Classique', desc:'Ombres, cigarettes', medium:'black and white, 35mm, chiaroscuro', palette:['#1a1a1a','#2b2b2b','#8b8b8b','#f5f5f5'], palette_label:'Noir, gris, blanc', composition:'chiaroscuro, venetian blinds', lighting:'high contrast, shadows', mood:'fatalistic, cynical', movement:'static, slow pan', editing:'hard cuts' },
+    { id:'neo-noir', name:'Néo-Noir', desc:'Noir moderne, néons', medium:'35mm film, color, neon', palette:['#1a1a2e','#e94560','#0f3460'], palette_label:'Bleu nuit, rouge néon', composition:'neon-lit, modern', lighting:'neon, high contrast', mood:'cynical, violent', movement:'slow tracking', editing:'hard cuts' }
+  ]
+};
+
+const GUIDED_ELEMENTS = [
+  { id:'protagonist', label:'Un protagoniste' }, { id:'antagonist', label:'Un antagoniste' },
+  { id:'ally', label:'Un allié' }, { id:'mentor', label:'Un mentor' },
+  { id:'love', label:'Une histoire d\'amour' }, { id:'loss', label:'Une perte' },
+  { id:'quest', label:'Une quête' }, { id:'transformation', label:'Une transformation' },
+  { id:'revelation', label:'Une révélation' }, { id:'sacrifice', label:'Un sacrifice' },
+  { id:'redemption', label:'Une rédemption' }, { id:'revenge', label:'Une vengeance' }
+];
+
+const NARRATIVE_STRUCTURES = {
+  linear: 'Récit linéaire — chronologique, cause à effet.',
+  nonlinear: 'Récit non-linéaire — flashbacks, temporalité brisée.',
+  circular: 'Récit circulaire — la fin rejoint le début.'
+};
+const TONES = {
+  melancholic: 'Ton mélancolique — tristesse douce, nostalgie.',
+  tragic: 'Ton tragique — destin inexorable, catharsis.',
+  poetic: 'Ton poétique — images fortes, lyrisme.',
+  hopeful: 'Ton lumineux — espoir, résilience.',
+  absurd: 'Ton absurde — humour noir, décalage.'
+};
+
+// ══════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════
+const state = {
+  keyPool: [],
+  isRunning: false,
+  stopRequested: false,
+  genre: 'cinema',
+  selectedStyle: STYLES.cinema[0],
+  scriptMode: 'auto',
+  referenceImages: [null, null, null], // [protagoniste, perso2, perso3]
+  referenceImageNames: [null, null, null],
+  referenceImagesForApi: [null, null, null],
+  imageAnalyses: [null, null, null],
+  isAnalyzingImages: false,
+  script: null,
+  videos: [],
+  isGeneratingVideos: false,
+  isPlayingFilm: false,
+  playRAF: null,
+  voiceEnabled: true,
+  currentUtterance: null
+};
+
+// ══════════════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════════════
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function setStatus(text){const b=document.getElementById('status-bar');const t=document.getElementById('status-text');if(!b||!t)return;if(text){b.classList.add('visible');t.textContent=text}else b.classList.remove('visible')}
+let toastTimeout=null;
+function showToast(message,type='success',duration=2800){const t=document.getElementById('toast');const i=document.getElementById('toast-icon');const x=document.getElementById('toast-text');if(!t||!i||!x)return;t.classList.remove('visible','success','error','warn');void t.offsetWidth;const icons={success:'✓',error:'✕',warn:'!'};i.textContent=icons[type]||'✓';x.textContent=message;t.classList.add(type);requestAnimationFrame(()=>t.classList.add('visible'));if(toastTimeout)clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>t.classList.remove('visible'),duration)}
+function nowTime(){return new Date().toLocaleTimeString('fr-FR',{hour12:false})}
+function sanitizeForApi(text){if(text==null)return '';return String(text).replace(/[\u2018\u2019\u201B\u2032\u02BC]/g, "'").replace(/[\u201C\u201D\u201F\u2033]/g, '"').replace(/\u2013/g, '-').replace(/\u2014/g, '--').replace(/\u2026/g, '...').replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\u00A0/g, ' ').replace(/\u202F/g, ' ');}
+function cleanLine(line){if(!line)return '';let s=String(line).replace(/^["'«»\s]+|["'«»\s]+$/g,'').replace(/[;]+$/,'.').replace(/\.+$/,'.');if(!s)return '';if(!/[.!?]$/.test(s))s+='.';return s;}
+function resizeImageForApi(dataUrl, maxSize){return new Promise((resolve)=>{const img=new Image();img.onload=()=>{try{let w=img.width,h=img.height;const scale=Math.min(1,maxSize/Math.max(w,h));w=Math.round(w*scale);h=Math.round(h*scale);const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);resolve(canvas.toDataURL('image/jpeg',0.85));}catch(e){resolve(null);}};img.onerror=()=>resolve(null);img.src=dataUrl;});}
+
+// ══════════════════════════════════════════════════════════════════
+// LOG
+// ══════════════════════════════════════════════════════════════════
+function journalLog(msg, level){
+  level = level || 'info';
+  const body = document.getElementById('journal-body');
+  if(!body) return;
+  const icons = { info:'·', highlight:'▶', success:'✓', warn:'!', error:'✕', video:'▸', play:'▸', key:'▸', voice:'♪', style:'▸', analysis:'◆', script:'▸' };
+  const icon = icons[level] || '·';
+  const entry = document.createElement('div');
+  entry.className = 'j-entry ' + level;
+  entry.innerHTML = '<span class="j-time">'+esc(nowTime())+'</span><span class="j-icon">'+icon+'</span><span class="j-msg">'+esc(msg)+'</span>';
+  body.appendChild(entry);
+  body.scrollTop = body.scrollHeight;
+  while(body.children.length > DEBUG_MAX) body.removeChild(body.firstChild);
+}
+let debugEntries=[],debugCollapsed=false;
+function debugLog(level,category,message,data){const body=document.getElementById('tech-body');if(!body)return;const time=nowTime();const entry=document.createElement('div');entry.className='d-entry '+level;let html='<span class="d-time">'+time+'</span><span class="d-cat">['+esc(category)+']</span>'+esc(message);if(data!==undefined&&data!==null){let ds;if(typeof data==='string')ds=data;else{try{ds=JSON.stringify(data,null,2)}catch(e){ds=String(data)}}if(ds.length>2000)ds=ds.slice(0,2000)+'\n…[truncated]';html+='<pre class="d-data">'+esc(ds)+'</pre>'}entry.innerHTML=html;body.appendChild(entry);debugEntries.push({time,level,category,message});if(debugEntries.length>DEBUG_MAX)debugEntries.shift();while(body.children.length>DEBUG_MAX)body.removeChild(body.firstChild);body.scrollTop=body.scrollHeight;}
+function clearDebug(){const b=document.getElementById('tech-body');const j=document.getElementById('journal-body');if(b)b.innerHTML='';if(j)j.innerHTML='';debugEntries=[];}
+function copyDebug(){const lines=debugEntries.map(e=>e.time+' ['+e.category+'] '+e.message).join('\n');const finish=(ok)=>showToast(ok?'Console copiée':'Copie impossible',ok?'success':'error');try{if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(lines).then(()=>finish(true)).catch(()=>legacyCopy(lines,finish));return}}catch(e){}legacyCopy(lines,finish)}
+function legacyCopy(text,cb){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);cb(ok)}
+function toggleDebugCollapse(){const p=document.getElementById('debug-panel');const b=document.getElementById('debug-collapse-btn');if(!p||!b)return;debugCollapsed=!debugCollapsed;p.classList.toggle('collapsed',debugCollapsed);b.textContent=debugCollapsed?'+':'−'}
+function switchTab(tab){const j=document.getElementById('journal-body');const t=document.getElementById('tech-body');const tj=document.getElementById('tab-journal');const tt=document.getElementById('tab-tech');if(!j||!t)return;if(tab==='journal'){j.classList.remove('hidden');t.classList.add('hidden');tj.classList.add('active');tt.classList.remove('active')}else{t.classList.remove('hidden');j.classList.add('hidden');tt.classList.add('active');tj.classList.remove('active');t.scrollTop=t.scrollHeight}}
+
+// ══════════════════════════════════════════════════════════════════
+// RATE LIMITERS
+// ══════════════════════════════════════════════════════════════════
+const _rateLimiter = {
+  active: 0, queue: [], lastStart: 0,
+  acquire(){return new Promise(resolve=>{this.queue.push(resolve);this._tryNext();});},
+  release(){this.active = Math.max(0, this.active - 1);this._tryNext();},
+  _tryNext(){
+    if(this.queue.length === 0) return;
+    if(this.active >= REQUEST_MAX_CONCURRENT) return;
+    const now = Date.now();
+    const wait = Math.max(0, REQUEST_MIN_INTERVAL_MS - (now - this.lastStart));
+    if(wait > 0){ setTimeout(()=>this._tryNext(), wait); return; }
+    const resolve = this.queue.shift();
+    this.active++;
+    this.lastStart = Date.now();
+    resolve();
+  }
+};
+let _lastVideoCreateTime = 0;
+async function _throttledCreateVideoTask(prompt, imageUrl, duration){
+  const now = Date.now();
+  const wait = Math.max(0, VIDEO_CREATE_INTERVAL_MS - (now - _lastVideoCreateTime));
+  if(wait > 0) await sleep(wait);
+  _lastVideoCreateTime = Date.now();
+  return createVideoTask(prompt, imageUrl, duration);
+}
+const _pollGate = {
+  lastAt: 0, busy: false,
+  async wait(){
+    while(this.busy) await sleep(50);
+    this.busy = true;
+    const now = Date.now();
+    const wait = Math.max(0, 2000 - (now - this.lastAt));
+    if(wait > 0) await sleep(wait);
+    this.lastAt = Date.now();
+    this.busy = false;
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════
+// KEYS
+// ══════════════════════════════════════════════════════════════════
+function getStoredKeys(){try{const raw=localStorage.getItem(API_KEYS_STORAGE);if(!raw)return [];const arr=JSON.parse(raw);if(!Array.isArray(arr))return [];return arr.filter(k=>typeof k==='string'&&k.trim().length>0);}catch(e){return []}}
+function setStoredKeys(keys){try{localStorage.setItem(API_KEYS_STORAGE,JSON.stringify(keys))}catch(e){}}
+function refreshKeyPool(){const stored=getStoredKeys();const old=state.keyPool||[];state.keyPool=stored.map(k=>{const existing=old.find(p=>p.key===k);if(existing) return existing;return {key:k,lastUsed:0,cooldownUntil:0,active:true,errorCount:0,busy:false,busyUntil:0};});}
+function hasActiveKey(){return state.keyPool.some(k=>k.active)}
+function getReadyKey(){
+  const now = Date.now();
+  const active = state.keyPool.filter(k => k.active);
+  if(active.length === 0) return {key:null, waitMs:0};
+  const ready = active.filter(k => {
+    if(k.cooldownUntil && k.cooldownUntil > now) return false;
+    if(k.busy && (k.busyUntil || 0) > now) return false;
+    return true;
+  });
+  if(ready.length === 0){
+    let minWait = 2000;
+    for(const k of active){
+      const freeAt = Math.max(k.cooldownUntil || 0, k.busyUntil || 0, (k.lastUsed || 0) + 300);
+      const w = freeAt - now;
+      if(w > 0 && w < minWait) minWait = w;
+    }
+    return {key:null, waitMs:Math.max(200, minWait)};
+  }
+  ready.sort((a,b) => (a.lastUsed || 0) - (b.lastUsed || 0));
+  return {key:ready[0], waitMs:0};
+}
+async function acquireKey(label, preferTail){
+  while(true){
+    if(state.stopRequested) throw new Error('Arrêt demandé');
+    // Suivi d'une vidéo : utiliser la clé qui a créé la tâche (si elle est encore active)
+    if(preferTail){
+      const pk = state.keyPool.find(k => k.active && k.key.slice(-8) === preferTail);
+      if(pk){
+        const now = Date.now();
+        if(!(pk.cooldownUntil > now) && !(pk.busy && (pk.busyUntil || 0) > now)){pk.busy = true;pk.busyUntil = now + 1000;pk.lastUsed = now;return pk;}
+        await sleep(500);
+        continue;
+      }
+    }
+    const {key, waitMs} = getReadyKey();
+    if(key){key.busy = true;key.busyUntil = Date.now() + 1000;key.lastUsed = Date.now();return key;}
+    if(waitMs === 0) throw new Error('Aucune clé API active');
+    await sleep(Math.min(waitMs, 500));
+  }
+}
+function releaseKey(keyObj){if(!keyObj) return;keyObj.busy = false;keyObj.busyUntil = 0;}
+function renderKeysStatus(){
+  const el=document.getElementById('keys-list');
+  if(!el)return;
+  if(state.keyPool.length===0){el.innerHTML='';return}
+  const now=Date.now();
+  el.innerHTML=state.keyPool.map((k,i)=>{
+    let stateHtml='<span class="badge" style="color:var(--ok);border-color:var(--ok)">Active</span>';
+    if(!k.active)stateHtml='<span class="badge" style="color:var(--err);border-color:var(--err)">Inactive</span>';
+    else if(k.cooldownUntil>now){const sec=Math.ceil((k.cooldownUntil-now)/1000);stateHtml='<span class="badge" style="color:var(--warn);border-color:var(--warn)">Cool '+sec+'s</span>';}
+    else if(k.busy && (k.busyUntil||0)>now){stateHtml='<span class="badge" style="color:var(--acc2);border-color:var(--acc2)">Busy</span>';}
+    return '<div style="padding:.35rem .6rem;background:var(--bg3);border:1px solid var(--line);border-radius:4px;margin-bottom:.25rem;display:flex;justify-content:space-between;align-items:center;font-family:var(--fm);font-size:.65rem"><span style="color:var(--ink);font-weight:600">#'+(i+1)+' · '+esc(k.key.slice(0,8))+'…'+esc(k.key.slice(-4))+'</span>'+stateHtml+'</div>';
+  }).join('');
+}
+function saveKeysFromUI(){
+  const input=document.getElementById('api-keys-input');
+  if(!input)return;
+  const raw=input.value||'';
+  const keys=raw.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length>0);
+  const valid=keys.filter(k=>k.startsWith('sk-'));
+  const invalid=keys.filter(k=>!k.startsWith('sk-'));
+  if(invalid.length>0){if(!confirm(invalid.length+' clé(s) ne commencent pas par "sk-". Les ignorer ?'))return;}
+  setStoredKeys(valid);
+  refreshKeyPool();
+  updateKeysPanel();
+  if(valid.length===0)showToast('Aucune clé valide enregistrée','warn');
+  else showToast(valid.length+' clé(s) enregistrée(s)','success');
+  journalLog(valid.length+' clé(s) API active(s). Parallélisme vidéo : '+valid.length+' worker(s).','key');
+}
+function updateKeysPanel(){
+  const line=document.getElementById('keys-line');
+  const text=document.getElementById('keys-text');
+  const status=document.getElementById('keys-status');
+  const input=document.getElementById('api-keys-input');
+  if(!line||!text||!status)return;
+  refreshKeyPool();
+  const n=state.keyPool.length;
+  if(n>0){
+    line.classList.add('ok');
+    status.className='card-status ok';
+    status.textContent=n+' clé(s)';
+    text.textContent=n+' clé(s) active(s) — '+n+' worker(s) vidéo';
+    if(input && !input.value) input.value=state.keyPool.map(k=>k.key).join('\n');
+  }else{
+    line.classList.remove('ok');
+    status.className='card-status empty';
+    status.textContent='Aucune clé';
+    text.textContent='Aucune clé API enregistrée';
+  }
+  renderKeysStatus();
+  updateButtons();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// API FETCH
+// ══════════════════════════════════════════════════════════════════
+async function apiFetch(url, options, label, maxAttempts){
+  options = options || {};
+  label = label || 'API';
+  maxAttempts = (typeof maxAttempts === 'number' && maxAttempts > 0) ? maxAttempts : 4;
+  let lastErr = null;
+  for(let attempt = 0; attempt < maxAttempts; attempt++){
+    if(state.stopRequested) throw new Error('Arrêt demandé');
+    let keyObj = null;
+    try{
+      keyObj = await acquireKey(label, options.keyTail);
+      const method = options.method || 'GET';
+      const headers = Object.assign({}, options.headers || {}, {'Authorization':'Bearer '+keyObj.key});
+      const finalOptions = Object.assign({}, options, {headers});
+      delete finalOptions.keyTail; delete finalOptions.usedKeyTail;
+      await _rateLimiter.acquire();
+      let res;
+      try {
+        debugLog('api','REQ '+label, method+' · clé '+keyObj.key.slice(-4)+' ('+(attempt+1)+'/'+maxAttempts+')');
+        res = await fetch(url, finalOptions);
+      } finally {
+        _rateLimiter.release();
+        releaseKey(keyObj);
+      }
+      let retryAfter = 0;
+      try{retryAfter = parseInt(res.headers.get('Retry-After')||'0',10)||0}catch(e){}
+      let errorText = '';
+      if(!res.ok){try{errorText = (await res.clone().text()).slice(0,1200)}catch(e){}}
+      debugLog('response','RÉP '+label,'HTTP '+res.status);
+      // usedKeyTail : permet à l'appelant de savoir quelle clé a créé la tâche vidéo
+      if(res.ok){if(keyObj) keyObj.errorCount = 0;options.usedKeyTail = keyObj.key.slice(-8);return res;}
+      if(res.status === 401 || res.status === 403){
+        keyObj.errorCount = (keyObj.errorCount || 0) + 1;
+        if(keyObj.errorCount >= 3){keyObj.active = false;debugLog('error','CLÉ','Clé '+keyObj.key.slice(-4)+' désactivée');renderKeysStatus();}
+        const err = new Error('HTTP '+res.status+' — '+errorText.slice(0,300));
+        err.status = res.status; err.body = errorText;
+        // Basculer sur une autre clé active : écarter celle-ci 60 s et retenter (sinon erreur comme avant)
+        const nowA = Date.now();
+        keyObj.authFailAt = nowA;
+        const otherKey = state.keyPool.some(k => k.active && k !== keyObj && !(k.authFailAt && nowA - k.authFailAt < 60000));
+        if(otherKey && attempt < maxAttempts - 1){
+          keyObj.cooldownUntil = nowA + 60000;
+          debugLog('warn','CLÉ','Clé '+keyObj.key.slice(-4)+' refusée (HTTP '+res.status+') → autre clé');
+          renderKeysStatus();
+          lastErr = err;
+          continue;
+        }
+        throw err;
+      }
+      if(res.status === 429){
+        const wait = retryAfter > 0 ? retryAfter : POLL_429_WAIT;
+        keyObj.cooldownUntil = Date.now() + wait * 1000;
+        debugLog('warn','RATELIMIT','Clé '+keyObj.key.slice(-4)+' → cooldown '+wait+'s');
+        renderKeysStatus();
+        lastErr = new Error('HTTP 429'); lastErr.status = 429;
+        await sleep(Math.min(wait * 1000, 8000));
+        continue;
+      }
+      if(res.status === 404){const err = new Error('HTTP 404');err.status = 404; err.body = errorText;throw err;}
+      if(res.status === 400){const err = new Error('HTTP 400 — '+errorText.slice(0,300));err.status = 400; err.body = errorText;throw err;}
+      if([500,502,503,504,520,522,524].includes(res.status)){
+        const wait = Math.min(60, 8 + attempt * 8);
+        debugLog('warn','SERVICE','HTTP '+res.status+' — attente '+wait+'s');
+        lastErr = new Error('HTTP '+res.status);
+        await sleep(wait * 1000);
+        continue;
+      }
+      const wait = Math.min(60, 6 + attempt * 6);
+      debugLog('warn','HTTP','HTTP '+res.status+' — retry '+wait+'s');
+      lastErr = new Error('HTTP '+res.status);
+      await sleep(wait * 1000);
+    }catch(e){
+      if(keyObj) releaseKey(keyObj);
+      if(e.message === 'Arrêt demandé') throw e;
+      if(e.status === 400 || e.status === 401 || e.status === 403 || e.status === 404) throw e;
+      lastErr = e;
+      const wait = Math.min(40, 4 + attempt * 4);
+      debugLog('warn','NETWORK', e.message + ' — retry '+wait+'s');
+      await sleep(wait * 1000);
+    }
+  }
+  throw lastErr || new Error('Tentatives épuisées pour ' + label);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// JSON PARSER
+// ══════════════════════════════════════════════════════════════════
+function balanceJson(text){let ob=0,ok=0,inString=false,escape=false;for(let i=0;i<text.length;i++){const ch=text[i];if(escape){escape=false;continue}if(ch==='\\'){escape=true;continue}if(ch==='"'){inString=!inString;continue}if(inString)continue;if(ch==='{')ob++;else if(ch==='}')ob--;else if(ch==='[')ok++;else if(ch===']')ok--;}let r=text;if(inString)r+='"';while(ok>0){r+=']';ok--}while(ob>0){r+='}';ob--}return r;}
+function repairJson(text){if(!text)return null;let c=String(text).trim();const fm=c.match(/```(?:json)?\s*([\s\S]*?)```/);if(fm)c=fm[1].trim();const fb=c.indexOf('{');if(fb<0)return null;c=c.slice(fb);const lb=c.lastIndexOf('}');if(lb>0)c=c.slice(0,lb+1);let out='';let inString=false;let strDelim='"';let escape=false;for(let i=0;i<c.length;i++){const ch=c[i];if(escape){if('"\\/bfnrtu'.includes(ch)){out+='\\'+ch;}else{out+=ch;}escape=false;continue}if(ch==='\\'){escape=true;continue}if(ch==='"'||ch==="'"){if(!inString){inString=true;strDelim=ch;out+='"';continue}if(ch===strDelim){inString=false;out+='"';continue}if(ch==='"'){out+='\\"';continue}out+="'";continue}if(inString){if(ch==='\n'){out+='\\n';continue}if(ch==='\r'){out+='\\r';continue}if(ch==='\t'){out+='\\t';continue}const code=ch.charCodeAt(0);if(code<32){out+='\\u'+code.toString(16).padStart(4,'0');continue}}out+=ch;}if(escape)out+='\\';if(inString)out+='"';out=out.replace(/,\s*([}\]])/g,'$1');return out;}
+function extractJson(text){if(!text)return null;const repaired=repairJson(text);if(!repaired){debugLog('error','PARSE','Aucun { trouvé');return null}try{return JSON.parse(repaired)}catch(e1){debugLog('warn','PARSE','1er essai échoué : '+e1.message);try{return JSON.parse(balanceJson(repaired))}catch(e2){debugLog('error','PARSE','2e essai échoué : '+e2.message);return null;}}}
+
+// ══════════════════════════════════════════════════════════════════
+// ANALYSE IMAGES (VISION)
+// ══════════════════════════════════════════════════════════════════
+async function analyzeImage(dataUrl, role){
+  const roleLabel = role === 'protagoniste' ? 'le personnage principal' : 'un personnage secondaire ('+role+')';
+  const systemPrompt = 'Tu es un directeur de casting. Tu examines une image et tu en extrais TOUT le vocabulaire visuel : identité du personnage (visage, âge, cheveux, vêtements, posture) ET style global (médium, palette, lumière, composition). Tu retournes TOUJOURS un JSON strict, valide, sans markdown.';
+  const userPrompt = [
+    'Analyse cette image. Ce personnage est ' + roleLabel + '.',
+    'Retourne UNIQUEMENT ce JSON :',
+    '{',
+    '  "character": {',
+    '    "physical_description_en": "detailed physical description in English (age, face, hair, clothing, posture, expression)",',
+    '    "physical_description_fr": "même description en français",',
+    '    "age_range": "estimated age range",',
+    '    "gender": "estimated gender",',
+    '    "clothing": "clothing description",',
+    '    "posture": "posture and expression"',
+    '  },',
+    '  "style": {',
+    '    "medium": "English", "medium_label_fr": "français",',
+    '    "palette": ["#hex1","#hex2","#hex3","#hex4","#hex5"],',
+    '    "palette_label_fr": "français",',
+    '    "lighting": "English", "composition": "English",',
+    '    "texture": "English", "mood": "English", "extras": "English"',
+    '  },',
+    '  "suggested_genres": ["cinema","manga","animation"],',
+    '  "style_summary_en": "5-8 sentence paragraph in English"',
+    '}'
+  ].join('\n');
+  const content = await callVisionCompletion(systemPrompt, userPrompt, dataUrl, 'Analyse image', 3000, 0.3);
+  const parsed = extractJson(content);
+  if(!parsed) throw new Error('Analyse impossible');
+  return {
+    character: {
+      physical_description_en: String(parsed.character?.physical_description_en || ''),
+      physical_description_fr: String(parsed.character?.physical_description_fr || ''),
+      age_range: String(parsed.character?.age_range || ''),
+      gender: String(parsed.character?.gender || ''),
+      clothing: String(parsed.character?.clothing || ''),
+      posture: String(parsed.character?.posture || '')
+    },
+    style: {
+      medium: String(parsed.style?.medium || ''),
+      medium_label_fr: String(parsed.style?.medium_label_fr || ''),
+      palette: Array.isArray(parsed.style?.palette) ? parsed.style.palette.filter(c=>/^#[0-9a-f]{3,8}$/i.test(String(c))).slice(0,8) : ['#888888','#666666','#444444'],
+      palette_label_fr: String(parsed.style?.palette_label_fr || 'Palette extraite'),
+      lighting: String(parsed.style?.lighting || ''),
+      composition: String(parsed.style?.composition || ''),
+      texture: String(parsed.style?.texture || ''),
+      mood: String(parsed.style?.mood || ''),
+      extras: String(parsed.style?.extras || '')
+    },
+    suggested_genres: Array.isArray(parsed.suggested_genres) ? parsed.suggested_genres : [],
+    style_summary_en: String(parsed.style_summary_en || '')
+  };
+}
+
+async function runAllImageAnalyses(){
+  if(state.isAnalyzingImages) return;
+  const hasAny = state.referenceImages.some(img => img !== null);
+  if(!hasAny){ showToast('Chargez au moins une image','warn'); return; }
+  if(!hasActiveKey()){ showToast('Ajoutez au moins une clé API','error'); return; }
+  
+  state.isAnalyzingImages = true;
+  updateRefPanel();
+  setStatus('Analyse des images de référence…');
+  journalLog('Analyse des images de référence…','analysis');
+  
+  const roles = ['protagoniste', null, null];
+  const roleSelects = [null, document.getElementById('ref-role-1'), document.getElementById('ref-role-2')];
+  
+  for(let i = 0; i < 3; i++){
+    if(state.stopRequested) break;
+    const img = state.referenceImages[i];
+    if(!img) continue;
+    const role = i === 0 ? 'protagoniste' : (roleSelects[i]?.value || 'secondaire');
+    try{
+      setStatus('Analyse personnage '+(i+1)+'/3…');
+      const analysis = await analyzeImage(img, role);
+      state.imageAnalyses[i] = analysis;
+      state.referenceImagesForApi[i] = await resizeImageForApi(img, 1024);
+      journalLog('Personnage '+(i+1)+' analysé — '+(analysis.character.physical_description_fr||'').slice(0,60)+'…','analysis');
+      // Mettre à jour le badge
+      const badge = document.getElementById('ref-badge-'+i);
+      if(badge){ badge.className='ref-analyze-badge ok'; badge.textContent='Analysé'; }
+    }catch(e){
+      debugLog('error','ANALYSE '+(i+1),e.message);
+      journalLog('Analyse personnage '+(i+1)+' échouée : '+e.message,'error');
+      const badge = document.getElementById('ref-badge-'+i);
+      if(badge){ badge.className='ref-analyze-badge pending'; badge.textContent='Erreur'; }
+    }
+  }
+  state.isAnalyzingImages = false;
+  updateRefPanel();
+  saveImages();
+  setStatus(null);
+  showToast('Analyse terminée','success');
+}
+
+function renderImageAnalysis(){
+  const el=document.getElementById('ref-analysis');
+  if(!el)return;
+  const analyses = state.imageAnalyses.filter(a => a !== null);
+  if(analyses.length === 0){el.classList.remove('visible');el.innerHTML='';return}
+  let html='';
+  state.imageAnalyses.forEach((a, idx) => {
+    if(!a) return; // idx = vrai numéro de slot (sinon mauvais libellé si un slot n'est pas analysé)
+    const roleNames = ['Protagoniste','Personnage 2','Personnage 3'];
+    html+='<div style="margin-bottom:.8rem;padding-bottom:.8rem;border-bottom:1px solid var(--line)">';
+    html+='<strong style="color:var(--acc)">'+roleNames[idx]+'</strong>\n';
+    const sw=(a.style.palette||[]).map(c=>'<span class="swatch" style="background:'+esc(c)+';" title="'+esc(c)+'"></span>').join('');
+    html+='<div class="palette">'+sw+'</div>';
+    html+='<strong>Personnage :</strong> '+esc(a.character.physical_description_fr||a.character.physical_description_en||'—')+'\n';
+    if(a.style.medium) html+='<strong>Médium :</strong> '+esc(a.style.medium)+(a.style.medium_label_fr?(' ('+esc(a.style.medium_label_fr)+')'):'')+'\n';
+    html+='</div>';
+  });
+  el.innerHTML=html;
+  el.classList.add('visible');
+}
+
+function updateRefPanel(){
+  const status=document.getElementById('ref-status');
+  const line=document.getElementById('ref-line');
+  const text=document.getElementById('ref-text');
+  const analyzeAllBtn=document.getElementById('ref-analyze-all-btn');
+  if(!status||!line||!text)return;
+
+  const loadedCount = state.referenceImages.filter(i => i !== null).length;
+  const analyzedCount = state.imageAnalyses.filter(a => a !== null).length;
+
+  // Mettre à jour les slots
+  for(let i = 0; i < 3; i++){
+    const slot = document.getElementById('ref-slot-'+i);
+    const container = document.getElementById('ref-img-container-'+i);
+    const placeholder = document.getElementById('ref-placeholder-'+i);
+    const badge = document.getElementById('ref-badge-'+i);
+    if(!slot || !container) continue;
+    
+    if(state.referenceImages[i]){
+      slot.classList.add('has-image');
+      if(container.querySelector('img')){
+        container.querySelector('img').src = state.referenceImages[i];
+      } else {
+        const img = document.createElement('img');
+        img.src = state.referenceImages[i];
+        img.alt = 'Personnage '+(i+1);
+        container.innerHTML = '';
+        container.appendChild(img);
+      }
+      if(placeholder) placeholder.style.display = 'none';
+      if(badge){
+        badge.classList.remove('hidden');
+        if(state.imageAnalyses[i]){
+          badge.className = 'ref-analyze-badge ok';
+          badge.textContent = 'Analysé';
+        } else {
+          badge.className = 'ref-analyze-badge pending';
+          badge.textContent = 'À analyser';
+        }
+      }
+    } else {
+      slot.classList.remove('has-image');
+      if(placeholder) placeholder.style.display = 'block';
+      if(badge) badge.classList.add('hidden');
+    }
+  }
+
+  if(analyzedCount > 0){
+    status.className='card-status ok';
+    status.textContent=analyzedCount+' analysé(s)';
+    line.classList.add('ok');
+    text.textContent=analyzedCount+' personnage(s) analysé(s) — prêt pour la génération';
+  } else if(loadedCount > 0){
+    status.className='card-status pending';
+    status.textContent=loadedCount+' chargé(s)';
+    line.classList.remove('ok');
+    text.textContent='Image(s) chargée(s) — cliquez sur « Analyser toutes les images »';
+  } else {
+    status.className='card-status empty';
+    status.textContent='Aucune image';
+    line.classList.remove('ok');
+    text.textContent='Chargez au moins une image (protagoniste)';
+  }
+
+  if(analyzeAllBtn) analyzeAllBtn.disabled = loadedCount === 0 || state.isAnalyzingImages;
+  renderImageAnalysis();
+  updateButtons();
+}
+
+function clearAllImages(){
+  state.referenceImages = [null, null, null];
+  state.referenceImageNames = [null, null, null];
+  state.referenceImagesForApi = [null, null, null];
+  state.imageAnalyses = [null, null, null];
+  for(let i = 0; i < 3; i++){
+    const input = document.getElementById('ref-input-'+i);
+    if(input) input.value = '';
+    const roleSelect = document.getElementById('ref-role-'+(i+1));
+    if(roleSelect) roleSelect.value = '';
+  }
+  updateRefPanel();
+  saveImages();
+  showToast('Toutes les images retirées','success');
+}
+
+function handleImageFile(file, slotIndex){
+  if(!file)return;
+  if(!file.type||!file.type.startsWith('image/')){showToast('Fichier non-image','error');return}
+  if(file.size>10*1024*1024){showToast('Image trop lourde (max 10 Mo)','error');return}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    state.referenceImages[slotIndex] = e.target.result;
+    state.referenceImageNames[slotIndex] = file.name;
+    state.referenceImagesForApi[slotIndex] = null;
+    state.imageAnalyses[slotIndex] = null;
+    updateRefPanel();
+    saveImages();
+    journalLog('Image '+(slotIndex+1)+' chargée : '+file.name,'style');
+  };
+  reader.onerror=()=>showToast('Lecture impossible','error');
+  reader.readAsDataURL(file);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CHAT / VISION
+// ══════════════════════════════════════════════════════════════════
+async function callChatCompletion(systemPrompt, userPrompt, label, maxTokens, temperature){
+  const sysMsg=sanitizeForApi(systemPrompt)||'Assistant.';
+  const usrMsg=sanitizeForApi(userPrompt);
+  if(!usrMsg)throw new Error('userPrompt vide');
+  const body={model:MODEL_TEXT,messages:[{role:'system',content:sysMsg},{role:'user',content:usrMsg}],temperature:typeof temperature==='number'?temperature:0.7,max_tokens:maxTokens||32000,reasoning_effort:'none',chat_template_kwargs:{enable_thinking:false}};
+  const res=await apiFetch(API_BASE+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},label,3);
+  const data=await res.json();
+  const choice=data.choices&&data.choices[0];
+  const msg=choice&&choice.message;
+  let content=msg&&msg.content;
+  if(!content&&msg&&msg.reasoning_content)content=msg.reasoning_content;
+  debugLog('response',label,'finish_reason='+(choice&&choice.finish_reason)+' · len='+((content&&content.length)||0));
+  return content;
+}
+async function callVisionCompletion(systemPrompt, userText, imageDataUrl, label, maxTokens, temperature){
+  const sysMsg=sanitizeForApi(systemPrompt)||'Directeur artistique.';
+  const usrText=sanitizeForApi(userText);
+  const body={model:MODEL_TEXT,messages:[{role:'system',content:sysMsg},{role:'user',content:[{type:'text',text:usrText},{type:'image_url',image_url:{url:imageDataUrl}}]}],temperature:typeof temperature==='number'?temperature:0.3,max_tokens:maxTokens||3000,reasoning_effort:'none',chat_template_kwargs:{enable_thinking:false}};
+  const res=await apiFetch(API_BASE+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},label,3);
+  const data=await res.json();
+  const choice=data.choices&&data.choices[0];
+  const msg=choice&&choice.message;
+  let content=msg&&msg.content;
+  if(!content&&msg&&msg.reasoning_content)content=msg.reasoning_content;
+  debugLog('response',label,'finish_reason='+(choice&&choice.finish_reason)+' · len='+((content&&content.length)||0));
+  return content;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// VIDEO TASK
+// ══════════════════════════════════════════════════════════════════
+function decodeCompositeId(composite){
+  if(!composite||typeof composite!=='string')return null;
+  if(!composite.startsWith('video_'))return null;
+  let b64=composite.slice(6);
+  while(b64.length%4)b64+='=';
+  try{
+    const decoded=atob(b64);
+    const m=decoded.match(/video_id:([^;]+)/);
+    if(m&&m[1])return m[1].trim();
+  }catch(e){}
+  return null;
+}
+async function createVideoTask(prompt, imageUrl, numFrames) {
+  const body={model:MODEL_VIDEO,prompt:sanitizeForApi(prompt),num_frames:numFrames||NUM_FRAMES,frame_rate:FRAME_RATE,ratio:VIDEO_RATIO,aspect_ratio:VIDEO_RATIO};
+  if(imageUrl)body.image=imageUrl;
+  debugLog('ai','PROMPT VIDÉO','Envoi ('+body.prompt.length+' chars · '+numFrames+' frames'+(imageUrl?' · +image ref':'')+')');
+  const reqOpts={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};
+  const res=await apiFetch(API_BASE+'/videos',reqOpts,'Video Task',4);
+  const data=await res.json();
+  const compositeId=data.video_id||data.id||data.task_id;
+  if(!compositeId)throw new Error('Pas de video_id');
+  const innerId=decodeCompositeId(compositeId);
+  debugLog('info','VIDÉO ID','composite='+String(compositeId).slice(0,60)+'… · inner='+(innerId||'—'));
+  return { compositeId: String(compositeId), innerId, keyTail: reqOpts.usedKeyTail || null, raw:data };
+}
+async function pollVideo(videoIdObj, onProgress, resumed) {
+  const compositeId = (typeof videoIdObj === 'string') ? videoIdObj : videoIdObj.compositeId;
+  const innerId = (videoIdObj && videoIdObj.innerId) || decodeCompositeId(compositeId);
+  const keyTail = (videoIdObj && typeof videoIdObj === 'object' && videoIdObj.keyTail) || null; // clé qui a créé la tâche
+  if(!compositeId) throw new Error('Pas de composite ID');
+  const candidates = [{label:'composite', value:compositeId}];
+  if(innerId && innerId !== compositeId) candidates.push({label:'inner', value:innerId});
+
+  // Attente initiale (inutile quand on reprend le suivi d'une tâche déjà ancienne)
+  let rem = resumed ? 0 : POLL_INITIAL_WAIT;
+  while(rem > 0){
+    if(state.stopRequested) throw new Error('Arrêt demandé');
+    onProgress('Préparation — '+rem+'s');
+    await sleep(1000);
+    rem--;
+  }
+
+  let total404 = 0;
+  let currentIdx = 0;
+  let currentInterval = POLL_MIN_INTERVAL;
+
+  for(let attempt = 0; attempt < POLL_MAX_ATTEMPTS; attempt++){
+    if(state.stopRequested) throw new Error('Arrêt demandé');
+    if(attempt > 0){
+      // Intervalle progressif
+      currentInterval = Math.min(POLL_MAX_INTERVAL, Math.round(currentInterval * POLL_BACKOFF));
+      let r = currentInterval;
+      while(r > 0){
+        if(state.stopRequested) throw new Error('Arrêt demandé');
+        onProgress('Création — '+r+'s avant prochain check');
+        await sleep(1000);
+        r--;
+      }
+    }
+    const cand = candidates[currentIdx % candidates.length];
+    const url = POLL_BASE + '?video_id=' + encodeURIComponent(cand.value) + '&model_name=' + encodeURIComponent(MODEL_VIDEO);
+    try{
+      await _pollGate.wait();
+      const res = await apiFetch(url, {method:'GET', keyTail}, 'Polling', 1);
+      const d = await res.json();
+      total404 = 0;
+      const status = d.status || 'unknown';
+      const progress = d.progress || 0;
+      onProgress('Création — '+progress+'%');
+      if(status === 'completed' || status === 'succeeded' || status === 'done'){
+        const videoUrl = (d.metadata && d.metadata.url) || d.url || (d.output && d.output.url);
+        if(!videoUrl) throw new Error('Terminé mais pas d\'URL');
+        return videoUrl;
+      }
+      if(status === 'failed' || status === 'error' || status === 'cancelled') throw Object.assign(new Error('Échec ('+status+')'),{final:true});
+    }catch(e){
+      if(e.message === 'Arrêt demandé') throw e;
+      // Échec annoncé par l'API : on arrête d'interroger (sinon ~35 min perdues avant la relance)
+      if(e.final) throw e;
+      if(e.status === 404 || (e.status === 400 && e.body && e.body.includes('task_not_exist'))){
+        total404++;
+        currentIdx++;
+        if(total404 >= (resumed ? 6 : 20)) throw new Error('TÂCHE_DISPARUE');
+      } else if(e.status === 429){
+        await sleep(POLL_429_WAIT * 1000);
+      }
+    }
+  }
+  throw new Error('TASK_LOST');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SCÉNARIO — GÉNÉRATION (AVEC BIBLE DE CONTINUITÉ)
+// ══════════════════════════════════════════════════════════════════
+async function buildScenario() {
+  const genre = state.genre;
+  const style = state.selectedStyle;
+  const analyses = state.imageAnalyses.filter(a => a !== null);
+  const hasImages = analyses.length > 0;
+  const char1 = state.imageAnalyses[0];
+  const char2 = state.imageAnalyses[1];
+  const char3 = state.imageAnalyses[2];
+  const role1 = document.getElementById('ref-role-1')?.value || '';
+  const role2 = document.getElementById('ref-role-2')?.value || '';
+
+  // Construire la Bible de Continuité
+  let continuityBible = '';
+  if(hasImages){
+    continuityBible += 'BIBLE DE CONTINUITÉ — Ces descriptions DOIVENT être identiques dans TOUTES les séquences :\n';
+    continuityBible += 'Personnage principal : ' + (char1?.character.physical_description_en || 'non décrit') + '\n';
+    if(char2){
+      const roleLabels = { antagoniste:'Antagoniste', allie:'Allié', mentor:'Mentor', amour:'Amour', contrepoint:'Contrepoint' };
+      continuityBible += 'Personnage 2 (' + (roleLabels[role1] || 'secondaire') + ') : ' + (char2?.character.physical_description_en || 'non décrit') + '\n';
+    }
+    if(char3){
+      const roleLabels = { antagoniste:'Antagoniste', allie:'Allié', mentor:'Mentor', amour:'Amour', contrepoint:'Contrepoint' };
+      continuityBible += 'Personnage 3 (' + (roleLabels[role2] || 'secondaire') + ') : ' + (char3?.character.physical_description_en || 'non décrit') + '\n';
+    }
+    continuityBible += 'Palette du film : ' + (char1?.style.palette_label_fr || '') + '\n';
+    continuityBible += 'Médium visuel : ' + (char1?.style.medium || style.medium) + '\n';
+  } else {
+    continuityBible = 'Aucune image de référence. Le personnage principal sera décrit par le scénario.';
+  }
+
+  // Contexte utilisateur
+  let userContext = '';
+  if (state.scriptMode === 'auto') {
+    const theme = document.getElementById('auto-theme-input')?.value?.trim() || '';
+    const structure = document.getElementById('auto-structure-select')?.value || 'linear';
+    const tone = document.getElementById('auto-tone-select')?.value || 'melancholic';
+    userContext = `Thème : "${theme}". Structure : ${NARRATIVE_STRUCTURES[structure]}. ${TONES[tone]}`;
+  } else if (state.scriptMode === 'guided') {
+    const checked = [...document.querySelectorAll('#guided-options input:checked')].map(i => i.dataset.element);
+    const lieu = document.getElementById('guided-lieu-input')?.value?.trim() || '';
+    const epoque = document.getElementById('guided-epoque-input')?.value?.trim() || '';
+    userContext = `Éléments : ${checked.join(', ') || 'aucun'}. Lieu : ${lieu||'non spécifié'}. Époque : ${epoque||'non spécifiée'}.`;
+  } else {
+    const story = document.getElementById('story-input')?.value?.trim() || '';
+    userContext = `Histoire écrite par l'utilisateur :\n${story.slice(0, 4000)}`;
+  }
+
+  const genreLabel = GENRES[genre]?.name || genre;
+
+  const systemPrompt = [
+    'Tu es un réalisateur de cinéma d\'auteur. Tu vas écrire le scénario COMPLET d\'UN SEUL FILM de 4 minutes, composé de 24 plans de 10 secondes.',
+    'Le spectateur doit voir UN FILM COHÉRENT, pas 24 clips indépendants. Chaque plan prépare le suivant et résonne avec le précédent.',
+    '',
+    '═══════════════════════════════════════════════════════════',
+    'RÈGLES ABSOLUES DE COHÉRENCE :',
+    '═══════════════════════════════════════════════════════════',
+    '',
+    '1. LE PERSONNAGE PRINCIPAL apparaît dans AU MOINS 20 des 24 séquences. Sa description physique est IDENTIQUE dans toutes les séquences.',
+    '',
+    '2. CHAQUE SÉQUENCE précise EXPLICITEMENT :',
+    '   - characters_present : qui est à l\'écran. Utilise ["protagoniste"] ou ["protagoniste","personnage2"] ou ["personnage2"] seul (rare).',
+    '   - shot_type : "champ" (on voit le personnage qui parle) ou "contre-champ" (on voit ce que le personnage regarde).',
+    '   - La description du décor DOIT être cohérente avec les séquences précédentes.',
+    '',
+    '3. CHAMP-CONTRE-CHAMP OBLIGATOIRE :',
+    '   - Si un dialogue a lieu entre deux personnages, alterne les plans de champ et de contre-champ.',
+    '   - Exemple : Séq 5 = champ sur protagoniste qui parle. Séq 6 = contre-champ sur personnage 2 qui écoute/répond.',
+    '',
+    '4. TRANSITIONS NARRATIVES :',
+    '   - "Le protagoniste regarde vers la droite" → le plan suivant montre ce qu\'il voit.',
+    '   - "Il ouvre une porte" → le plan suivant montre ce qu\'il découvre.',
+    '   - Utilise des raccords dans le mouvement (le personnage commence un geste, le plan suivant continue ce geste).',
+    '',
+    '5. PROGRESSION EN 3 ACTES :',
+    '   - ACTE I (séquences 1-6) : Exposition. Présenter le protagoniste, son monde, son désir/manque.',
+    '   - ACTE II (séquences 7-18) : Confrontation. Le conflit émerge, les obstacles se dressent.',
+    '   - ACTE III (séquences 19-24) : Résolution. Climax émotionnel, transformation, résonance finale.',
+    '',
+    '6. PROGRESSION ÉMOTIONNELLE LINÉAIRE :',
+    '   - Le protagoniste commence dans un état émotionnel et termine dans un autre.',
+    '   - Chaque séquence montre une étape de cette transformation.',
+    '',
+    '═══════════════════════════════════════════════════════════',
+    'CONTEXTE VISUEL :',
+    '═══════════════════════════════════════════════════════════',
+    'Genre : ' + genreLabel,
+    'Style : ' + style.name + ' — ' + style.desc,
+    'Médium : ' + (char1?.style.medium || style.medium),
+    'Palette : ' + (char1?.style.palette_label_fr || style.palette_label),
+    'Ambiance : ' + (char1?.style.mood || style.mood),
+    '',
+    '═══════════════════════════════════════════════════════════',
+    continuityBible,
+    '═══════════════════════════════════════════════════════════',
+    '',
+    userContext,
+    '',
+    'Retourne UNIQUEMENT ce JSON (une seule ligne) :',
+    '{',
+    '  "title": "titre du film",',
+    '  "logline": "une phrase qui résume le film",',
+    '  "protagonist_arc": "de [état initial] à [état final]",',
+    '  "setting": "description du/des décors principaux",',
+    '  "sequences": [',
+    '    {',
+    '      "index": 1,',
+    '      "act": "I",',
+    '      "characters_present": ["protagoniste"],',
+    '      "shot_type": "champ",',
+    '      "decor": "description du décor",',
+    '      "camera": "mouvement de caméra (ex: dolly-in, plan large statique)",',
+    '      "action": "ce que fait le personnage",',
+    '      "emotion": "état émotionnel visible",',
+    '      "dialogue_fr": "réplique en français (ou vide)",',
+    '      "transition_to_next": "comment ce plan se connecte au suivant"',
+    '    },',
+    '    ... 24 éléments exactement',
+    '  ]',
+    '}'
+  ].filter(Boolean).join('\n');
+
+  debugLog('ai','SCÉNARIO','Demande de scénario complet (24 séquences, '+genre+', '+style.name+')');
+  const content = await callChatCompletion(systemPrompt, 'Écris le scénario complet. N\'oublie pas : le protagoniste apparaît dans au moins 20 séquences, et chaque dialogue implique un champ-contre-champ.', 'Scénario', 8000, 0.7);
+  if(!content) return null;
+  const parsed = extractJson(content);
+  if(!parsed) return null;
+
+  const sequences = Array.isArray(parsed.sequences) ? parsed.sequences : [];
+  const normalized = sequences.slice(0, 24).map((s, i) => ({
+    index: i + 1,
+    act: s.act || (i < 6 ? 'I' : i < 18 ? 'II' : 'III'),
+    characters_present: Array.isArray(s.characters_present) ? s.characters_present : ['protagoniste'],
+    shot_type: String(s.shot_type || 'champ'),
+    decor: String(s.decor || ''),
+    camera: String(s.camera || 'static wide shot'),
+    action: String(s.action || ''),
+    emotion: String(s.emotion || ''),
+    dialogue_fr: cleanLine(String(s.dialogue_fr || '')),
+    transition_to_next: String(s.transition_to_next || 'cut')
+  }));
+  while(normalized.length < 24){
+    normalized.push({
+      index: normalized.length + 1,
+      act: normalized.length < 6 ? 'I' : normalized.length < 18 ? 'II' : 'III',
+      characters_present: ['protagoniste'],
+      shot_type: 'champ',
+      decor: '',
+      camera: 'static wide shot',
+      action: 'Le personnage est présent, silencieux.',
+      emotion: 'neutre',
+      dialogue_fr: '',
+      transition_to_next: 'cut'
+    });
+  }
+
+  return {
+    title: parsed.title || 'Sans titre',
+    logline: parsed.logline || '',
+    protagonist_arc: parsed.protagonist_arc || '',
+    setting: parsed.setting || '',
+    sequences: normalized
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PROMPT BUILDER POUR CLIPS
+// ══════════════════════════════════════════════════════════════════
+function buildClipPrompt(sequence, scenario, style) {
+  const char1 = state.imageAnalyses[0];
+  const hasImages = !!char1;
+  const charDesc = hasImages ? char1.character.physical_description_en : 'a human character described by the user';
+  const styleMedium = hasImages ? char1.style.medium : style.medium;
+  const stylePalette = hasImages ? char1.style.palette.join(', ') : style.palette.join(', ');
+  const stylePaletteLabel = hasImages ? char1.style.palette_label_fr : style.palette_label;
+  const styleMood = hasImages ? char1.style.mood : style.mood;
+  const styleComposition = hasImages ? char1.style.composition : style.composition;
+  const styleLighting = hasImages ? char1.style.lighting : style.lighting;
+
+  const lines = [
+    'CINEMATIC FILM — VERTICAL 9:16 — 10 SECONDS — 24 FPS',
+    '',
+    'STYLE: ' + style.name + ' — ' + style.desc,
+    'MEDIUM: ' + styleMedium,
+    'PALETTE: ' + stylePaletteLabel + ' (' + stylePalette + ')',
+    'LIGHTING: ' + styleLighting,
+    'COMPOSITION: ' + styleComposition,
+    'MOOD: ' + styleMood,
+    '',
+    'CONTINUITY — This is sequence ' + sequence.index + '/24 of a coherent film. The SAME character appears across all sequences.',
+    'CHARACTER: ' + charDesc + '. The character must be visually IDENTICAL to the reference image.',
+    '',
+    'SCENE: ' + (sequence.decor || scenario.setting || ''),
+    'ACTION: ' + sequence.action,
+    'EMOTION: ' + sequence.emotion,
+    'SHOT TYPE: ' + sequence.shot_type + ' — ' + (sequence.shot_type === 'champ' ? 'we see the character who speaks' : 'we see what the character looks at'),
+    sequence.characters_present.length > 1 ? 'OTHER CHARACTERS PRESENT: ' + sequence.characters_present.slice(1).join(', ') : '',
+    '',
+    'CAMERA: ' + sequence.camera,
+    'Shot pattern: wide establishing → medium reverse shot → close-up → insert → pull-back.',
+    '',
+    sequence.dialogue_fr ? 'DIALOGUE (French, spoken to camera): "' + sequence.dialogue_fr + '"' : 'No dialogue in this sequence.',
+    '',
+    'SOUND: realistic diegetic sound effects only. ABSOLUTELY NO MUSIC.',
+    '',
+    'TRANSITION TO NEXT: ' + sequence.transition_to_next,
+    '',
+    'CONSTRAINTS: vertical 9:16, exactly 10 seconds, fully clothed, no text overlays, no watermarks, character consistency with reference image.'
+  ];
+  return lines.filter(Boolean).join('\n');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// UI RENDER
+// ══════════════════════════════════════════════════════════════════
+function updateButtons(){
+  const launch=document.getElementById('launch-btn');
+  const stop=document.getElementById('stop-btn');
+  const play=document.getElementById('play-film-btn');
+  const replay=document.getElementById('replay-btn');
+  const hasKey=hasActiveKey();
+  const hasVideos=state.videos.filter(v=>v.status==='done').length>0;
+  const missing=missingVideos();
+  if(launch){
+    launch.disabled=!hasKey||state.isRunning;
+    if(!hasKey)launch.innerHTML='Ajoutez au moins une clé API';
+    else if(state.isRunning)launch.innerHTML='Création en cours…';
+    else if(state.script&&missing>0)launch.innerHTML='Relancer les vidéos manquantes ('+missing+')';
+    else if(state.script)launch.innerHTML='🎬 Créer un nouveau film (24 séquences)';
+    else launch.innerHTML='🎬 Créer le film (24 séquences)';
+  }
+  if(stop)stop.classList.toggle('hidden',!state.isRunning);
+  const nf=document.getElementById('new-film-btn');
+  if(nf)nf.classList.toggle('hidden',!state.script||state.isRunning);
+  if(play)play.disabled=!hasVideos||state.isPlayingFilm||state.isRunning;
+  if(replay)replay.disabled=!hasVideos||state.isPlayingFilm||state.isRunning;
+  const pb=document.getElementById('player-badge');
+  if(pb)pb.textContent=state.videos.filter(v=>v.status==='done').length;
+}
+
+function renderScript(){
+  const view=document.getElementById('script-view');
+  const badge=document.getElementById('script-badge');
+  const section=document.getElementById('section-script');
+  const status=document.getElementById('script-status');
+  if(!view)return;
+  if(!state.script){if(section)section.classList.add('hidden');if(status)status.textContent='—';return}
+  if(section)section.classList.remove('hidden');
+  if(status)status.textContent='3 actes · 24 séq.';
+  const s=state.script;
+  if(badge)badge.textContent=(s.sequences||[]).length+' séquences';
+  let html='';
+  html+='<div style="font-weight:600;font-size:.95rem;margin-bottom:.3rem">'+esc(s.title||'')+'</div>';
+  html+='<div style="font-style:italic;color:var(--dim);font-size:.78rem;margin-bottom:.8rem">'+esc(s.logline||'')+'</div>';
+  if(s.protagonist_arc)html+='<div style="font-size:.72rem;color:var(--acc2);font-family:var(--fm);margin-bottom:.8rem">ARC : '+esc(s.protagonist_arc)+'</div>';
+  if(s.setting)html+='<div style="font-size:.72rem;color:var(--dim);font-family:var(--fm);margin-bottom:.8rem">DÉCOR : '+esc(s.setting)+'</div>';
+  (s.sequences||[]).forEach((seq,i)=>{
+    const actLabel = seq.act || (i<6?'I':i<18?'II':'III');
+    const actColors = {I:'var(--acc2)', II:'var(--warn)', III:'var(--ok)'};
+    html+='<div class="scene-item">';
+    html+='<div class="si-head" style="color:'+(actColors[actLabel]||'var(--acc)')+'">SÉQ. '+String(seq.index||(i+1)).padStart(2,'0')+' · ACTE '+actLabel+' · 10s</div>';
+    if(seq.characters_present && seq.characters_present.length) html+='<div class="si-line"><span class="si-label">PERSONNAGES</span>'+esc(seq.characters_present.join(', '))+'</div>';
+    if(seq.shot_type) html+='<div class="si-line"><span class="si-label">PLAN</span>'+esc(seq.shot_type)+'</div>';
+    if(seq.decor) html+='<div class="si-line"><span class="si-label">DÉCOR</span>'+esc(seq.decor)+'</div>';
+    if(seq.camera) html+='<div class="si-line"><span class="si-label">CAMÉRA</span>'+esc(seq.camera)+'</div>';
+    if(seq.action) html+='<div class="si-line"><span class="si-label">ACTION</span>'+esc(seq.action)+'</div>';
+    if(seq.emotion) html+='<div class="si-line"><span class="si-label">ÉMOTION</span>'+esc(seq.emotion)+'</div>';
+    if(seq.dialogue_fr) html+='<div class="si-line si-dialogue"><span class="si-label">DIALOGUE</span>« '+esc(seq.dialogue_fr)+' »</div>';
+    if(seq.transition_to_next) html+='<div class="si-line"><span class="si-label">TRANSITION</span>'+esc(seq.transition_to_next)+'</div>';
+    html+='</div>';
+  });
+  view.innerHTML=html;
+}
+
+function renderVideos(){
+  const grid=document.getElementById('videos-grid');
+  const badge=document.getElementById('videos-badge');
+  const section=document.getElementById('section-videos');
+  if(!grid)return;
+  if(state.videos.length===0){if(section)section.classList.add('hidden');return}
+  if(section)section.classList.remove('hidden');
+  if(badge)badge.textContent=state.videos.filter(v=>v.status==='done').length+'/'+state.videos.length;
+
+  // Nettoyer les cartes en trop
+  while(grid.children.length>state.videos.length)grid.removeChild(grid.lastChild);
+  // Créer les cartes manquantes
+  for(let i=grid.children.length;i<state.videos.length;i++){
+    const card=document.createElement('div');
+    card.className='vcard';
+    card.dataset.index=String(i);
+    card.dataset.status='';
+    card.dataset.progress='';
+    card.dataset.url='';
+    card.innerHTML='<div class="vcard-header"><span>SC. '+String(i+1).padStart(2,'0')+'</span><span class="vcard-status"></span></div><div class="vcard-body" style="position:relative"></div>';
+    grid.appendChild(card);
+  }
+  state.videos.forEach((v,i)=>{
+    const card=grid.children[i];
+    if(!card)return;
+    const statusEl=card.querySelector('.vcard-status');
+    const bodyEl=card.querySelector('.vcard-body');
+    let baseClass='vcard';
+    if(v.status==='done')baseClass+=' done';
+    else if(v.status==='error')baseClass+=' error';
+    else if(v.status==='loading'||v.status==='pending')baseClass+=' generating';
+    if(card.className!==baseClass)card.className=baseClass;
+
+    if(v.status==='done'&&v.url){
+      if(card.dataset.url!==v.url||!bodyEl.querySelector('video')){
+        statusEl.innerHTML='<span style="color:var(--ok);font-weight:700">OK</span>';
+        bodyEl.innerHTML='';
+        // Bouton de téléchargement EN HAUT (toujours visible)
+        const dlWrap = document.createElement('div');
+        dlWrap.className = 'vcard-download';
+        const dl=document.createElement('a');
+        dl.href=v.url;dl.target='_blank';dl.rel='noopener noreferrer';
+        dl.setAttribute('download','scene-'+String(i+1).padStart(2,'0')+'.mp4');
+        dl.textContent='↓ Télécharger';
+        dlWrap.appendChild(dl);
+        bodyEl.appendChild(dlWrap);
+        // Vidéo
+        const video=document.createElement('video');
+        video.src=v.url;video.controls=true;video.preload='metadata';
+        video.setAttribute('playsinline','');
+        bodyEl.appendChild(video);
+        card.dataset.url=v.url;
+      }
+    } else if(v.status==='error'){
+      if(card.dataset.status!=='error'){
+        statusEl.innerHTML='<span style="color:var(--err);font-weight:700">ERR</span>';
+        bodyEl.innerHTML='<div class="vcard-ph" style="color:var(--err);font-size:.7rem">❌ Échec de génération<br><span style="font-size:.6rem;color:var(--faint)">'+esc(v.error||'')+'</span></div>';
+      }
+    } else {
+      statusEl.innerHTML='<span class="spinner" style="width:12px;height:12px"></span>';
+      const progressTxt=v.progress||'En attente…';
+      if(card.dataset.progress!==progressTxt||card.dataset.status!==v.status){
+        bodyEl.innerHTML='<div class="vcard-ph"><div class="spinner"></div><span>'+esc(progressTxt)+'</span></div>';
+      }
+    }
+    card.dataset.status=v.status||'';
+    card.dataset.progress=v.progress||'';
+  });
+
+  const allDone = state.videos.length > 0 && state.videos.every(v=>v.status==='done');
+  const dlPanel = document.getElementById('download-panel');
+  if(dlPanel) dlPanel.classList.toggle('hidden', !allDone);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DOWNLOAD ALL
+// ══════════════════════════════════════════════════════════════════
+async function downloadAllVideos(){
+  const done = state.videos.filter(v=>v.status==='done' && v.url);
+  if(done.length === 0){ showToast('Aucune vidéo à télécharger','error'); return; }
+  const statusEl = document.getElementById('download-status');
+  const btn = document.getElementById('download-all-btn');
+  if(btn) btn.disabled = true;
+  let okCount = 0;
+  for(let i=0;i<done.length;i++){
+    const v = done[i];
+    const num = String(i+1).padStart(2,'0');
+    if(statusEl) statusEl.textContent = 'Téléchargement '+num+'/'+done.length+'…';
+    try{
+      const res = await fetch(v.url);
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'scene-'+num+'.mp4';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+      okCount++;
+      await sleep(800);
+    }catch(e){
+      debugLog('warn','DOWNLOAD','Erreur scène '+num+' : '+e.message);
+    }
+  }
+  // Annoncer le vrai nombre (le téléchargement groupé peut être refusé par le serveur vidéo depuis un fichier local)
+  if(statusEl) statusEl.textContent = okCount===done.length ? 'Téléchargement terminé.' : 'Téléchargement terminé : '+okCount+'/'+done.length+'. Pour les autres, utilisez le bouton « ↓ Télécharger » de chaque séquence.';
+  if(btn) btn.disabled = false;
+  showToast(okCount+'/'+done.length+' vidéos téléchargées', okCount===done.length?'success':'warn');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SAUVEGARDE DU PROJET (IndexedDB — les data URI sont trop grosses pour localStorage)
+// ══════════════════════════════════════════════════════════════════
+const projectDB = {
+  _db: null,
+  open(){
+    if(this._db) return Promise.resolve(this._db);
+    return new Promise((res, rej) => {
+      if(!window.indexedDB) return rej(new Error('IndexedDB indisponible'));
+      const rq = indexedDB.open(PROJECT_DB_NAME, 1);
+      rq.onupgradeneeded = () => { const d = rq.result; if(!d.objectStoreNames.contains('kv')) d.createObjectStore('kv'); };
+      rq.onsuccess = () => { this._db = rq.result; res(this._db); };
+      rq.onerror = () => rej(rq.error);
+    });
+  },
+  _tx(mode, fn){
+    return this.open().then(d => new Promise((res, rej) => {
+      const tx = d.transaction('kv', mode); const rq = fn(tx.objectStore('kv'));
+      tx.oncomplete = () => res(rq && rq.result); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error);
+    }));
+  },
+  get(k){ return this._tx('readonly', s => s.get(k)); },
+  put(k, v){ return this._tx('readwrite', s => s.put(v, k)); },
+  del(k){ return this._tx('readwrite', s => s.delete(k)); }
+};
+function missingVideos(){
+  if(!state.script) return 0;
+  const n = (state.script.sequences||[]).slice(0, SCENE_COUNT).length;
+  return n - state.videos.filter(v => v.status === 'done').length;
+}
+// Copie « JSON » : uniquement des données clonables (aucune Promise, fonction, Blob…)
+function snapshotProject(){
+  return JSON.parse(JSON.stringify({
+    ts: Date.now(),
+    script: state.script,
+    videos: state.videos.map(v => ({status: v.status, url: v.url || null, prompt: v.prompt || '', index: v.index, error: v.error || '', task: v.task || null}))
+  }));
+}
+let _projSaving = false, _projDirty = false;
+function saveProject(){
+  _projDirty = true;
+  if(_projSaving) return;
+  _projSaving = true;
+  (async () => {
+    while(_projDirty){
+      _projDirty = false;
+      try{ await projectDB.put('project', snapshotProject()); }
+      catch(e){ debugLog('warn','SAUVEGARDE','Projet non sauvegardé : '+e.message); }
+    }
+    _projSaving = false;
+  })();
+}
+function saveImages(){
+  const data = JSON.parse(JSON.stringify({
+    referenceImages: state.referenceImages, referenceImageNames: state.referenceImageNames,
+    referenceImagesForApi: state.referenceImagesForApi, imageAnalyses: state.imageAnalyses
+  }));
+  projectDB.put('images', data).catch(e => debugLog('warn','SAUVEGARDE','Images non sauvegardées : '+e.message));
+}
+async function loadProject(){
+  try{
+    const imgs = await projectDB.get('images');
+    const ok3 = a => Array.isArray(a) && a.length === 3;
+    if(imgs && ok3(imgs.referenceImages)){
+      state.referenceImages = imgs.referenceImages;
+      if(ok3(imgs.referenceImageNames)) state.referenceImageNames = imgs.referenceImageNames;
+      if(ok3(imgs.referenceImagesForApi)) state.referenceImagesForApi = imgs.referenceImagesForApi;
+      if(ok3(imgs.imageAnalyses)) state.imageAnalyses = imgs.imageAnalyses;
+    }
+    const p = await projectDB.get('project');
+    if(p && p.script && Array.isArray(p.script.sequences) && !state.isRunning){
+      state.script = p.script;
+      // Vidéos en cours à la fermeture : à relancer (le suivi de leur tâche sera repris si possible)
+      state.videos = (p.videos || []).map((v, i) => {
+        const done = v.status === 'done' && v.url;
+        return {status: done ? 'done' : 'error', url: done ? v.url : null, prompt: v.prompt || '', index: v.index || i + 1,
+          error: done ? '' : (v.status === 'error' && v.error ? v.error : 'Interrompue — cliquez « Relancer »'), task: done ? null : (v.task || null)};
+      });
+      const doneN = state.videos.filter(v => v.status === 'done').length;
+      const miss = missingVideos();
+      journalLog('Projet restauré — « '+(state.script.title||'Sans titre')+' » · '+doneN+' séquence(s) prête(s)'+(miss>0?' · '+miss+' à relancer (bouton « Relancer les vidéos manquantes »)':''),'success');
+      updatePipelineStep(miss > 0 ? 4 : 5);
+      if(doneN > 0) document.getElementById('section-player').classList.remove('hidden');
+    }
+  }catch(e){
+    debugLog('warn','RESTAURATION', e.message);
+  }
+  updateRefPanel();
+  renderScript();
+  renderVideos();
+  updateButtons();
+}
+function clearProject(){
+  if(state.isRunning) return;
+  if(!confirm('Effacer le scénario et les vidéos de ce film ? (les images des personnages sont conservées)')) return;
+  state.script = null;
+  state.videos = [];
+  ['section-script','section-videos','section-player'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('download-panel').classList.add('hidden');
+  document.getElementById('videos-grid').innerHTML='';
+  renderScript(); renderVideos(); updateButtons(); updatePipelineStep(1);
+  projectDB.del('project').catch(()=>{});
+  journalLog('Nouveau film : scénario et vidéos effacés.','highlight');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PIPELINE PRINCIPAL
+// ══════════════════════════════════════════════════════════════════
+function updatePipelineStep(step){
+  for(let i=1;i<=5;i++){
+    const el=document.getElementById('pipe-'+i);
+    if(!el)continue;
+    el.classList.toggle('active', i===step);
+    el.classList.toggle('done', i<step);
+  }
+}
+
+async function runGeneration(onlyMissing){
+  if(state.isRunning)return;
+  if(!hasActiveKey()){showToast('Ajoutez au moins une clé API','error');return}
+  // Relance : on garde le scénario et les vidéos réussies, on ne refait que les manquantes
+  onlyMissing = onlyMissing === true && !!state.script;
+  if(!onlyMissing){
+    // Image chargée mais non analysée : elle serait ignorée sans prévenir (ni personnage, ni image de référence)
+    const notAnalyzed=state.referenceImages.filter((img,i)=>img&&!state.imageAnalyses[i]).length;
+    if(notAnalyzed>0&&!confirm(notAnalyzed+' image(s) chargée(s) mais non analysée(s) : elles seront ignorées pour ce film.\n\nAnnulez puis cliquez « Analyser toutes les images », ou OK pour continuer quand même.'))return;
+    if(state.script&&!confirm('Le film actuel sera remplacé par un nouveau film (nouveau scénario et 24 nouvelles vidéos). Continuer ?'))return;
+  }
+
+  state.isRunning=true;
+  state.stopRequested=false;
+  if(!onlyMissing){
+    state.script=null;
+    state.videos=[];
+    ['section-script','section-videos','section-player'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+    document.getElementById('download-panel').classList.add('hidden');
+    document.getElementById('videos-grid').innerHTML='';
+  }
+  renderScript();renderVideos();
+  updateButtons();
+
+  const style = state.selectedStyle;
+  if(onlyMissing) journalLog('Relance de '+missingVideos()+' séquence(s) manquante(s) — scénario et vidéos réussies conservés.','highlight');
+  else journalLog('Création lancée — ' + (GENRES[state.genre]?.name) + ' · ' + style.name, 'highlight');
+  debugLog('state','GENERATION','genre='+state.genre+' style='+style.id+' scriptMode='+state.scriptMode+' analyses='+state.imageAnalyses.filter(a=>a).length+(onlyMissing?' (relance)':''));
+
+  try{
+    let scenario = state.script;
+    if(!onlyMissing){
+      // ÉTAPE 3 : SCÉNARIO
+      updatePipelineStep(3);
+      setStatus('Étape 3/5 — Écriture du scénario (3 actes, 24 séquences)…');
+      journalLog('Écriture du scénario — structure en 3 actes, cohérence cinématographique…','script');
+      scenario = await buildScenario();
+      if(!scenario) throw new Error('Scénario impossible');
+      state.script = scenario;
+      renderScript();
+      saveProject();
+      journalLog('Scénario prêt — ' + scenario.sequences.length + ' séquences · « ' + scenario.title + ' »','success');
+      await sleep(500);
+    }
+
+    // ÉTAPE 4 : GÉNÉRATION VIDÉOS
+    updatePipelineStep(4);
+    setStatus(onlyMissing ? 'Étape 4/5 — Relance des séquences manquantes…' : 'Étape 4/5 — Génération des 24 séquences vidéo 9:16…');
+    if(!onlyMissing) journalLog('Génération des 24 séquences vidéo…','video');
+    await generateAllVideos(scenario, onlyMissing);
+    if(state.stopRequested) throw new Error('Arrêt demandé');
+
+    // ÉTAPE 5 : MONTAGE
+    updatePipelineStep(5);
+    const doneCount = state.videos.filter(v=>v.status==='done').length;
+    journalLog('Création complète — ' + doneCount + '/24 séquences prêtes.','success');
+    document.getElementById('section-player').classList.remove('hidden');
+    if(doneCount < 24){
+      journalLog('Certaines séquences ont échoué. Relancez la création pour les réessayer.','warn');
+    }
+    await sleep(1000);
+    setStatus(null);
+
+  }catch(e){
+    if(e.message==='Arrêt demandé'){
+      // Les cartes non terminées ne doivent pas tourner indéfiniment après l'arrêt
+      state.videos.forEach(v=>{if(v.status!=='done'){v.status='error';v.error='Arrêté';}});
+      renderVideos();
+      journalLog('Arrêt demandé.','warn');
+      setStatus('Arrêté.');
+      await sleep(1000);
+      setStatus(null);
+    }else{
+      journalLog('Erreur : '+e.message,'error');
+      debugLog('error','GENERATION',e.message);
+      setStatus('Erreur — voir console.');
+      await sleep(2000);
+      setStatus(null);
+    }
+  }
+
+  state.isRunning=false;
+  state.stopRequested=false;
+  if(state.script) saveProject();
+  updateButtons();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// VIDEO GENERATION
+// ══════════════════════════════════════════════════════════════════
+async function generateAllVideos(scenario, onlyMissing){
+  state.isGeneratingVideos=true;
+  const sequences=(scenario.sequences||[]).slice(0,SCENE_COUNT);
+  if(!onlyMissing || state.videos.length!==sequences.length){
+    state.videos=[];
+    for(let i=0;i<sequences.length;i++){
+      state.videos.push({status:'pending',url:null,prompt:'',index:i+1,progress:'En attente…'});
+    }
+  }
+  // Seules les séquences non terminées sont (re)faites ; la tâche déjà créée (v.task) est conservée
+  state.videos.forEach(v=>{if(v.status!=='done'){v.status='pending';v.progress='En attente…';v.error='';}});
+  renderVideos();
+  saveProject();
+  const activeKeys = state.keyPool.filter(k=>k.active).length;
+  const workerCount = Math.max(1, activeKeys);
+  const queue=sequences.map((seq,index)=>({seq,index})).filter(t=>state.videos[t.index].status!=='done');
+  journalLog('Lancement de '+workerCount+' worker(s) sur '+queue.length+' scènes.','video');
+  const workers=[];
+  for(let w=0;w<workerCount;w++)workers.push(videoWorker(w,queue,scenario));
+  await Promise.all(workers);
+  state.isGeneratingVideos=false;
+  updateButtons();
+  renderVideos();
+  const done=state.videos.filter(v=>v.status==='done').length;
+  journalLog('Bilan : '+done+'/'+sequences.length+' séquences prêtes.','success');
+}
+
+async function videoWorker(workerId, queue, scenario){
+  while(queue.length>0 && !state.stopRequested){
+    const task=queue.shift();
+    if(!task)break;
+    await generateOneVideo(task.seq, task.index, workerId, scenario);
+  }
+}
+
+async function generateOneVideo(sequence, index, workerId, scenario){
+  if(state.stopRequested)return;
+  // Relance : réutiliser le prompt d'origine (cohérence du film même si le style a été changé depuis)
+  const prompt=state.videos[index].prompt||buildClipPrompt(sequence, scenario, state.selectedStyle);
+  state.videos[index].status='loading';
+  state.videos[index].prompt=prompt;
+  state.videos[index].progress='Initialisation…';
+  renderVideos();
+  journalLog('W'+(workerId+1)+' → Séquence '+(index+1)+' : « '+((sequence.dialogue_fr||sequence.action||'').slice(0,50))+'… »','video');
+  const onProg=(prog)=>{state.videos[index].progress=prog;renderVideos();};
+
+  // Tâche déjà créée (arrêt, fermeture de la page…) : reprendre son suivi avant d'en créer une nouvelle
+  const oldTask=state.videos[index].task;
+  if(oldTask && oldTask.compositeId && Date.now()-(oldTask.createdAt||0) < 24*3600*1000){
+    try{
+      journalLog('W'+(workerId+1)+' → Séquence '+(index+1)+' : reprise du suivi de la tâche existante','video');
+      const videoUrl=await pollVideo(oldTask,onProg,true);
+      state.videos[index]={status:'done',url:videoUrl,prompt,index:index+1};
+      renderVideos(); saveProject();
+      journalLog('W'+(workerId+1)+' → Séquence '+(index+1)+' prête ✓','success');
+      return;
+    }catch(e){
+      if(e.message==='Arrêt demandé')return;
+      debugLog('warn','VIDÉO '+(index+1),'Reprise du suivi impossible ('+e.message+') → nouvelle création');
+    }
+  }
+
+  let lastErr = null;
+  for(let retry = 0; retry < VIDEO_MAX_RETRIES; retry++){
+    if(state.stopRequested) return;
+    if(retry > 0){
+      state.videos[index].progress = 'Relance ' + retry + '…';
+      renderVideos();
+      await sleep(3000);
+    }
+    try{
+      const refImage = state.referenceImagesForApi[0] || null;
+      let videoIdObj=null;
+      try{
+        videoIdObj=await _throttledCreateVideoTask(prompt, refImage, NUM_FRAMES);
+      }catch(e){
+        if(e.status===400 && refImage){
+          debugLog('warn','VIDÉO','Réessai sans image de référence…');
+          videoIdObj=await _throttledCreateVideoTask(prompt, null, NUM_FRAMES);
+        }else{throw e}
+      }
+      // Mémoriser la tâche et la clé qui l'a créée (suivi avec cette clé, reprise après fermeture)
+      state.videos[index].task={compositeId:videoIdObj.compositeId,innerId:videoIdObj.innerId||null,keyTail:videoIdObj.keyTail||null,createdAt:Date.now()};
+      saveProject();
+      const videoUrl=await pollVideo(videoIdObj,onProg);
+      state.videos[index]={status:'done',url:videoUrl,prompt,index:index+1};
+      renderVideos(); saveProject();
+      journalLog('W'+(workerId+1)+' → Séquence '+(index+1)+' prête ✓','success');
+      return;
+    }catch(e){
+      if(e.message==='Arrêt demandé')return;
+      lastErr = e;
+      debugLog('warn','VIDÉO '+(index+1),'Tentative '+(retry+1)+' échouée : '+e.message);
+    }
+  }
+  state.videos[index]={status:'error',url:null,prompt,index:index+1,error:(lastErr?lastErr.message:'échec')};
+  renderVideos(); saveProject();
+  journalLog('W'+(workerId+1)+' → Séquence '+(index+1)+' échouée : '+(lastErr?lastErr.message:'—'),'error');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PLAYER + TTS
+// ══════════════════════════════════════════════════════════════════
+let ttsVoice=null;
+function pickFrenchVoice(){
+  if(!('speechSynthesis' in window))return null;
+  const voices=window.speechSynthesis.getVoices();
+  if(!voices||voices.length===0)return null;
+  const fr=voices.filter(v=>v.lang&&v.lang.toLowerCase().startsWith('fr'));
+  if(fr.length===0)return null;
+  const preferred=fr.find(v=>/premium|enhanced|amelie|thomas|audrey|marie/i.test(v.name));
+  return preferred||fr[0];
+}
+function initTTS(){
+  if(!('speechSynthesis' in window))return;
+  const update=()=>{ttsVoice=pickFrenchVoice();if(ttsVoice)debugLog('success','TTS','Voix : '+ttsVoice.name)};
+  update();
+  window.speechSynthesis.onvoiceschanged=update;
+}
+function speakFR(text){
+  if(!state.voiceEnabled)return;
+  if(!('speechSynthesis' in window))return;
+  if(!text)return;
+  try{
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='fr-FR';u.rate=1.0;u.pitch=1.0;u.volume=1.0;
+    if(ttsVoice)u.voice=ttsVoice;
+    window.speechSynthesis.speak(u);
+    state.currentUtterance=u;
+  }catch(e){}
+}
+function stopTTS(){try{if('speechSynthesis' in window)window.speechSynthesis.cancel()}catch(e){}state.currentUtterance=null;}
+
+async function playFilm(){
+  const ready=state.videos.filter(v=>v.status==='done'&&v.url);
+  if(ready.length===0){showToast('Aucune vidéo à diffuser','error');return}
+  if(state.isPlayingFilm)return;
+  state.isPlayingFilm=true;
+  updateButtons();
+  const overlay=document.getElementById('player-overlay');
+  const canvas=document.getElementById('player-canvas');
+  if(!overlay||!canvas)return;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const cssW=window.innerWidth;
+  const cssH=window.innerHeight;
+  canvas.width=Math.round(cssW*dpr);
+  canvas.height=Math.round(cssH*dpr);
+  canvas.style.width=cssW+'px';
+  canvas.style.height=cssH+'px';
+  const ctx=canvas.getContext('2d');
+  overlay.classList.add('visible');
+  try{if('speechSynthesis' in window){const u0=new SpeechSynthesisUtterance(' ');u0.volume=0;window.speechSynthesis.speak(u0);}}catch(e){}
+  journalLog('Diffusion…','play');
+  const scenario=state.script||{sequences:[]};
+  const sequences=scenario.sequences||[];
+  const readyWithSeq = ready.map(v => {
+    const origIndex = state.videos.indexOf(v);
+    return { video:v, sequence: sequences[origIndex] || {} };
+  });
+  for(let i=0;i<readyWithSeq.length;i++){
+    if(!state.isPlayingFilm)break;
+    const {video,sequence}=readyWithSeq[i];
+    journalLog('Séq '+(i+1)+'/'+readyWithSeq.length,'play');
+    await playOneScene(video,sequence,ctx,canvas,dpr);
+  }
+  stopFilmPlayback();
+  journalLog('Diffusion terminée.','success');
+}
+
+function playOneScene(videoObj, sequence, ctx, canvas, dpr){
+  return new Promise((resolve)=>{
+    const video=document.createElement('video');
+    video.src=videoObj.url;
+    video.playsInline=true;
+    video.muted=true;
+    let ttsFired=false;
+    let finished=false;
+    const finish=()=>{if(finished)return;finished=true;resolve();};
+    const startTTS=()=>{if(ttsFired)return;ttsFired=true;const line=sequence.dialogue_fr||'';if(line)speakFR(line);};
+    const ttsGuard=setTimeout(()=>{startTTS()},2000);
+
+    const drawOverlay=(w,h)=>{
+      const t=video.currentTime||0;
+      const dur=video.duration||10;
+      let alpha=1;
+      if(t<0.4)alpha=t/0.4;
+      else if(dur-t<0.5)alpha=Math.max(0,(dur-t)/0.5);
+      if(alpha<=0)return;
+      const pad=Math.round(Math.min(30*dpr, w*0.03));
+      const bandH=Math.round(Math.min(110*dpr, h*0.16));
+      const bandY=h-bandH-pad;
+      const bandX=pad;
+      const bandW=w-pad*2;
+      ctx.save();
+      ctx.globalAlpha=alpha;
+      const grad=ctx.createLinearGradient(bandX,bandY,bandX,bandY+bandH);
+      grad.addColorStop(0,'rgba(10,10,18,0.0)');
+      grad.addColorStop(0.35,'rgba(10,10,18,0.85)');
+      grad.addColorStop(1,'rgba(10,10,18,0.95)');
+      ctx.fillStyle=grad;
+      ctx.fillRect(bandX,bandY,bandW,bandH);
+      ctx.fillStyle = '#ff2200';
+      ctx.fillRect(bandX,bandY+Math.round(bandH*0.15),Math.round(5*dpr),bandH-Math.round(bandH*0.3));
+      const overlayText=sequence.dialogue_fr||'';
+      if(overlayText){
+        ctx.fillStyle='#ffffff';
+        ctx.font='500 '+Math.round(Math.min(22*dpr, h*0.028))+'px -apple-system, BlinkMacSystemFont, Helvetica, Arial';
+        ctx.textBaseline='top';
+        let txt=overlayText;
+        const maxW=bandW-Math.round(bandH*0.4);
+        while(ctx.measureText(txt).width>maxW&&txt.length>4){txt=txt.slice(0,-4)+'…'}
+        ctx.fillText(txt,bandX+Math.round(bandH*0.22),bandY+Math.round(bandH*0.5));
+      }
+      ctx.restore();
+    };
+    const draw=()=>{
+      ctx.fillStyle='#000';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      const vw=video.videoWidth||720;
+      const vh=video.videoHeight||1280;
+      const ar=vw/vh;
+      const car=canvas.width/canvas.height;
+      let dw,dh,dx,dy;
+      if(ar>car){dw=canvas.width;dh=canvas.width/ar;dx=0;dy=(canvas.height-dh)/2}
+      else{dh=canvas.height;dw=canvas.height*ar;dx=(canvas.width-dw)/2;dy=0}
+      try{ctx.drawImage(video,dx,dy,dw,dh)}catch(e){}
+      drawOverlay(canvas.width,canvas.height);
+    };
+    const loop=()=>{
+      if(!state.isPlayingFilm){clearTimeout(ttsGuard);finish();return}
+      if(video.paused||video.ended){clearTimeout(ttsGuard);finish();return}
+      draw();
+      state.playRAF=requestAnimationFrame(loop);
+    };
+    video.onloadedmetadata=()=>{clearTimeout(ttsGuard);startTTS();video.play().then(()=>{loop()}).catch(()=>{startTTS();finish()});};
+    video.oncanplay=()=>{startTTS()};
+    video.onended=()=>{clearTimeout(ttsGuard);finish()};
+    video.onerror=()=>{startTTS();clearTimeout(ttsGuard);finish()};
+    video.load();
+  });
+}
+
+function stopFilmPlayback(){
+  state.isPlayingFilm=false;
+  if(state.playRAF)cancelAnimationFrame(state.playRAF);
+  state.playRAF=null;
+  stopTTS();
+  const overlay=document.getElementById('player-overlay');
+  if(overlay)overlay.classList.remove('visible');
+  updateButtons();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// STYLE SELECTOR
+// ══════════════════════════════════════════════════════════════════
+function renderStyleGrid(){
+  const container=document.getElementById('style-grid-container');
+  if(!container)return;
+  const genre=state.genre;
+  const styles=STYLES[genre]||STYLES.cinema;
+  container.innerHTML = styles.map(s => {
+    const active = state.selectedStyle && state.selectedStyle.id === s.id;
+    return '<div class="style-item'+(active?' active':'')+'" data-style="'+s.id+'">'+
+      '<div class="si-name">'+esc(s.name)+'</div>'+
+      '<div class="si-desc">'+esc(s.desc)+'</div>'+
+      '</div>';
+  }).join('');
+  container.querySelectorAll('.style-item').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const id = el.dataset.style;
+      const style = styles.find(s=>s.id===id);
+      if(style){
+        state.selectedStyle = style;
+        renderStyleGrid();
+        updateStyleDetail();
+        try{localStorage.setItem(STYLE_STORAGE, style.id)}catch(e){}
+      }
+    });
+  });
+  updateStyleDetail();
+}
+
+function updateStyleDetail(){
+  const detail=document.getElementById('style-detail');
+  const text=document.getElementById('style-detail-text');
+  const status=document.getElementById('style-status');
+  if(!state.selectedStyle){if(detail)detail.style.display='none';return}
+  const s=state.selectedStyle;
+  if(status)status.textContent=s.name;
+  if(detail && text){
+    detail.style.display='block';
+    text.textContent = s.composition + ' · ' + s.lighting + ' · ' + s.mood;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// GUIDED OPTIONS
+// ══════════════════════════════════════════════════════════════════
+function renderGuidedOptions(){
+  const container=document.getElementById('guided-options');
+  if(!container)return;
+  container.innerHTML = GUIDED_ELEMENTS.map(el => 
+    '<label style="display:flex;align-items:center;gap:.4rem;padding:.4rem .6rem;background:var(--bg3);border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:.7rem">'+
+    '<input type="checkbox" data-element="'+el.id+'" style="width:auto;margin:0;accent-color:var(--acc)">'+
+    '<span>'+esc(el.label)+'</span>'+
+    '</label>'
+  ).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════
+(function init(){
+  // Keys
+  document.getElementById('api-save-btn').addEventListener('click',saveKeysFromUI);
+  document.getElementById('api-clear-btn').addEventListener('click',()=>{
+    document.getElementById('api-keys-input').value='';
+    setStoredKeys([]);refreshKeyPool();updateKeysPanel();
+  });
+  document.getElementById('api-keys-input').addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();saveKeysFromUI()}
+  });
+
+  // Reference images (3 slots)
+  for(let i=0;i<3;i++){
+    const slot=document.getElementById('ref-slot-'+i);
+    const input=document.getElementById('ref-input-'+i);
+    if(slot && input){
+      slot.addEventListener('click',(e)=>{
+        if(e.target.closest('select')) return; // ne pas ouvrir le file picker si on clique sur le select
+        input.click();
+      });
+      input.addEventListener('change',(e)=>{
+        const f=e.target.files&&e.target.files[0];
+        if(f)handleImageFile(f, i);
+      });
+    }
+  }
+  document.getElementById('ref-analyze-all-btn').addEventListener('click',runAllImageAnalyses);
+  document.getElementById('ref-clear-all-btn').addEventListener('click',clearAllImages);
+
+  // Genre
+  document.querySelectorAll('.mode-card[data-genre]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      document.querySelectorAll('.mode-card[data-genre]').forEach(o=>o.classList.remove('active'));
+      el.classList.add('active');
+      const genre=el.dataset.genre;
+      state.genre=genre;
+      try{localStorage.setItem(GENRE_STORAGE,genre)}catch(e){}
+      const styles=STYLES[genre]||STYLES.cinema;
+      state.selectedStyle=styles[0];
+      renderStyleGrid();
+      updateStyleDetail();
+      const genreStatus=document.getElementById('genre-status');
+      if(genreStatus)genreStatus.textContent=GENRES[genre]?.name||genre;
+    });
+  });
+
+  // Style grid
+  renderStyleGrid();
+
+  // Script mode
+  document.querySelectorAll('#script-mode-selector .btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('#script-mode-selector .btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const mode=btn.dataset.scriptMode;
+      state.scriptMode=mode;
+      document.getElementById('script-auto-wrap').classList.toggle('hidden',mode!=='auto');
+      document.getElementById('script-guided-wrap').classList.toggle('hidden',mode!=='guided');
+      document.getElementById('script-write-wrap').classList.toggle('hidden',mode!=='write');
+    });
+  });
+
+  // Guided options
+  renderGuidedOptions();
+
+  // Load stored values
+  try{
+    const savedGenre=localStorage.getItem(GENRE_STORAGE);
+    if(savedGenre && GENRES[savedGenre]){
+      state.genre=savedGenre;
+      document.querySelectorAll('.mode-card[data-genre]').forEach(o=>o.classList.toggle('active',o.dataset.genre===savedGenre));
+      const styles=STYLES[savedGenre]||STYLES.cinema;
+      state.selectedStyle=styles[0];
+    }
+    const savedStyle=localStorage.getItem(STYLE_STORAGE);
+    if(savedStyle){
+      const styles=STYLES[state.genre]||STYLES.cinema;
+      const st=styles.find(s=>s.id===savedStyle);
+      if(st){state.selectedStyle=st;}
+    }
+  }catch(e){}
+  renderStyleGrid();
+  updateStyleDetail();
+
+  // Launch
+  // Scénario existant avec des vidéos manquantes → ne relancer que celles-ci
+  document.getElementById('launch-btn').addEventListener('click',()=>runGeneration(!!state.script&&missingVideos()>0));
+  document.getElementById('new-film-btn').addEventListener('click',clearProject);
+  document.getElementById('stop-btn').addEventListener('click',()=>{
+    state.stopRequested=true;
+    stopTTS();
+    journalLog('Arrêt demandé…','warn');
+    setStatus('Arrêt en cours…');
+  });
+
+  // Player
+  document.getElementById('play-film-btn').addEventListener('click',playFilm);
+  document.getElementById('replay-btn').addEventListener('click',playFilm);
+  document.getElementById('player-overlay').addEventListener('click',stopFilmPlayback);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.isPlayingFilm)stopFilmPlayback()});
+  document.getElementById('voice-toggle').addEventListener('change',e=>{
+    state.voiceEnabled=e.target.checked;
+    if(!state.voiceEnabled)stopTTS();
+  });
+
+  // Download
+  document.getElementById('download-all-btn').addEventListener('click',downloadAllVideos);
+
+  // Debug tabs
+  document.getElementById('tab-journal').addEventListener('click',()=>switchTab('journal'));
+  document.getElementById('tab-tech').addEventListener('click',()=>switchTab('tech'));
+  document.getElementById('debug-clear-btn').addEventListener('click',e=>{e.stopPropagation();clearDebug()});
+  document.getElementById('debug-copy-btn').addEventListener('click',e=>{e.stopPropagation();copyDebug()});
+  document.getElementById('debug-collapse-btn').addEventListener('click',e=>{e.stopPropagation();toggleDebugCollapse()});
+
+  // Init
+  refreshKeyPool();
+  updateKeysPanel();
+  updateRefPanel();
+  updateButtons();
+  initTTS();
+  setInterval(renderKeysStatus, 1000);
+  updatePipelineStep(1);
+  loadProject(); // projet précédent (scénario, vidéos, images) depuis IndexedDB
+
+  debugLog('success','INIT','STUDIO D\'AUTEUR v12.0 — Créateur de films IA');
+  debugLog('info','INIT','6 genres · ' + Object.values(STYLES).reduce((acc,arr)=>acc+arr.length,0) + ' styles visuels');
+  debugLog('info','INIT','Scénario 3 actes · 24 séquences · 4 minutes · Cohérence inter-clips');
+  debugLog('info','INIT','Polling: attente initiale 120s, intervalle 20-45s, max 50 tentatives');
+  journalLog('Prêt. Chargez vos images de personnages.','highlight');
+})();
+</script>
+</body>
+</html>
